@@ -279,7 +279,7 @@ export function ComposePage() {
                 <span className="text-[10px] text-text-muted">{encoreCount}/{ENCORE_WALL_COUNT} Encores</span>
               </div>
               <p className="text-[10px] text-text-muted mt-1 leading-snug">
-                Keep performing. When you reach the limits of the concert hall, a new path will open.
+                Perform {ENCORE_WALL_COUNT} Encores to master the stage — then a new path opens.
               </p>
               <div className="mt-1.5 h-1 rounded-full bg-bg-primary overflow-hidden">
                 <div className="h-full rounded-full bg-text-muted/40 transition-all" style={{ width: `${wallProgress}%` }} />
@@ -289,10 +289,10 @@ export function ComposePage() {
             <>
               {opusCount === 0 && (
                 <div className="p-3 rounded-lg border border-red-500/40 bg-red-500/10">
-                  <div className="text-sm font-semibold text-red-400 mb-1">The hall has reached its limit</div>
+                  <div className="text-sm font-semibold text-red-400 mb-1">You've mastered the stage</div>
                   <p className="text-xs text-text-secondary leading-relaxed">
-                    The air itself can hold no more sound — each Encore now barely moves the needle. But a
-                    performance, once <em>recorded</em>, echoes forever. Your Magnum Opus awaits.
+                    Eight encores to a roaring hall — the crowd knows every note. But a performance fades by
+                    morning. To make your music <em>endure</em>, you must record it. Your Magnum Opus awaits.
                   </p>
                 </div>
               )}

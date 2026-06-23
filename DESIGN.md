@@ -100,8 +100,10 @@ Each layer climaxes on a **hard wall you provably can't beat with this layer's t
 
 The pattern, per layer: *diminishing returns set in → a themed hard wall → a one-line teaser reframing
 the next verb.* Examples:
-- **End of L1 (Encore):** Applause gains plateau; the hall hits a **volume ceiling**. *"A performance
-  fades the moment it ends. What if you could capture it forever?"* → **Magnum Opus** (recording).
+- **End of L1 (Encore):** after 8 Encores you've **mastered the stage** (the mechanical gate). Aspirational
+  teaser — *"a performance fades by morning; to make your music endure, record it"* → **Magnum Opus**.
+  (Note: the *natural* production stall lands later, ~Encore 11-12; the gate fires at 8 while play still
+  feels good, so the teaser is framed as ambition, not a wall the player is grinding against.)
 - **End of L2 (Magnum Opus):** the fastest tempo you can conduct by hand still stalls — *"You can't be in
   every city at once."* → **Repertoire** (touring / automation).
 - **End of L3 (Repertoire):** automation maxed, but the same setlist every night. *"You've mastered the
