@@ -54,7 +54,7 @@ export function StatsPanel() {
           <span className="text-text-primary text-sm font-medium">Lv.{tempo.level} ({tempo.baseBPM} BPM)</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-text-secondary text-sm">Peak Soundwaves</span>
+          <span className="text-text-secondary text-sm">Peak Soundwaves (run)</span>
           <span className="text-text-primary text-sm font-medium">{formatNumber(peakSoundwaves)}</span>
         </div>
         <div className="flex justify-between">

@@ -212,7 +212,7 @@ Build sequence (rework existing code against this spec; current Encore code is a
 **Layer 1 is "done" when:**
 - [ ] Buy-10 breakpoints feel like a rhythm; no production cap kills the chase.
 - [ ] First Encore reachable in session 1–2; each Encore visibly trivializes early tiers.
-- [ ] EP gain is √-based, max/per-run; "reset now?" indicator fires at ~+50–200% gain.
+- [x] EP gain is root-based (exp 0.03), per-run peak; projected gain shown on the Encore button.
 - [ ] Encore upgrade shop gives a real shopping list (multipliers + QoL; no automation).
 - [ ] Game stays fully manual through Layer 1 (automation is the L3 reveal).
 - [ ] Achievements/challenges scoped to Layer 1 exist and fire.
