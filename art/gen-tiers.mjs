@@ -26,8 +26,11 @@ const TIERS = [
 
 mkdirSync('art/tiers', { recursive: true })
 const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${KEY}`
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+const SPACING_MS = 13000 // free tier is RPM-limited; space requests so we don't trip 429
 
 for (const [id, name, subj] of TIERS) {
+  if (id > 1) await sleep(SPACING_MS)
   const body = {
     contents: [{ parts: [{ text: `${STYLE} The emblem depicts: ${subj}.` }] }],
     generationConfig: { responseModalities: ['IMAGE'] },
