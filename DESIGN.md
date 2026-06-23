@@ -185,15 +185,16 @@ automation** (that's the L3 reveal). "Done" = the checklist in §8 is all green.
    (cheaper tempo). **No autobuyers here — automation is the L3 reveal.** Player stays manual through L1.
 6. After enough Encores, Applause gains plateau → **Layer-1 wall + teaser** → Magnum Opus unlocks.
 
-**Concrete numbers to start tuning from** (all adjustable):
-- Encore unlock: 30 Harmonies (keep).
-- `EP_gain = floor(sqrt(peakSW / 1e8))` — placeholder; tune `threshold` so first Encore ≈ 20–40 min in,
-  and the optimal-reset multiple (~+100%) recurs on a satisfying cadence.
-- Each EP: ×1.5 to ×2 all production (start at ×2, watch for runaway; √ gain should contain it).
-- Encore shop: 5–8 nodes, costs in EP — multipliers + QoL only (no automation; that's L3).
+**SHIPPED Layer 1 constants** (sim-validated in `sim/`, asserted by `src/core/layer1.test.ts`):
+- `PRODUCTION_SCALE = 0.1` — global production knob → first Encore ≈ 30–36 min (sim, optimal play).
+- Cost growth: original per-bracket factors (1e2…1e5), **milestone uncapped** (`MILESTONE_PROD_CAP = Infinity`) so every 10th buy keeps doubling — the buy-10 chase stays alive.
+- Encore reward is **ADDITIVE**: production ×`(1 + ENCORE_REWARD_PER · totalEP)`, `ENCORE_REWARD_PER = 1`. (×2^EP explodes — proven; see the test's regression guard.)
+- `EP_gain = floor((runPeak / 1e15)^0.03)`, accumulated into `lifetimeEncorePoints` (drives the multiplier) and `encorePoints` (spendable in the shop). The 0.03 exponent — much smaller than a √ — is what keeps EP bounded under uncapped production; it yields a healthy ×2–2.8 per-Encore cadence.
+- Encore unlock gate: 30 Harmonies (escalates per Encore: 30 Movements → 30/50/70… Symphonies).
+- `ENCORE_WALL_COUNT = 8` — after 8 Encores (~2–2.5h optimal) the cliffhanger fires and Magnum Opus unlocks.
+- Encore shop: 3 nodes (Perfect Pitch ×prod, Sight-Reading head start, Overture +EP gain) — multipliers + QoL only, no automation (that's L3).
 
-**Open balance question (needs a playtest pass):** exact `threshold`/`k` for EP gain, and whether EP
-reward is ×1.5 or ×2 per point. We'll tune by playing, not by spreadsheet alone.
+**Still feel-tunable on a playtest pass:** exact `PRODUCTION_SCALE`/`ENCORE_WALL_COUNT` for the desired session length, and shop upgrade magnitudes. Math fixed the pacing; subjective feel is a human call.
 
 ---
 

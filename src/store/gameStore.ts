@@ -486,9 +486,14 @@ export const useGameStore = create<GameState & GameActions>()(
         const moPurchased = state.tiers[moCost.tierIndex]?.purchased ?? 0
         if (moPurchased < moCost.amount) return
 
+        // Magnum Opus fully resets the Encore layer (production mult comes from lifetimeEncorePoints).
         set({
           ...resetTiersAndSW(state.achievements),
+          peakSoundwaves: new Decimal(0),
           encorePoints: 0,
+          lifetimeEncorePoints: 0,
+          encoreCount: 0,
+          encoreUpgrades: {},
           opusPoints: state.opusPoints + 1,
           opusCount: state.opusCount + 1,
         })
@@ -510,9 +515,14 @@ export const useGameStore = create<GameState & GameActions>()(
 
         if (state.soundwaves.lt(GRAND_FINALE_SW_THRESHOLD)) return
 
+        // Grand Finale resets the Encore + Magnum Opus layers.
         set({
           ...resetTiersAndSW(state.achievements),
+          peakSoundwaves: new Decimal(0),
           encorePoints: 0,
+          lifetimeEncorePoints: 0,
+          encoreCount: 0,
+          encoreUpgrades: {},
           opusPoints: 0,
           finalePoints: state.finalePoints + 1,
           finaleCount: state.finaleCount + 1,

@@ -36,13 +36,14 @@ export function encoreGate(count) {
 }
 
 // ---- default tunable params ----
+// Defaults reflect the SHIPPED Layer 1 config (mirrors src/core/constants.ts).
 export const DEFAULTS = {
   costScale: 1,      // x all tier base costs
   growthExp: 1,      // per-bracket growth raised to this power (>1 = steeper walls)
-  prodScale: 1,      // x all production
-  milestoneCap: 4,   // prod milestone cap (Infinity = uncapped)
-  epThreshold: 1e8,  // EP = floor((peak/epThreshold)^epRoot)
-  epRoot: 0.5,
+  prodScale: 0.1,    // x all production (PRODUCTION_SCALE)
+  milestoneCap: Infinity, // prod milestone uncapped — keeps the buy-10 chase alive (DESIGN.md)
+  epThreshold: 1e15, // EP = floor((peak/epThreshold)^epRoot)
+  epRoot: 0.03,
   epRewardMode: 'add', // 'add' = (1 + epRewardPer*EP) [stable], 'mult' = 2^EP [explodes]
   epRewardPer: 1,      // additive production bonus per EP (e.g. 1 = +100%/point)
 }
