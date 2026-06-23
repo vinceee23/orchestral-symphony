@@ -153,7 +153,8 @@ export function getEncoreMultiplier(ep: number): Decimal {
 /** EP gained from a run's peak soundwaves: floor((peak/threshold)^root). 0 below threshold. */
 export function getEncoreGain(peakSoundwaves: Decimal): number {
   if (peakSoundwaves.lte(ENCORE_EP_THRESHOLD)) return 0
-  return Math.floor(peakSoundwaves.div(ENCORE_EP_THRESHOLD).pow(ENCORE_EP_ROOT).toNumber())
+  const n = Math.floor(peakSoundwaves.div(ENCORE_EP_THRESHOLD).pow(ENCORE_EP_ROOT).toNumber())
+  return isFinite(n) ? n : Number.MAX_SAFE_INTEGER // guard: extreme peaks can't poison numeric EP
 }
 
 /** Opus BPM multiplier: each OP = x2 tick speed (BPM) */

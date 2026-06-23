@@ -524,6 +524,7 @@ export const useGameStore = create<GameState & GameActions>()(
           encoreCount: 0,
           encoreUpgrades: {},
           opusPoints: 0,
+          opusCount: 0,
           finalePoints: state.finalePoints + 1,
           finaleCount: state.finaleCount + 1,
         })
@@ -611,6 +612,7 @@ export const useGameStore = create<GameState & GameActions>()(
             state.soundwaves = currentState.soundwaves
             state.tiers = currentState.tiers
             state.tempo = currentState.tempo
+            state.autobuyers = currentState.autobuyers
             state.totalTimePlayed = currentState.totalTimePlayed
             state.peakSoundwaves = currentState.peakSoundwaves
           }

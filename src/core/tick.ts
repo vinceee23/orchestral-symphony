@@ -13,6 +13,7 @@ import {
   getFinaleMultiplier,
   getTempoProductionMultiplier,
   getMilestoneTickspeedMultiplier,
+  getOpusBPMMultiplier,
 } from './formulas'
 import {
   getAchievementGlobalMultiplier,
@@ -48,10 +49,13 @@ export function calculateTick(state: GameState, deltaMs: number): Partial<GameSt
   // Prestige multipliers (disabled during noPrestige challenge)
   let encoreMult = new Decimal(1)
   let finaleMult = new Decimal(1)
+  let opusMult = 1
   if (!mods.noPrestige) {
     // Multiplier from TOTAL EP earned (lifetime) — spending in the shop doesn't reduce it.
     encoreMult = getEncoreMultiplier(state.lifetimeEncorePoints)
     finaleMult = getFinaleMultiplier(state.finalePoints)
+    // Opus (Magnum Opus, L2) is a real production multiplier too — same fix as tempo.
+    opusMult = getOpusBPMMultiplier(state.opusPoints)
   }
 
   // Tempo + milestone-tickspeed are now REAL production multipliers (previously dead — they only
@@ -59,6 +63,7 @@ export function calculateTick(state: GameState, deltaMs: number): Partial<GameSt
   let globalMult = achievementGlobal
     .times(encoreMult)
     .times(finaleMult)
+    .times(opusMult)
     .times(getPerfectPitchMultiplier(state.encoreUpgrades))
     .times(PRODUCTION_SCALE)
     .times(getTempoProductionMultiplier(state.tempo.level))
