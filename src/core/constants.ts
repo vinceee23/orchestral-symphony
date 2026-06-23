@@ -20,7 +20,7 @@ export const TIER_CONFIGS: TierConfig[] = [
     icon: '\u{266A}',
     produces: 'Soundwaves',
     baseCost: new Decimal(10),
-    costGrowth: 1e2,
+    costGrowth: 316,
     baseProduction: new Decimal(1),
   },
   {
@@ -29,7 +29,7 @@ export const TIER_CONFIGS: TierConfig[] = [
     icon: '\u{266C}',
     produces: 'Notes',
     baseCost: new Decimal(200),
-    costGrowth: 3e2,
+    costGrowth: 1248,
     baseProduction: new Decimal(1),
   },
   {
@@ -38,7 +38,7 @@ export const TIER_CONFIGS: TierConfig[] = [
     icon: '\u{1D11E}',
     produces: 'Motifs',
     baseCost: new Decimal(5000),
-    costGrowth: 1e3,
+    costGrowth: 5623,
     baseProduction: new Decimal(1),
   },
   {
@@ -47,7 +47,7 @@ export const TIER_CONFIGS: TierConfig[] = [
     icon: '\u{1D122}',
     produces: 'Phrases',
     baseCost: new Decimal(2e5),
-    costGrowth: 3e3,
+    costGrowth: 22185,
     baseProduction: new Decimal(1),
   },
   {
@@ -56,7 +56,7 @@ export const TIER_CONFIGS: TierConfig[] = [
     icon: '\u{1D121}',
     produces: 'Melodies',
     baseCost: new Decimal(5e7),
-    costGrowth: 1e4,
+    costGrowth: 100000,
     baseProduction: new Decimal(1),
   },
   {
@@ -65,7 +65,7 @@ export const TIER_CONFIGS: TierConfig[] = [
     icon: '\u{1D106}',
     produces: 'Harmonies',
     baseCost: new Decimal(1e12),
-    costGrowth: 3e4,
+    costGrowth: 394457,
     baseProduction: new Decimal(1),
   },
   {
@@ -74,7 +74,7 @@ export const TIER_CONFIGS: TierConfig[] = [
     icon: '\u{1D107}',
     produces: 'Movements',
     baseCost: new Decimal(1e18),
-    costGrowth: 1e5,
+    costGrowth: 1778279,
     baseProduction: new Decimal(1),
   },
 ]
@@ -82,6 +82,12 @@ export const TIER_CONFIGS: TierConfig[] = [
 export type BuyAmount = 1 | 10 | 'max'
 
 export const STARTING_SOUNDWAVES = new Decimal(10)
+
+// Layer 1 balance — sim-validated (see sim/ + DESIGN.md). Punchy ~2-3h to the wall.
+export const PRODUCTION_SCALE = 0.3                 // global production tuning knob
+export const ENCORE_EP_THRESHOLD = new Decimal('1e15') // EP = floor((peak/threshold)^root)
+export const ENCORE_EP_ROOT = 0.10
+export const ENCORE_REWARD_PER = 1                  // additive: each EP = +100% production (stable; x2/pt explodes)
 export const TEMPO_BASE_COST = new Decimal(1000)
 export const TEMPO_COST_GROWTH = 3.5
 export const TEMPO_SPEED_FACTOR = 0.10

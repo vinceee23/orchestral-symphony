@@ -1,6 +1,6 @@
 import Decimal from 'break_infinity.js'
 import type { GameState } from '../store/types'
-import { TIER_CONFIGS, AUTOBUYER_DEFAULT_INTERVAL } from './constants'
+import { TIER_CONFIGS, AUTOBUYER_DEFAULT_INTERVAL, PRODUCTION_SCALE } from './constants'
 import {
   getTierProductionPerTick,
   getTierCost,
@@ -11,6 +11,8 @@ import {
   getMaxBuyable,
   getEncoreMultiplier,
   getFinaleMultiplier,
+  getTempoProductionMultiplier,
+  getMilestoneTickspeedMultiplier,
 } from './formulas'
 import {
   getAchievementGlobalMultiplier,
@@ -50,7 +52,14 @@ export function calculateTick(state: GameState, deltaMs: number): Partial<GameSt
     finaleMult = getFinaleMultiplier(state.finalePoints)
   }
 
-  let globalMult = achievementGlobal.times(encoreMult).times(finaleMult)
+  // Tempo + milestone-tickspeed are now REAL production multipliers (previously dead — they only
+  // shrank the tick interval, which cancels out over real time). PRODUCTION_SCALE is the tuning knob.
+  let globalMult = achievementGlobal
+    .times(encoreMult)
+    .times(finaleMult)
+    .times(PRODUCTION_SCALE)
+    .times(getTempoProductionMultiplier(state.tempo.level))
+    .times(getMilestoneTickspeedMultiplier(state.tiers))
 
   // Apply production divisor from challenge
   if (mods.productionDivisor > 1) {

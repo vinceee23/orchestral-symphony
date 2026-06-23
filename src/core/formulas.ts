@@ -10,6 +10,9 @@ import {
   TEMPO_SPEED_FACTOR,
   TEMPO_MIN_INTERVAL,
   TEMPO_BASE_INTERVAL,
+  ENCORE_REWARD_PER,
+  ENCORE_EP_THRESHOLD,
+  ENCORE_EP_ROOT,
 } from './constants'
 import type { TierState } from '../store/types'
 
@@ -94,6 +97,12 @@ export function getTempoBPM(level: number): number {
   return Math.round(60000 / getTempoTickInterval(level))
 }
 
+/** Tempo as a REAL production multiplier (= intended speed-up ratio). The game loop only
+ *  shrank the tick interval, which cancels out — so tempo had no production effect. This is the fix. */
+export function getTempoProductionMultiplier(level: number): number {
+  return TEMPO_BASE_INTERVAL / getTempoTickInterval(level)
+}
+
 /** Cost of the next tempo upgrade */
 export function getTempoCost(level: number): Decimal {
   return TEMPO_BASE_COST.times(Decimal.pow(TEMPO_COST_GROWTH, level))
@@ -136,9 +145,15 @@ export function getMaxTempoLevels(currentLevel: number, soundwaves: Decimal): nu
 
 // === Prestige reward formulas ===
 
-/** EP multiplier: each EP = x2 all production */
+/** EP multiplier: additive per point (1 + per*EP). Stable — x2^EP explodes (sim-proven). */
 export function getEncoreMultiplier(ep: number): Decimal {
-  return Decimal.pow(2, ep)
+  return new Decimal(1).plus(ENCORE_REWARD_PER * ep)
+}
+
+/** EP gained from a run's peak soundwaves: floor((peak/threshold)^root). 0 below threshold. */
+export function getEncoreGain(peakSoundwaves: Decimal): number {
+  if (peakSoundwaves.lte(ENCORE_EP_THRESHOLD)) return 0
+  return Math.floor(peakSoundwaves.div(ENCORE_EP_THRESHOLD).pow(ENCORE_EP_ROOT).toNumber())
 }
 
 /** Opus BPM multiplier: each OP = x2 tick speed (BPM) */

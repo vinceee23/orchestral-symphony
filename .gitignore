@@ -11,6 +11,10 @@ node_modules
 dist
 dist-ssr
 *.local
+
+# Secrets — never commit
+.env
+.env.*
 .electron-dist
 release
 

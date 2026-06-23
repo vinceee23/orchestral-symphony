@@ -18,6 +18,7 @@ import {
   getTempoCost,
   getMaxBuyable,
   getMaxTempoLevels,
+  getEncoreGain,
 } from '../core/formulas'
 import { ACHIEVEMENTS, getAchievementStartingSW, getAchievementCostReduction, getAchievementTierCostReduction } from '../core/achievements'
 import { getChallengeById, getActiveChallengeModifiers } from '../core/challenges'
@@ -418,10 +419,14 @@ export const useGameStore = create<GameState & GameActions>()(
         const purchased = state.tiers[cost.tierIndex]?.purchased ?? 0
         if (purchased < cost.amount) return
 
+        // EP gained from this run's peak (additive accumulation). Reset peak = per-run gain.
+        const gain = getEncoreGain(state.peakSoundwaves)
+
         set({
           ...resetTiersAndSW(state.achievements),
-          encorePoints: state.encorePoints + 1,
-          lifetimeEncorePoints: state.lifetimeEncorePoints + 1,
+          peakSoundwaves: new Decimal(0),
+          encorePoints: state.encorePoints + gain,
+          lifetimeEncorePoints: state.lifetimeEncorePoints + gain,
           encoreCount: state.encoreCount + 1,
         })
       },
