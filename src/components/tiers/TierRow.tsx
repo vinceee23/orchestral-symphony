@@ -2,6 +2,7 @@ import Decimal from 'break_infinity.js'
 import { useGameStore } from '../../store/gameStore'
 import { TIER_CONFIGS } from '../../core/constants'
 import { getTierProductionPerSec, getMilestoneMultiplier, getTierBatchCost, getMaxBuyable, getEncoreMultiplier, getFinaleMultiplier } from '../../core/formulas'
+import { getPerfectPitchMultiplier } from '../../core/encoreUpgrades'
 import { formatNumber, formatCost } from '../../core/format'
 import { SmoothNumber } from '../shared/SmoothNumber'
 import { ProgressBar } from '../shared/ProgressBar'
@@ -18,7 +19,8 @@ export function TierRow({ tierId }: TierRowProps) {
   const buyAmount = useGameStore((s) => s.buyAmount)
   const achievements = useGameStore((s) => s.achievements)
   const autobuyers = useGameStore((s) => s.autobuyers)
-  const encorePoints = useGameStore((s) => s.encorePoints)
+  const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
+  const encoreUpgrades = useGameStore((s) => s.encoreUpgrades)
   const finalePoints = useGameStore((s) => s.finalePoints)
   const buyTier = useGameStore((s) => s.buyTier)
   const buyMaxTier = useGameStore((s) => s.buyMaxTier)
@@ -46,9 +48,9 @@ export function TierRow({ tierId }: TierRowProps) {
   // Build the full multiplier stack
   const achievementSet = new Set(achievements)
   const achievementGlobal = getAchievementGlobalMultiplier(achievementSet)
-  const encoreMult = getEncoreMultiplier(encorePoints)
+  const encoreMult = getEncoreMultiplier(lifetimeEncorePoints)
   const finaleMult = getFinaleMultiplier(finalePoints)
-  const globalMult = achievementGlobal.times(encoreMult).times(finaleMult)
+  const globalMult = achievementGlobal.times(encoreMult).times(finaleMult).times(getPerfectPitchMultiplier(encoreUpgrades))
   const tierAchMult = getAchievementTierMultiplier(achievementSet, tierId)
   const fullMult = globalMult.times(tierAchMult)
 

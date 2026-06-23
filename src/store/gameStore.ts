@@ -8,7 +8,12 @@ import {
   getEncoreCost, getMagnumOpusCost,
   GRAND_FINALE_SW_THRESHOLD,
   AUTOBUYER_DEFAULT_INTERVAL,
+  ENCORE_WALL_COUNT,
 } from '../core/constants'
+import {
+  ENCORE_UPGRADE_MAP, getEncoreUpgradeCost,
+  getSightReadingStartNotes, getOvertureGainMultiplier,
+} from '../core/encoreUpgrades'
 import { calculateTick } from '../core/tick'
 import {
   getTierCost,
@@ -53,12 +58,14 @@ function createInitialState(): GameState {
     buyAmount: 1,
     achievements: [],
     completedChallenges: [],
+    encoreUpgrades: {},
     autobuyers: {},
     activeChallenge: null,
     preChallengeState: null,
     encorePoints: 0,
     lifetimeEncorePoints: 0,
     encoreCount: 0,
+    layer1WallReached: false,
     opusPoints: 0,
     opusCount: 0,
     finalePoints: 0,
@@ -67,7 +74,7 @@ function createInitialState(): GameState {
     totalTimePlayed: 0,
     lastSaveTimestamp: Date.now(),
     currentRunStartTime: Date.now(),
-    version: '0.5.0',
+    version: '0.6.0',
   }
 }
 
@@ -274,6 +281,21 @@ export const useGameStore = create<GameState & GameActions>()(
         })
       },
 
+      buyEncoreUpgrade: (id: string) => {
+        set((state) => {
+          const config = ENCORE_UPGRADE_MAP[id]
+          if (!config) return state
+          const level = state.encoreUpgrades[id] ?? 0
+          if (level >= config.maxLevel) return state
+          const cost = getEncoreUpgradeCost(config, level)
+          if (state.encorePoints < cost) return state
+          return {
+            encorePoints: state.encorePoints - cost,
+            encoreUpgrades: { ...state.encoreUpgrades, [id]: level + 1 },
+          }
+        })
+      },
+
       checkAchievements: () => {
         const state = get()
         const currentSet = new Set(state.achievements)
@@ -419,21 +441,38 @@ export const useGameStore = create<GameState & GameActions>()(
         const purchased = state.tiers[cost.tierIndex]?.purchased ?? 0
         if (purchased < cost.amount) return
 
-        // EP gained from this run's peak (additive accumulation). Reset peak = per-run gain.
-        const gain = getEncoreGain(state.peakSoundwaves)
+        // EP gained from this run's peak (additive), boosted by the Overture upgrade.
+        const overtureMult = getOvertureGainMultiplier(state.encoreUpgrades)
+        const gain = Math.floor(getEncoreGain(state.peakSoundwaves) * overtureMult)
 
+        const reset = resetTiersAndSW(state.achievements)
+        // Sight-Reading: begin the new run with free Notes (tier 1).
+        const startNotes = getSightReadingStartNotes(state.encoreUpgrades)
+        if (startNotes > 0 && reset.tiers) {
+          reset.tiers[0] = {
+            ...reset.tiers[0],
+            quantity: new Decimal(startNotes),
+            purchased: startNotes,
+            multiplier: getMilestoneMultiplier(startNotes),
+          }
+        }
+
+        const newEncoreCount = state.encoreCount + 1
         set({
-          ...resetTiersAndSW(state.achievements),
+          ...reset,
           peakSoundwaves: new Decimal(0),
           encorePoints: state.encorePoints + gain,
           lifetimeEncorePoints: state.lifetimeEncorePoints + gain,
-          encoreCount: state.encoreCount + 1,
+          encoreCount: newEncoreCount,
+          layer1WallReached: state.layer1WallReached || newEncoreCount >= ENCORE_WALL_COUNT,
         })
       },
 
       // === Prestige Layer 2: Magnum Opus (always +1 OP, x2 BPM each, resets EP) ===
       performMagnumOpus: () => {
         const state = get()
+
+        if (!state.layer1WallReached) return // locked until the Layer-1 cliffhanger
 
         if (state.activeChallenge) {
           const ch = getChallengeById(state.activeChallenge.challengeId)
@@ -459,6 +498,8 @@ export const useGameStore = create<GameState & GameActions>()(
       performGrandFinale: () => {
         const state = get()
 
+        if (!state.layer1WallReached) return // locked until the Layer-1 cliffhanger
+
         if (state.activeChallenge) {
           const ch = getChallengeById(state.activeChallenge.challengeId)
           if (ch) {
@@ -483,12 +524,12 @@ export const useGameStore = create<GameState & GameActions>()(
       },
     }),
     {
-      name: 'orchestral-symphony-v5',
+      name: 'orchestral-symphony-v6',
       storage: createDecimalStorage(),
       partialize: (state): GameState => {
         const {
           tick, buyTier, buyMaxTier, buyTempo, buyMaxTempo, setBuyAmount,
-          toggleAutobuyer, checkAchievements, checkChallengeCompletion,
+          toggleAutobuyer, buyEncoreUpgrade, checkAchievements, checkChallengeCompletion,
           startChallenge, abandonChallenge,
           performEncore, performMagnumOpus, performGrandFinale,
           hardReset,
@@ -504,6 +545,8 @@ export const useGameStore = create<GameState & GameActions>()(
           if (!state.achievements) state.achievements = []
           if (!state.completedChallenges) state.completedChallenges = []
           if (!state.autobuyers) state.autobuyers = {}
+          if (!state.encoreUpgrades) state.encoreUpgrades = {}
+          if (state.layer1WallReached === undefined) state.layer1WallReached = false
           if (!state.buyAmount) state.buyAmount = 1
           if (state.activeChallenge === undefined) state.activeChallenge = null
           if (state.preChallengeState === undefined) state.preChallengeState = null
@@ -531,12 +574,14 @@ export const useGameStore = create<GameState & GameActions>()(
               buyAmount: state.buyAmount,
               achievements: state.achievements,
               completedChallenges: state.completedChallenges,
+              encoreUpgrades: state.encoreUpgrades,
               autobuyers: state.autobuyers,
               activeChallenge: state.activeChallenge,
               preChallengeState: state.preChallengeState,
               encorePoints: state.encorePoints,
               lifetimeEncorePoints: state.lifetimeEncorePoints,
               encoreCount: state.encoreCount,
+              layer1WallReached: state.layer1WallReached,
               opusPoints: state.opusPoints,
               opusCount: state.opusCount,
               finalePoints: state.finalePoints,

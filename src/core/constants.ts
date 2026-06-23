@@ -88,6 +88,7 @@ export const PRODUCTION_SCALE = 0.3                 // global production tuning 
 export const ENCORE_EP_THRESHOLD = new Decimal('1e15') // EP = floor((peak/threshold)^root)
 export const ENCORE_EP_ROOT = 0.10
 export const ENCORE_REWARD_PER = 1                  // additive: each EP = +100% production (stable; x2/pt explodes)
+export const ENCORE_WALL_COUNT = 5                  // after this many Encores, the L1 wall hits & Magnum Opus unlocks
 export const TEMPO_BASE_COST = new Decimal(1000)
 export const TEMPO_COST_GROWTH = 3.5
 export const TEMPO_SPEED_FACTOR = 0.10

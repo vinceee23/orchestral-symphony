@@ -43,6 +43,9 @@ export interface GameState {
   achievements: string[]
   completedChallenges: string[]
 
+  // Layer 1 Encore shop — id -> level (spends encorePoints)
+  encoreUpgrades: Record<string, number>
+
   // Autobuyers
   autobuyers: Record<string, AutobuyerState>
 
@@ -50,10 +53,14 @@ export interface GameState {
   activeChallenge: ActiveChallengeState | null
   preChallengeState: PreChallengeSnapshot | null
 
-  // Prestige Layer 1: Encore (+1 per reset, x2 all production each)
+  // Prestige Layer 1: Encore. encorePoints = spendable EP; lifetimeEncorePoints drives the
+  // production multiplier (never drops when you spend in the shop).
   encorePoints: number
   lifetimeEncorePoints: number
   encoreCount: number
+
+  // Cliffhanger gate: layers 2-6 stay locked until the Layer-1 wall is reached.
+  layer1WallReached: boolean
 
   // Prestige Layer 2: Magnum Opus (+1 per reset, x2 BPM each)
   opusPoints: number
@@ -79,6 +86,7 @@ export interface GameActions {
   buyMaxTempo: () => void
   setBuyAmount: (amount: BuyAmount) => void
   toggleAutobuyer: (key: string) => void
+  buyEncoreUpgrade: (id: string) => void
   checkAchievements: () => void
   checkChallengeCompletion: () => void
   startChallenge: (id: string) => void

@@ -22,6 +22,7 @@ import {
 } from './achievements'
 import { getChallengeById, getActiveChallengeModifiers } from './challenges'
 import type { ChallengeModifiers } from './challenges'
+import { getPerfectPitchMultiplier } from './encoreUpgrades'
 
 export function calculateTick(state: GameState, deltaMs: number): Partial<GameState> {
   const achievementSet = new Set(state.achievements)
@@ -48,7 +49,8 @@ export function calculateTick(state: GameState, deltaMs: number): Partial<GameSt
   let encoreMult = new Decimal(1)
   let finaleMult = new Decimal(1)
   if (!mods.noPrestige) {
-    encoreMult = getEncoreMultiplier(state.encorePoints)
+    // Multiplier from TOTAL EP earned (lifetime) — spending in the shop doesn't reduce it.
+    encoreMult = getEncoreMultiplier(state.lifetimeEncorePoints)
     finaleMult = getFinaleMultiplier(state.finalePoints)
   }
 
@@ -57,6 +59,7 @@ export function calculateTick(state: GameState, deltaMs: number): Partial<GameSt
   let globalMult = achievementGlobal
     .times(encoreMult)
     .times(finaleMult)
+    .times(getPerfectPitchMultiplier(state.encoreUpgrades))
     .times(PRODUCTION_SCALE)
     .times(getTempoProductionMultiplier(state.tempo.level))
     .times(getMilestoneTickspeedMultiplier(state.tiers))

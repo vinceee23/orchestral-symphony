@@ -3,6 +3,7 @@ import { useGameStore } from '../../store/gameStore'
 import { formatNumber } from '../../core/format'
 import { TIER_CONFIGS } from '../../core/constants'
 import { getTierProductionPerSec, getEncoreMultiplier, getFinaleMultiplier } from '../../core/formulas'
+import { getPerfectPitchMultiplier } from '../../core/encoreUpgrades'
 import { getAchievementGlobalMultiplier, getAchievementTierMultiplier } from '../../core/achievements'
 import { SmoothNumber } from '../shared/SmoothNumber'
 
@@ -11,13 +12,15 @@ export function SoundwaveDisplay() {
   const tiers = useGameStore((s) => s.tiers)
   const achievements = useGameStore((s) => s.achievements)
   const encorePoints = useGameStore((s) => s.encorePoints)
+  const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
+  const encoreUpgrades = useGameStore((s) => s.encoreUpgrades)
   const finalePoints = useGameStore((s) => s.finalePoints)
 
   const achievementSet = new Set(achievements)
   const achievementGlobal = getAchievementGlobalMultiplier(achievementSet)
-  const encoreMult = getEncoreMultiplier(encorePoints)
+  const encoreMult = getEncoreMultiplier(lifetimeEncorePoints)
   const finaleMult = getFinaleMultiplier(finalePoints)
-  const globalMult = achievementGlobal.times(encoreMult).times(finaleMult)
+  const globalMult = achievementGlobal.times(encoreMult).times(finaleMult).times(getPerfectPitchMultiplier(encoreUpgrades))
 
   const tier1 = tiers[0]
   const config1 = TIER_CONFIGS[0]
@@ -40,9 +43,9 @@ export function SoundwaveDisplay() {
           +{formatNumber(swPerSec)}/s
         </div>
       )}
-      {encorePoints > 0 && (
+      {lifetimeEncorePoints > 0 && (
         <div className="text-[10px] text-accent-gold mt-1">
-          EP: {encorePoints} (x{formatNumber(encoreMult, 0)})
+          Applause: {encorePoints} spendable · x{formatNumber(encoreMult, 2)} production
         </div>
       )}
       {finalePoints > 0 && (
