@@ -60,37 +60,39 @@ curve (base 1000, ×3.5/level). This is your second investment axis: **breadth**
 
 ---
 
-## 3. The layer map — 9 prestige layers, each a distinct verb
+## 3. The layer map — 6 prestige layers, each a distinct verb
 
-Telescoping scope mirrors a musician's ascent from busker to the cosmos. **Each layer resets everything
-below but grants a currency that boosts everything below** (fractal nesting). The iron rule with this
-many layers: **every layer is a different MECHANIC, never just a bigger multiplier.** Each verb below is
-a proven archetype from the research (AD, Realm Grinder, Synergism, NGU, Trimps, Paperclips).
+Telescoping scope mirrors a musician's ascent from first performance to defining a canon. **Each layer
+resets everything below but grants a currency that boosts everything below** (fractal nesting). The iron
+rule: **every layer is a different MECHANIC, never just a bigger multiplier.** Each verb is a proven
+archetype from the research (AD, Realm Grinder, Synergism, Trimps).
 
 | # | Layer (music frame) | **Distinct verb (the new toy)** | Archetype borrowed | Cadence |
 |---|---------------------|----------------------------------|--------------------|---------|
 | 0 | **Compose** — the performance | Buy 7 tiers + tempo by hand | base loop | sec–min |
-| 1 | **Encore** — take a bow, play again | **Pure ×production multiplier.** Teaches the prestige loop. | Clicker Heroes souls | hours → 1–2 days |
-| 2 | **Magnum Opus** — record the album | **×tempo + the first autobuyers** (earned, slow). | AD tickspeed | days |
-| 3 | **Repertoire** — go on tour | **Automation milestone ladder** — spend currency on permanent QoL/automation you keep *forever*. | AD Eternity Milestones | days → 1 wk |
+| 1 | **Encore** — take a bow, play again | **Pure ×production multiplier.** Teaches the prestige loop. Fully manual. | Clicker Heroes souls | hours → 1–2 days |
+| 2 | **Magnum Opus** — record the album | **×tempo + a deep tempo system you conduct by hand** (sections/movements). NO autobuyers here. | AD tickspeed | days |
+| 3 | **Repertoire** — go on tour | **THE Automation layer.** Every autobuyer unlocks + upgrades here, on a milestone ladder you keep *forever*. | AD Eternity Milestones | days → 1 wk |
 | 4 | **Genre** — define a style | **Choice/build tree** — pick a Genre (Classical/Jazz/Electronic/Film) each reset; reshapes bonuses, respeccable. | Realm Grinder factions / AD Time Studies | 1–2 wks |
 | 5 | **Virtuoso** — master the craft | **Voluntary-difficulty runs** — opt into constraints ("perform blindfolded") for permanent stacking multipliers. | AD Eternity Challenges / Synergism Corruptions | 2–4 wks |
-| 6 | **Canon** — a body of work | **Collectible loadout** — earn randomized **Compositions** (equippable, leveled, rarity) and mix-and-match a build. | AD Glyphs / Synergism Talismans | weeks |
-| 7 | **Zeitgeist** — a cultural movement | **Parallel multi-resource economy** — new bars (Influence / Inspiration / Resonance) feeding separate ratchets you juggle. | NGU Idle | weeks → month |
-| 8 | **Conservatory** — teach the world | **Automator scripting** — write a real script that plays the whole game beneath you. | AD Automator | month+ |
-| 9 | **Music of the Spheres** — the cosmic finale | **Finite narrative act** — rules reinvent, a true ending (or "break the game" endgame systems). | Universal Paperclips / AD Celestials | endgame |
+| 6 | **Canon** — a body of work (endgame) | **Collectible loadout** — earn randomized **Compositions** (equippable, leveled, rarity), mix-and-match a build. Open-ended terminal layer. | AD Glyphs / Synergism Talismans | weeks → ∞ |
 
-**Why 9 distinct verbs and not 9 multipliers:** research is blunt — layers that are mechanically
-identical with more zeroes are the deepest anti-pattern. Each layer here changes *how you play*: from
-buying, to automating, to choosing builds, to opting into difficulty, to crafting loadouts, to juggling
-economies, to programming, to a finite ending. That's what sustains months without becoming a spreadsheet.
+**Why distinct verbs, not 6 multipliers:** research is blunt — layers that are mechanically identical with
+more zeroes are the deepest anti-pattern. Each layer changes *how you play*: buy → conduct → automate →
+choose a build → opt into difficulty → craft a loadout. That progression sustains months without becoming
+a spreadsheet.
 
-**Build incrementally — 6 is the "complete core", 7–9 is deep expansion.** We finish one layer fully
-before the next (your layer-by-layer plan). Layers 1–6 form a satisfying complete game; 7–9 extend it
-for the hardcore. So 9 is the *roadmap ceiling*, not a commitment to build all nine before shipping.
+**The tightening (from design review):** automation lives in ONE place. L1–L2 are fully manual — you press
+buy and conduct tempo yourself ("manual" = occasional decisions; production runs passively, so no
+click-fatigue). L3 ("Repertoire") is the dedicated Automation layer where every autobuyer is earned and
+permanently kept. This stops L2 and L3 from both reading as "more automation," and makes L3 a strong reveal.
 
-**Naming:** existing Encore / Magnum Opus survive as layers 1–2. The old "Grand Finale" concept moves to
-the true ending (layer 9, "Music of the Spheres"); the deep middle gets the new names above.
+**Endgame:** L6 (Canon) is open-ended — collect/level/equip Compositions forever, with the L5 difficulty
+dial feeding infinite scaling. Genre-standard terminal state (AD Reality/Glyphs, Synergism, NGU all end
+open-ended). A finite narrative finale was considered and cut to keep scope at a tight, complete 6 layers.
+
+**Naming:** existing Encore / Magnum Opus survive as layers 1–2. The old "Grand Finale" is retired; the
+deep game gets the new names above.
 
 ### Cliffhangers (mechanical wall + narrative teaser, per your call)
 Each layer climaxes on a **hard wall you provably can't beat with this layer's tools**, paired with a
@@ -100,11 +102,11 @@ The pattern, per layer: *diminishing returns set in → a themed hard wall → a
 the next verb.* Examples:
 - **End of L1 (Encore):** Applause gains plateau; the hall hits a **volume ceiling**. *"A performance
   fades the moment it ends. What if you could capture it forever?"* → **Magnum Opus** (recording).
-- **End of L2 (Magnum Opus):** max tempo + autobuyers still stall at a **mastering wall**. *"One album is
-  a moment. A career is a tour."* → **Repertoire**.
-- **End of L3 (Repertoire):** automation maxed but the same setlist every night. *"You've mastered the
+- **End of L2 (Magnum Opus):** the fastest tempo you can conduct by hand still stalls — *"You can't be in
+  every city at once."* → **Repertoire** (touring / automation).
+- **End of L3 (Repertoire):** automation maxed, but the same setlist every night. *"You've mastered the
   songs. Now write the rulebook."* → **Genre**.
-- …each subsequent wall hands off to the next verb the same way, up to the finite L9 ending.
+- …L4 → L5 → L6 hand off the same way, ending in the open-ended Canon endgame.
 
 ---
 
@@ -113,18 +115,21 @@ the next verb.* Examples:
 **Earned, ratcheted, phased** — the AD Eternity-Milestones model, which is also the spine of your
 "phased playstyle" choice.
 
-- **Phase A (Layer 0–1, manual):** buy everything by hand. Autobuyers appear *late* in Layer 1 as the
-  first reward — and start *slow* (long interval, buy-1 only). You earn relief from tedium you've mastered.
-- **Phase B (Layer 2):** the Automation ladder proper. Milestone-gated upgrades, in this order per autobuyer:
-  **unlock → bulk (1 / 10 / max) → speed (interval down) → conditional (auto-prestige when reward ≥ ×N).**
+**Automation lives in exactly one layer: L3 (Repertoire).**
+
+- **Phase A (Layers 0–2, manual):** you buy tiers and conduct tempo by hand. "Manual" only means *you
+  press buy* — production runs passively — so it's occasional decision-making, not click-fatigue. This is
+  where you learn the loop and earn the *right* to automate it.
+- **Phase B (Layer 3, the Automation reveal):** the big beat. Every autobuyer unlocks here on a milestone
+  ladder, each upgraded in order: **unlock → bulk (1 / 10 / max) → speed (interval down) → conditional
+  (auto-prestige when reward ≥ ×N).**
 - **Permanent ratchet:** once an automation milestone is earned, it is **kept on every future run forever.**
-  You never re-grind convenience. This is the single most-copied idea in the genre and the reason resets
-  stop feeling like punishment.
-- **Late game (Layer 2–3):** the entire 7-tier + Encore loop runs itself; your attention moves up to
-  tempo routing, then genre/build decisions. By Layer 3 you tune a self-running machine, not operate it.
+  You never re-grind convenience — the reason resets stop feeling like punishment.
+- **Late game (Layers 4–6):** the entire 7-tier + Encore + tempo loop runs itself; your attention moves up
+  to genre builds, difficulty runs, and loadout craft. You tune a self-running machine, not operate it.
 
 Rule of thumb baked in: **automate an action ~one prestige cycle after the player first did it manually
-and repeatedly.** Never sooner (kills engagement), never much later (tedium → churn).
+and repeatedly** — which is exactly why automation lands at L3, after L1–L2 manual mastery.
 
 ---
 
@@ -165,9 +170,9 @@ too-slow first prestige; layers that are mechanically identical with more zeroes
 
 ## 7. Layer 1 — complete spec (this is what we build first)
 
-**Scope:** base 7-tier game + Tempo + a fully-developed, repeatable **Encore** prestige + Layer-1
-autobuyers + Layer-1 achievements/challenges + the cliffhanger wall & teaser into Magnum Opus.
-"Done" = the checklist in §8 is all green.
+**Scope:** base 7-tier game + Tempo + a fully-developed, repeatable **Encore** prestige +
+Layer-1 achievements/challenges + the cliffhanger wall & teaser into Magnum Opus. **Fully manual — no
+automation** (that's the L3 reveal). "Done" = the checklist in §8 is all green.
 
 **The Encore loop:**
 1. Player builds tiers + tempo, hits the natural cost stall.
@@ -175,9 +180,9 @@ autobuyers + Layer-1 achievements/challenges + the cliffhanger wall & teaser int
    projected Applause gain and the multiplier it'll grant.
 3. Encore resets tiers/tempo/SW, grants Applause (√ formula), each point ×prod permanently.
 4. Next run re-clears the early tiers fast → visible "I'm so much stronger" payoff.
-5. **Encore upgrade shop** (Applause sink): a small tree of permanent buys — e.g. *Sight-Reading*
-   (start each run with N free Tier-1), *Perfect Pitch* (×prod), *Metronome* (cheaper tempo), and the
-   **first autobuyer unlocks** (slow, buy-1) as the late Layer-1 reward.
+5. **Encore upgrade shop** (Applause sink): a small tree of permanent buys — e.g. *Sight-Reading* (start
+   each run with N free Tier-1), *Perfect Pitch* (×prod), *Crescendo* (milestone bonus +), *Metronome*
+   (cheaper tempo). **No autobuyers here — automation is the L3 reveal.** Player stays manual through L1.
 6. After enough Encores, Applause gains plateau → **Layer-1 wall + teaser** → Magnum Opus unlocks.
 
 **Concrete numbers to start tuning from** (all adjustable):
@@ -185,8 +190,7 @@ autobuyers + Layer-1 achievements/challenges + the cliffhanger wall & teaser int
 - `EP_gain = floor(sqrt(peakSW / 1e8))` — placeholder; tune `threshold` so first Encore ≈ 20–40 min in,
   and the optimal-reset multiple (~+100%) recurs on a satisfying cadence.
 - Each EP: ×1.5 to ×2 all production (start at ×2, watch for runaway; √ gain should contain it).
-- Encore shop: 5–8 nodes, costs in EP, including 2–3 autobuyer unlocks gated behind several Encores.
-- First autobuyer: unlock interval ~2s, buy-1 only; upgradable later (in Layer 2).
+- Encore shop: 5–8 nodes, costs in EP — multipliers + QoL only (no automation; that's L3).
 
 **Open balance question (needs a playtest pass):** exact `threshold`/`k` for EP gain, and whether EP
 reward is ×1.5 or ×2 per point. We'll tune by playing, not by spreadsheet alone.
@@ -199,18 +203,17 @@ Build sequence (rework existing code against this spec; current Encore code is a
 
 1. **Base loop balance pass** — uncap buy-10 milestone; verify cost/production curves feel right; first stall lands in-session.
 2. **Encore rework** — √-based EP gain, max/per-run; ×prod reward; projected-gain + "reset now?" UI.
-3. **Encore upgrade shop** — the Applause sink tree (5–8 nodes), incl. autobuyer unlocks.
-4. **Layer-1 autobuyers** — earned late, slow, buy-1; milestone-ratcheted (kept forever).
-5. **Layer-1 achievements & challenges** — scoped to the Encore epoch only.
-6. **Cliffhanger** — the volume-ceiling wall + narrative teaser; Magnum Opus shown as "coming next" (locked, but framed narratively, not as a bare "???").
-7. **Polish** — numbers formatting, soundwave/tempo feedback, save/load integrity across Encores.
+3. **Encore upgrade shop** — the Applause sink tree (5–8 nodes): multipliers + QoL only, no automation.
+4. **Layer-1 achievements & challenges** — scoped to the Encore epoch only.
+5. **Cliffhanger** — the volume-ceiling wall + narrative teaser; Magnum Opus shown as "coming next" (locked, framed narratively, not a bare "???").
+6. **Polish** — number formatting, soundwave/tempo feedback, save/load integrity across Encores.
 
 **Layer 1 is "done" when:**
 - [ ] Buy-10 breakpoints feel like a rhythm; no production cap kills the chase.
 - [ ] First Encore reachable in session 1–2; each Encore visibly trivializes early tiers.
 - [ ] EP gain is √-based, max/per-run; "reset now?" indicator fires at ~+50–200% gain.
-- [ ] Encore upgrade shop gives a real shopping list, including earned autobuyers.
-- [ ] Autobuyers are earned late, ratchet permanently, and start slow.
+- [ ] Encore upgrade shop gives a real shopping list (multipliers + QoL; no automation).
+- [ ] Game stays fully manual through Layer 1 (automation is the L3 reveal).
 - [ ] Achievements/challenges scoped to Layer 1 exist and fire.
 - [ ] The cliffhanger wall + narrative teaser lands and unlocks Magnum Opus.
 - [ ] Saves survive Encores and a reload without corruption.
@@ -219,13 +222,14 @@ Build sequence (rework existing code against this spec; current Encore code is a
 
 ## 9. Decisions (locked 2026-06-24)
 
-- **Layer map: 9 layers, each a distinct verb** (see §3). 1–6 = complete core, 7–9 = deep expansion.
-  Build one layer fully before the next.
-- The earlier "Genre choice + difficulty dial" call is now cleanly split into **L4 Genre** (choice tree)
-  and **L5 Virtuoso** (voluntary-difficulty dial) — two distinct layers instead of one.
-- **Build order: Layer 1 only, now.** Git initialized as a safety net before reworking.
+- **Layer map: 6 layers, each a distinct verb** (see §3). Trimmed from a 9-layer draft to keep scope tight
+  and complete. Build one layer fully before the next.
+- **Automation tightening applied:** automation lives only in L3 (Repertoire). L1–L2 are fully manual
+  ("active early"); L2 is the tempo axis, not automation.
+- The earlier "Genre choice + difficulty dial" call = **L4 Genre** + **L5 Virtuoso** (two distinct layers).
+- **Build order: Layer 1 only, now.** Git initialized (baseline `0c69e6b`).
 
 Still to settle by playtest (not blockers):
-- Whether to ship at L6 or push through L9 — decide when we reach L6.
 - Currency flavor names per layer — decide as we build each.
-- EP reward per point — ×1.5 vs ×2 (tune by playtest).
+- EP reward per point — ×1.5 vs ×2 (tune by playtest / simulation).
+- Whether L6 Canon stays open-ended or gets a finite capstone — decide at L6.
