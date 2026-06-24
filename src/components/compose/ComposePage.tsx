@@ -174,10 +174,10 @@ export function ComposePage() {
           <BuyAmountToggle />
         </div>
 
-        <div className="w-full flex-1 flex items-center justify-center pb-28">
+        <div className="w-full flex justify-center mt-3 pb-24">
           <div
             className="transition-transform duration-[1500ms] ease-out"
-            style={{ transform: `scale(${orchestraScale})`, transformOrigin: 'center' }}
+            style={{ transform: `scale(${orchestraScale})`, transformOrigin: 'top center' }}
           >
             <OrchestraStage />
           </div>

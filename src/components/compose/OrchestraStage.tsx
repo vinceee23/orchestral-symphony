@@ -109,8 +109,7 @@ export function OrchestraStage() {
   }))
 
   return (
-    <div className="w-full flex justify-center">
-      <div className="flex justify-center items-end gap-3 sm:gap-5 pb-16 max-w-full overflow-x-auto">
+    <div className="flex items-end justify-center gap-3 sm:gap-5 pb-16">
         {TIER_CONFIGS.map((config, i) => {
           const tier = tiers[i]
           const arc = Math.pow((i - 3) / 3, 2) * 50 // parabola: center sits highest (stage curve)
@@ -212,8 +211,6 @@ export function OrchestraStage() {
             </button>
           )
         })}
-      </div>
-
     </div>
   )
 }
