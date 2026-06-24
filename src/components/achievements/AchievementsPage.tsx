@@ -1,9 +1,36 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import { ACHIEVEMENTS } from '../../core/achievements'
 import { getMilestoneTickspeedMultiplier } from '../../core/formulas'
 
 const COLS = 7
+
+function AchievementImage({ id, icon, dim }: { id: string; icon: string; dim: boolean }) {
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    setFailed(false)
+  }, [id])
+
+  const dimClass = dim ? 'grayscale opacity-40' : ''
+
+  if (failed) {
+    return (
+      <span className={`flex items-center justify-center w-full h-full ${dimClass}`}>
+        {icon}
+      </span>
+    )
+  }
+
+  return (
+    <img
+      src={`/achievements/${id}.jpg`}
+      alt=""
+      className={`w-full h-full object-cover ${dimClass}`}
+      onError={() => setFailed(true)}
+    />
+  )
+}
 
 export function AchievementsPage() {
   const achievements = useGameStore((s) => s.achievements)
@@ -75,7 +102,7 @@ export function AchievementsPage() {
                       onMouseLeave={() => setHoveredId(null)}
                       onClick={() => setSelectedId(isSelected ? null : ach.id)}
                       className={`
-                        aspect-square rounded-lg border flex items-center justify-center text-2xl transition-all duration-200
+                        aspect-square rounded-lg border overflow-hidden text-2xl transition-all duration-200
                         ${unlocked
                           ? 'bg-accent-gold/10 border-accent-gold/40 shadow-[0_0_8px_rgba(255,215,0,0.15)]'
                           : 'bg-bg-secondary/50 border-border/50 grayscale opacity-40'
@@ -84,7 +111,7 @@ export function AchievementsPage() {
                         hover:scale-105
                       `}
                     >
-                      {ach.icon}
+                      <AchievementImage id={ach.id} icon={ach.icon} dim={!unlocked} />
                     </button>
                   )
                 })}
@@ -107,8 +134,14 @@ export function AchievementsPage() {
                 ? 'bg-accent-gold/5 border-accent-gold/30'
                 : 'bg-bg-secondary border-border'
             }`}>
+              <div className="aspect-video rounded-lg overflow-hidden mb-3 text-4xl">
+                <AchievementImage
+                  id={displayed.id}
+                  icon={displayed.icon}
+                  dim={!isDisplayedUnlocked}
+                />
+              </div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">{displayed.icon}</span>
                 {isDisplayedUnlocked && (
                   <span className="text-[10px] bg-success/20 text-success px-1.5 py-0.5 rounded">UNLOCKED</span>
                 )}
