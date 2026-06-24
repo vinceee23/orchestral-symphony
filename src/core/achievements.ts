@@ -553,6 +553,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     check: (s) => s.platinum || s.recordsSold >= 1_000_000,
     reward: { globalPercent: 0.05 },
     rewardDescription: '+5% all production',
+    hidden: true, // mystery: stays "???" until you cross 1M records — the reveal IS the payoff
   },
   {
     id: 'ach_diamond_hands',
@@ -625,6 +626,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     check: (s) => s.platinum === true,
     reward: { perk: 'perk-keep-encore-upgrades' },
     rewardDescription: 'PERK: keep your Encore upgrades through a Magnum Opus',
+    hidden: true, // mystery: the Platinum perk stays "???" until you go Platinum
   },
   {
     id: 'ach_perk_warmup',

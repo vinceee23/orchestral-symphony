@@ -45,8 +45,10 @@ export function OpusPage() {
           <div className="text-xs text-text-muted uppercase tracking-wider">Records Sold</div>
           <div className="text-lg font-display font-semibold text-text-primary tabular-nums mt-1">{formatNumber(recordsSold, 0)}</div>
         </div>
-        <div className="rounded-xl border border-border bg-bg-secondary/40 p-4">
-          <div className="text-xs text-text-muted uppercase tracking-wider">Platinum</div>
+        {/* Mystery: pre-reveal this slot never names "Platinum" — just an unmarked milestone at 1M records
+            ("reach 1,000,000 to unlock ???"). It resolves into PLATINUM · Certified only once you cross it. */}
+        <div className={`rounded-xl border bg-bg-secondary/40 p-4 ${platinum ? 'border-accent-purple/30' : 'border-border'}`}>
+          <div className="text-xs text-text-muted uppercase tracking-wider">{platinum ? 'Platinum' : '???'}</div>
           <div className={`text-lg font-display font-semibold tabular-nums mt-1 ${platinum ? 'text-accent-purple' : 'text-text-muted'}`}>
             {platinum ? 'Certified' : `${formatNumber(recordsSold, 0)} / ${formatNumber(PLATINUM_THRESHOLD, 0)}`}
           </div>
