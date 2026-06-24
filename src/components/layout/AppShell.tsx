@@ -23,7 +23,7 @@ export function AppShell() {
       <Header />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 min-w-0 overflow-y-auto">
           {activeTab === 'compose' && <ComposePage />}
           {activeTab === 'prestige' && <PrestigePage />}
           {activeTab === 'opus' && <OpusPage />}
