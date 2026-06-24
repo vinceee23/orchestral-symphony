@@ -3,7 +3,7 @@ import { useGameStore } from '../../store/gameStore'
 import { SoundwaveDisplay } from './SoundwaveDisplay'
 import { TempoBar } from './TempoBar'
 import { BuyAmountToggle } from './BuyAmountToggle'
-import { TierPanel } from '../tiers/TierPanel'
+import { OrchestraStage } from './OrchestraStage'
 import { formatNumber } from '../../core/format'
 import {
   getEncoreCost,
@@ -180,13 +180,13 @@ export function ComposePage() {
       <TempoBar />
 
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">
-          Composers
+        <h2 className="text-base font-display font-semibold text-accent-gold tracking-wide">
+          Your Orchestra
         </h2>
         <BuyAmountToggle />
       </div>
 
-      <TierPanel />
+      <OrchestraStage />
 
       {/* Prestige */}
       {(canEncore || encoreCount > 0) && !prestigeBlocked && (

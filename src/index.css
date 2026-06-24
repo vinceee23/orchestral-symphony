@@ -1,6 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
+  --font-display: 'Cinzel', Georgia, serif;
   --color-bg-primary: #0a0a0f;
   --color-bg-secondary: #12121a;
   --color-bg-tertiary: #1a1a2e;
@@ -98,4 +100,26 @@ body {
 
 .animate-slide-in-right {
   animation: slide-in-right 0.3s ease-out;
+}
+
+/* --- Stage --- */
+/* Soft spotlight wash over the stage backdrop */
+@keyframes spotlight-breathe {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.8; }
+}
+.animate-spotlight { animation: spotlight-breathe 6s ease-in-out infinite; }
+
+/* A section pulses when you buy into it */
+@keyframes section-buy {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+.animate-section-buy { animation: section-buy 0.35s ease-out; }
+
+/* Tempo heartbeat — a gentle glow pulse (duration set inline from BPM) */
+@keyframes tempo-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
 }
