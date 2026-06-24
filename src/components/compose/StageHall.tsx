@@ -28,6 +28,16 @@ export const StageHall = memo(function StageHall({ era, liveliness }: Props) {
 
   return (
     <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden" aria-hidden="true">
+      {/* ── back-wall ambient glow: era-colored depth behind the orchestra ── */}
+      <div
+        className="absolute left-1/2 top-[28%] -translate-x-1/2 transition-all duration-[1500ms] ease-out"
+        style={{
+          width: `${55 + grand * 30}%`, height: '52%',
+          opacity: 0.25 + grand * 0.4,
+          background: `radial-gradient(60% 55% at 50% 45%, ${color}2e, transparent 72%)`,
+          filter: 'blur(8px)',
+        }}
+      />
       {/* ── grand architecture: organ pipes + proscenium back wall ── */}
       <div
         className="absolute left-1/2 top-[6%] -translate-x-1/2 transition-all duration-[1500ms] ease-out"
@@ -40,6 +50,18 @@ export const StageHall = memo(function StageHall({ era, liveliness }: Props) {
           WebkitMaskImage: 'linear-gradient(180deg, #000 0%, #000 55%, transparent 100%)',
           borderTopLeftRadius: '50% 80%', borderTopRightRadius: '50% 80%',
           borderTop: `1px solid ${color}33`,
+        }}
+      />
+      {/* ── volumetric god-rays fanning down from the lamp ── */}
+      <div
+        className="absolute inset-0 transition-opacity duration-[1500ms]"
+        style={{
+          opacity: 0.05 + grand * 0.14,
+          background:
+            `conic-gradient(from 205deg at 50% -6%, transparent 0deg, ${color}14 4deg, transparent 9deg, ` +
+            `${color}10 15deg, transparent 21deg, ${color}14 27deg, transparent 33deg, ${color}10 40deg, transparent 46deg)`,
+          maskImage: 'radial-gradient(80% 75% at 50% 0%, #000 10%, transparent 75%)',
+          WebkitMaskImage: 'radial-gradient(80% 75% at 50% 0%, #000 10%, transparent 75%)',
         }}
       />
       {/* ── tiered risers receding behind the orchestra (stacked steps: lit edge + filled tread) ── */}
@@ -81,6 +103,30 @@ export const StageHall = memo(function StageHall({ era, liveliness }: Props) {
           </g>
         ))}
       </svg>
+      {/* ── era-tinted floor glow (warms gold / cools violet / blazes per era) ── */}
+      <div
+        className="absolute inset-x-0 bottom-0 h-[26%] transition-all duration-[1500ms]"
+        style={{ opacity: 0.3 + grand * 0.3, background: `radial-gradient(50% 120% at 50% 100%, ${color}24, transparent 72%)` }}
+      />
+      {/* ── HYBRID: optional generated backdrop layered in front; gracefully hides if absent → procedural hall shows ── */}
+      {e <= 2 && (
+        <img
+          src={`/halls/hall-${['0-intimate', '1-encore', '2-magnum-opus'][e]}.jpg`}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-[1500ms]"
+          style={{
+            opacity: 0.82,
+            maskImage: 'radial-gradient(135% 105% at 50% 40%, #000 58%, transparent 100%)',
+            WebkitMaskImage: 'radial-gradient(135% 105% at 50% 40%, #000 58%, transparent 100%)',
+          }}
+          onError={(ev) => { ev.currentTarget.style.display = 'none' }}
+        />
+      )}
+      {/* ── cinematic edge vignette: frames the hall (orchestra pods sit above this layer and stay bright) ── */}
+      <div
+        className="absolute inset-0 transition-all duration-[1500ms]"
+        style={{ opacity: 0.45 + grand * 0.2, background: 'radial-gradient(120% 90% at 50% 42%, transparent 52%, #000 100%)' }}
+      />
     </div>
   )
 })

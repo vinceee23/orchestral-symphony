@@ -31,8 +31,9 @@ const HALLS = [
 
 mkdirSync('public/halls', { recursive: true })
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-const SPACING_MS = 60000
-const MAX_RETRY = 2
+const SPACING_MS = 30000
+const MAX_RETRY = 20          // persistent: keep trying (user confirmed credits remain; 429 is pure throttle)
+const BACKOFF_MS = 120000     // patient 2-min cool-off so retries don't re-trigger the cooldown
 
 async function genOne(model, text) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${KEY}`
@@ -40,9 +41,9 @@ async function genOne(model, text) {
   for (let attempt = 0; attempt <= MAX_RETRY; attempt++) {
     const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
     if (res.status === 429) {
-      if (attempt === MAX_RETRY) throw new Error('429 after retries (rate-limit; rerun later)')
-      console.error(`  429, backing off 90s [retry ${attempt + 1}/${MAX_RETRY}]`)
-      await sleep(90000); continue
+      if (attempt === MAX_RETRY) throw new Error('429 after all retries (rate-limit; rerun later)')
+      console.error(`  429, backing off ${BACKOFF_MS / 1000}s [retry ${attempt + 1}/${MAX_RETRY}]`)
+      await sleep(BACKOFF_MS); continue
     }
     const json = await res.json()
     if (!res.ok) throw new Error(`HTTP ${res.status} ${JSON.stringify(json).slice(0, 180)}`)
