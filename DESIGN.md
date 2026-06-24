@@ -237,3 +237,40 @@ Still to settle by playtest (not blockers):
 - Currency flavor names per layer — decide as we build each.
 - EP reward per point — ×1.5 vs ×2 (tune by playtest / simulation).
 - Whether L6 Canon stays open-ended or gets a finite capstone — decide at L6.
+
+---
+
+## 10. Layer 2 — Magnum Opus spec (designed 2026-06-24)
+
+**Theme:** *record the album.* **Unlock:** the Layer-1 cliffhanger (8 Encores). **Reset:** resets the
+Encore layer (Applause, Encore upgrades, tiers, tempo) → grants **Opus Points (OP)**.
+
+**The pivot — tempo becomes ACTIVE, and automation moves here.** L2's verb is the **Crescendo**: an
+active push. Because conducting a crescendo demands attention, the rote buying (spamming M / 1–7) becomes
+**automatable at L2** — so the player's active focus shifts *from buying → to conducting.* (This revises
+the earlier "automation = L3" plan; see layer-map note below.)
+
+**The Crescendo (the new verb, on the Compose stage):** a meter you build by actively conducting
+(hold/click). At its peak it grants a big **temporary** production multiplier that decays when you stop.
+Idle players keep the baseline tempo; active players ride crescendos for surges. With buying automated,
+**conducting the crescendo IS the active gameplay.**
+
+**Opus Points are spent in the Magnum Opus section (Prestige tab) on three things:**
+1. **Tempo** — each OP raises baseline tempo (passive production speed; the existing ×BPM idea).
+2. **Automators** — OP buys autobuyers (per-tier auto-purchase + auto-tempo), earned and upgradable
+   (interval → bulk). This frees your hands for the crescendo.
+3. **Crescendo ceiling** — OP raises how high a crescendo can surge (and how slowly it decays).
+
+**Loop:** Magnum Opus → OP → buy automators (free your hands) + tempo + ceiling → conduct crescendos for
+production surges → accumulate OP toward Layer 3. Cadence: days → weeks.
+
+**Layer-map implication:** basic automation now enters at **L2**. **L3 (Repertoire)** shifts from "the
+automation layer" to **automation MASTERY / permanence** — the AD-Eternity-Milestone idea: auto-prestige,
+keep-automation-forever ratchets, and eventually light scripting. (Re-designed when we reach it.)
+
+**Build order (when we build L2):** OP gain formula + Magnum Opus section UI (tempo / automators / ceiling)
+→ autobuyer system earned via OP (reuse the existing `autobuyers` store scaffold) → the Crescendo meter +
+active mechanic on the stage → sim-validate OP gain + crescendo balance → cliffhanger into L3.
+
+**Open for playtest/tuning:** crescendo build/decay rates, whether it's hold-to-build or click-to-pump,
+OP gain formula, and how aggressively automators should be priced in OP.
