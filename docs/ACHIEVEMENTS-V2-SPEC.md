@@ -22,7 +22,8 @@ Depth: detailed + implementable. The reward *engine* stays; the **list, pacing, 
 
 - **Even drip across the WHOLE game**, not a wall at MO. Target cadence: roughly **one unlock every 3–8 min of active play early**, stretching to **one per run/milestone late**. Sim-verified (the `sim/` engine can timestamp first-unlock per achievement — see §7).
 - **Functional > flat.** Keep flat % as the *connective tissue* (small, frequent dopamine) but make the **milestone** achievements grant perks or distinctive effects. Roughly: 55% flat-%, 25% tier/tempo/cost texture, 12% perks, 8% collectibles (`none`).
-- **Every layer gets a full row.** L1 (Compose) · L1.5 (Encore) · L2a (Conducting/Records) · L2b (Opus-tree/Platinum) · **L3 (Repertoire/Finale — NEW, fleshed out)** · cross-cutting (time/hidden/mastery).
+- **Per-row global-mult budget (Codex NTH#1).** Set an explicit cap on total `globalPercent` each row may contribute, so ~90–100 achievements don't quietly *become* the progression system. Starting budget: the **whole achievement set's `globalPercent` sum stays ≤ ~+150–200%** end-to-end, allocated per row (early rows tiny, late rows larger). The pacing sim (§7) prints the running total per layer; tune to the budget. This is the guard against "achievement mult is the real game."
+- **Every layer gets a full row.** L1 (Compose) · L1.5 (Encore) · L2a (Conducting/Records) · L2b (Opus-tree/Platinum) · **L3 Repertoire (NEW, fleshed out)** · L4/L5/L6 rows built with each layer · cross-cutting (time/hidden/mastery).
 - **More + better perks** (§5): go from 10 → ~14, covering L2 and L3 quality-of-life, so perks remain the "build-defining" reward tier.
 - **Keep the voice** (song titles + orchestral wit) and the hidden-easter-egg sprinkle.
 
@@ -45,7 +46,8 @@ Each row = a progression zone with a target unlock-window. `[N]` = approx count.
 | R7 | Opus-tree mastery + automators | 6–12 h | [10] | tempo, cost, **perks: Session Musicians, Pick-Up-Tempo, Sustained Note** |
 | R8 | MO repetition (3/5/10) + deep SW | 10–20 h | [9] | global %, headStart, 1 hidden |
 | **R9** | **L3 Repertoire — touring, venues, Acclaim (NEW)** | 20–40 h | **[12]** | **L3 perks (§5), Acclaim milestones, stage-section unlocks** |
-| **R10** | **L3 mastery / multi-Finale / endgame** | 40 h+ | **[10]** | big global %, **perk: Legacy**, prestige collectibles |
+| **R10** | **L3 tour mastery (tourCount / all venues / Acclaim thresholds)** | 40 h+ | **[10]** | big global %, **perk: Legacy**, tour collectibles |
+| *(future)* | *R-Genre (L4) · R-Virtuoso (L5) · **R-Grand-Finale (L6)*** — built with each layer; **all `finaleCount`/multi-Finale + endgame-completionist achievements live in the L6 row, NOT R10** | — | — | per-layer perks |
 | RX | Cross-cutting (time-played, no-tempo runs, hidden eggs) | any | [8] | startingSW, hidden, collectibles |
 
 **The fix for "43-at-MO":** R1–R5 sum to ~40 and are *spread* over the first 2–4 h; R6–R10 (the new mass) only start unlocking once you're *in* L2/L3. The MO moment unlocks ~3–5 (its own row), not 43.
@@ -66,14 +68,15 @@ Detailed enough to implement directly against the v1 schema. (Existing kept entr
 - `ach_world_tour` — **Around the World (Reprise)** — "Complete the World Tour (all venues)" — **perk: Encore Bus** (§5).
 - `ach_acclaim_1` / `_2` / `_3` — **Standing Ovation / Critical Darling / Household Name** — Acclaim thresholds — escalating global %.
 - `ach_two_orchestras` — **Double Bill** — "Run the touring ensemble + home orchestra simultaneously at full tilt" — **perk: Split the Bill**.
-- `ach_legacy` — **Legacy** — "Complete an L3 tour reset" — **perk: Legacy** (carry a fraction of your L2 snowball — Fame/Records — across the L3 tour reset; mirrors keep-encore-upgrades). *(The Fame-across-Grand-Finale version belongs to the L6 row.)*
-- `ach_catalogue_deep` — **The Back Catalogue** — "Reach catalogue-scaling finalePoint gain (the L3 break)" — big global %.
+- `ach_legacy` — **Legacy** — "Complete an L3 tour reset" — **perk: Legacy** (carry a fraction of `recordsSold` across the L3 tour reset; mirrors keep-encore-upgrades). *(The carry-across-Grand-Finale version is a separate L6 perk.)*
+- `ach_catalogue_deep` — **The Back Catalogue** — "Reach catalogue-scaling **Acclaim** gain (the L3 World-Tour break)" — big global %.
 - 2× collectibles + 1 hidden L3 easter egg.
 
-### R10 — L3 mastery / endgame
-- Multi-Finale counts (2/3/5/10) — escalating global % + headStart (re-tune `back_in_black`'s 0.36 into a curve).
-- `ach_perpetual_motion` — **Perpetual Motion** — "10 Finales" — large collectible/prestige badge.
-- Endgame "completionist" — "Unlock all non-hidden achievements" — collectible capstone.
+### R10 — L3 tour mastery
+- **tourCount** milestones (2/3/5/10 tours) — escalating global % + headStart.
+- All-venues / repeat-World-Tour collectibles + Acclaim-threshold capstones.
+- `ach_legacy` perk lives here (or late R9).
+- **Multi-Finale (`finaleCount`) + the "unlock all non-hidden achievements" endgame capstone do NOT live here** — they belong to the future **L6 Grand-Finale row**, built with L6. (Putting them in R10 was the contradiction Codex flagged: R10 is L3, finaleCount is L6.)
 
 ### Re-pacing fixes to EXISTING entries (carry tonight's audit forward)
 - Distribute the L2b/Records achievements' SW/record thresholds so they don't all pop at the Platinum moment (stagger 100k / 1M / 10M / 50M record gates — already roughly staged; verify with sim).
@@ -85,9 +88,9 @@ Detailed enough to implement directly against the v1 schema. (Existing kept entr
 ## 5. Perks v2 — 10 → ~14
 
 **Keep all 10.** Add (L2/L3 quality-of-life, the build-defining tier):
-1. **Encore Bus** (`perk-encore-bus`) — *World Tour* — the touring ensemble also advances your Encore wall passively (L3 helps L1). Mirrors §11 "layers feed each other."
-2. **Split the Bill** (`perk-split-bill`) — *Double Bill* — a fraction of home-orchestra production also feeds Acclaim (the two tracks cross-pollinate).
-3. **Legacy** (`perk-legacy`) — *Legacy* — carry a fraction of Fame across a Grand Finale (softens the L3 reset; sim the fraction).
+1. **Encore Bus** (`perk-encore-bus`) — *World Tour* — gives a **flat, capped head-start** toward the Encore wall each run (e.g. start +1 Encore), NOT a continuous passive advance. *(Codex MUST-FIX #4: a perpetual "advances your wall passively" effect compounds with production into a runaway. Make it a one-time per-run boost.)*
+2. **Split the Bill** (`perk-split-bill`) — *Double Bill* — a **one-way, capped, delayed** trickle from home production into Acclaim (a slow flat bonus, not a multiplier). *(Codex MUST-FIX #4: production already stacks Encore×Finale×tempo×crescendo×Fame×milestones per `formulas.ts`; a multiplicative or two-way feed self-amplifies. One-way + capped only.)*
+3. **Legacy** (`perk-legacy`) — *Legacy* — carry a **fraction of `recordsSold`** across an **L3 tour reset** (softens the studio wipe). *(Codex MUST-FIX #6: Fame is **derived** from `recordsSold` in `records.ts`, not a stored field — so Legacy must preserve a slice of `recordsSold` itself, not "Fame". The carry-across-**Grand-Finale** version is a separate **L6** perk, not this one.)*
 4. **Catalogue Royalties** (`perk-catalogue-royalties`) — an L2 perk: Records keep selling (at reduced rate) through an Encore/MO reset. Smooths the L2 grind.
 
 **Engine change required:** `perks.ts` `PerkId` union + `PERKS` array + effect constants; `hasPerk` already generic. Each perk's *effect* wires into the same spots its sibling perks do (gameStore reset/tick/cost paths). No new engine concept — just more entries. (ponytail: reuse the existing perk plumbing, don't build a perk framework.)
@@ -105,7 +108,7 @@ Detailed enough to implement directly against the v1 schema. (Existing kept entr
 - Extend the headless `sim/` run to **record the tick/elapsed-time at which each achievement's `check()` first returns true** over a representative playthrough (cold start → several MOs → a Finale).
 - Output a CSV: `id, first-unlock-minute, layer`. Plot the histogram; the target is a **smooth drip**, no spike at the MO tick, and **non-empty buckets for L2b/L3**.
 - Iterate thresholds until the curve is smooth. This is the objective check that "43-at-MO" is fixed.
-- `check()` functions are pure over `GameState`, so the sim can call them directly each tick — no UI needed.
+- Most `check()` functions are pure over `GameState` so the sim can call them directly each tick — **with two caveats Codex flagged (#10):** (a) a few use wall-clock — `ach_perk_tempo_headstart` reads `Date.now()` in `achievements.ts` — so the sim must inject a deterministic clock (it already tracks `currentRunStartTime`/tick count; feed those instead of real time); (b) **`sim/engine.mjs` has drifted from live `constants.ts`** (stale gates/growth) — the sim MUST be re-synced to live constants before its timestamps are trustworthy, or the "smooth drip" claim is measuring the wrong game. Sync + a constants-parity assert is step 0 of the pacing pass.
 
 ## 8. Self-iteration — loopholes / risks found (and mitigations)
 - **L:** v2 depends on L3 state (`acclaim`, `venues`) that doesn't exist yet — R9/R10 can't be built until LAYER3-SPEC lands. **M:** ship v2 in **two waves** — Wave A (R1–R8 re-pace + new perks that don't need L3) now-ish; Wave B (R9/R10) with L3. Spec is structured so Wave A is independent.
@@ -115,6 +118,9 @@ Detailed enough to implement directly against the v1 schema. (Existing kept entr
 - **L:** new `PerkId`s + a new reward field touch the **save schema**. **M:** additive only; default-undefined-safe; bump the persist migration to seed new fields. No removals.
 - **L:** R9 perks (Encore Bus / Split the Bill) **cross-feed layers** → risk of trivializing L1/L2 once L3 is reached. **M:** these are *late* perks (post-World-Tour); by then trivializing the early climb is the intended "snowball" reward — but sim the re-climb time so it's *fast*, not *instant*.
 - **L:** count target (~90–100) is **a lot of authoring** — risk of filler. **M:** every achievement must clear a bar: distinct trigger + (functional reward OR genuine flavor/easter-egg). Collectibles capped at ~8%. Delegate the bulk authoring to Cursor against this spec; Codex reviews for filler/duplication.
+- **L (Codex NTH#5):** inserting L3–L5 rows affects **old saves** that already have `finalePoints>0` / challenge completions / post-Platinum state. **M:** same migration as LAYER3-SPEC §7 — additive fields default to zero, earned achievements never re-lock, legacy `finalePoints` is treated as L6 progress. Test against a pre-L3 save fixture.
+
+> **Adversarial review:** run through Codex (gpt-5.5) on 2026-06-25. Folded-in must-fixes: R10/multi-Finale contradiction (→ finaleCount moved to the L6 row), the Legacy/Fame-derivation inconsistency (Legacy now carries `recordsSold`, not "Fame"), the runaway cross-feed perks (Encore Bus & Split the Bill now one-way/capped), the `Date.now()`-impurity + stale-`sim` pacing caveat, and the per-row mult budget.
 
 ## 9. Build order (once signed off)
 1. Lock §2 goals + §3 row targets with Vince. 2. Build the sim timestamp instrument (§7). 3. Wave A: re-pace R1–R8 + add L2 perks → sim → tune. 4. Ship Wave A. 5. After L3 (LAYER3-SPEC) lands: Wave B R9/R10 + L3 perks → sim → tune.
