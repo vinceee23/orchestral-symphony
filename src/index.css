@@ -190,6 +190,14 @@ body {
 
 /* §11 liveliness: gold light motes/embers rising off the stage. Density + brightness ramp per era
    (none in the gloomy start → a celebratory shower by the Canon). Cheap: transform+opacity only. */
+/* §11 liveliness: a producing orchestra section gently "breathes" — a soft glow pulse so the stage
+   looks like it's playing, not static. Opacity-only (cheap). */
+@keyframes pod-breathe {
+  0%, 100% { opacity: 0.22; }
+  50% { opacity: 0.55; }
+}
+.animate-pod-breathe { animation: pod-breathe ease-in-out infinite; }
+
 @keyframes mote-rise {
   0% { opacity: 0; transform: translateY(0) translateX(0); }
   12% { opacity: var(--mote-peak, 0.5); }

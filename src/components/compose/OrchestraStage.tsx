@@ -187,6 +187,16 @@ export function OrchestraStage() {
                   : (owned > 0 ? `inset 0 0 ${owned * 10}px rgba(212,168,67,0.1)` : 'none'),
               }}
             >
+              {/* §11 liveliness: a producing section gently breathes a warm glow (looks like it's playing) */}
+              {tier.quantity.gt(0) && (
+                <span
+                  className="animate-pod-breathe pointer-events-none absolute inset-0 rounded-2xl"
+                  style={{
+                    background: 'radial-gradient(60% 60% at 50% 45%, rgba(212,168,67,0.5), transparent 75%)',
+                    animationDuration: `${2 + (i % 3) * 0.5}s`,
+                  }}
+                />
+              )}
               {resonating.has(config.id) && (
                 <span className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-accent-gold animate-resonate-ring" />
               )}
