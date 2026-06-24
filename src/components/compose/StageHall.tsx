@@ -20,6 +20,9 @@ const ERA_SAT = [0.18, 0.45, 0.7, 0.85, 0.95, 1.05, 1.15]    // near-grey & cold
 // Keep it RICH + DARK, never a washed-out bright sheet — so the bright motes + conduct-blaze pop against
 // deep gold (the "blazing" comes from the lively sparks, not a flat bright wash).
 const ERA_BRIGHT = [0.34, 0.5, 0.64, 0.72, 0.78, 0.83, 0.88]
+// The hall comes into focus as you rise: extra runtime blur on top of the soft baked baseline — near-
+// abstract early → "clearer but still soft" by the Canon (never fully crisp, so it stays cohesive).
+const ERA_BLUR = [40, 30, 20, 12, 7, 3, 0]
 
 interface Props {
   era: number
@@ -54,8 +57,8 @@ export const StageHall = memo(function StageHall({ era, liveliness, blaze = 0 }:
           opacity: 0.28 + grand * 0.22,
           transform: `scale(${ERA_ZOOM[e] ?? 1})`,
           transformOrigin: '50% 38%',
-          // conducting (blaze) brightens + warms the hall art live — the §11 "swell lights the room"
-          filter: `saturate(${(ERA_SAT[e] ?? 1) + blaze * 0.25}) brightness(${(ERA_BRIGHT[e] ?? 1) + blaze * 0.35})`,
+          // conducting (blaze) brightens + warms the hall live; blur lowers per era (comes into focus as you rise)
+          filter: `saturate(${(ERA_SAT[e] ?? 1) + blaze * 0.25}) brightness(${(ERA_BRIGHT[e] ?? 1) + blaze * 0.35}) blur(${ERA_BLUR[e] ?? 0}px)`,
           maskImage: 'radial-gradient(125% 100% at 50% 40%, #000 28%, transparent 86%)',
           WebkitMaskImage: 'radial-gradient(125% 100% at 50% 40%, #000 28%, transparent 86%)',
         }}
