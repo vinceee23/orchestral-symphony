@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import { SoundwaveDisplay } from './SoundwaveDisplay'
 import { TempoBar } from './TempoBar'
@@ -7,6 +7,7 @@ import { OrchestraStage } from './OrchestraStage'
 import { FloatingNotes } from '../shared/FloatingNotes'
 import { StageHall } from './StageHall'
 import { ConductorPodium } from './ConductorPodium'
+import { RecordsMeter } from './RecordsMeter'
 import { getEncoreCost, getMagnumOpusCost } from '../../core/constants'
 import { formatNumber } from '../../core/format'
 import { getEncoreGain, getLiveliness, getEncoreMultiplier } from '../../core/formulas'
@@ -25,7 +26,6 @@ export function ComposePage() {
   const encoreCount = useGameStore((s) => s.encoreCount)
   const encoreUpgrades = useGameStore((s) => s.encoreUpgrades)
   const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
-  const opusPoints = useGameStore((s) => s.opusPoints)
   const opusUpgrades = useGameStore((s) => s.opusUpgrades)
   const crescendo = useGameStore((s) => s.crescendo)
   const recordsSold = useGameStore((s) => s.recordsSold)
@@ -44,25 +44,36 @@ export function ComposePage() {
   const [pendingEncore, setPendingEncore] = useState(false)
   const [pendingMO, setPendingMO] = useState(false)
 
-  const releaseConducting = useCallback(() => setConducting(false), [setConducting])
+  // Conduct from TWO independent sources — Spacebar and the pointer button. conducting = either is held,
+  // so a stray mouse-leave on the button can't cancel a Space-hold (and vice-versa).
+  const spaceHeld = useRef(false)
+  const pointerHeld = useRef(false)
+  const syncConducting = useCallback(() => setConducting(spaceHeld.current || pointerHeld.current), [setConducting])
+  const releaseAll = useCallback(() => {
+    spaceHeld.current = false
+    pointerHeld.current = false
+    setConducting(false)
+  }, [setConducting])
 
   useEffect(() => {
-    if (opusPoints <= 0) return
+    if (opusCount <= 0) return
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.code !== 'Space' || e.repeat) return
       const tag = (e.target as HTMLElement)?.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.isContentEditable) return
       e.preventDefault()
-      setConducting(true)
+      spaceHeld.current = true
+      syncConducting()
     }
     const onKeyUp = (e: KeyboardEvent) => {
       if (e.code !== 'Space') return
-      setConducting(false)
+      spaceHeld.current = false
+      syncConducting()
     }
-    const onBlur = () => releaseConducting()
+    const onBlur = () => releaseAll()
     const onVisibility = () => {
-      if (document.hidden) releaseConducting()
+      if (document.hidden) releaseAll()
     }
 
     window.addEventListener('keydown', onKeyDown)
@@ -74,9 +85,9 @@ export function ComposePage() {
       window.removeEventListener('keyup', onKeyUp)
       window.removeEventListener('blur', onBlur)
       document.removeEventListener('visibilitychange', onVisibility)
-      releaseConducting()
+      releaseAll()
     }
-  }, [opusPoints, setConducting, releaseConducting])
+  }, [opusCount, syncConducting, releaseAll])
 
   const activeCh = activeChallenge ? getChallengeById(activeChallenge.challengeId) ?? null : null
   const prestigeBlocked = getActiveChallengeModifiers(activeCh).noPrestige
@@ -96,10 +107,10 @@ export function ComposePage() {
 
   // Spotlight heartbeat (capped) + ambient liveliness (bland pre-Encore, warmer each layer).
   const pulseDur = Math.min(2, Math.max(0.5, 60 / (tempo.baseBPM || 60)))
-  const liveliness = getLiveliness(lifetimeEncorePoints, opusPoints, finalePoints)
+  const liveliness = getLiveliness(lifetimeEncorePoints, opusCount, finalePoints)
   // Stage era = one hall tier per prestige layer (0 intimate · 1 Encore · 2 Magnum Opus ·
   // 3 Repertoire · 4 Genre · 5 Virtuoso · 6 Canon). Only 0-2 reachable today; finale jumps to the top tier.
-  const era = finalePoints > 0 ? 6 : opusPoints > 0 ? 2 : lifetimeEncorePoints > 0 ? 1 : 0
+  const era = finalePoints > 0 ? 6 : opusCount > 0 ? 2 : lifetimeEncorePoints > 0 ? 1 : 0
   const orchestraScale = [1, 0.93, 0.86, 0.82, 0.78, 0.74, 0.7][era] ?? 0.7 // camera pulls back per layer
   const stageGlow = 0.5 + (era / 6) * 0.5 // dim + intimate at era 0, brighter each prestige layer
   // Live "conduct stage" multipliers (crescendo updates as you hold Conduct).
@@ -108,7 +119,7 @@ export function ComposePage() {
   const fameMult = platinum ? getFameMultiplier(recordsSold, opusUpgrades) : 1
   const goldWash = (0.04 + liveliness * 0.12).toFixed(3)
   // Magnum Opus era brings violet richness into the hall — a clear mood shift, not just brighter gold.
-  const purpleWash = (opusPoints > 0 ? 0.13 : liveliness * 0.03).toFixed(3)
+  const purpleWash = (opusCount > 0 ? 0.13 : liveliness * 0.03).toFixed(3)
 
   const doEncore = () => {
     const from = getEncoreMultiplier(lifetimeEncorePoints).toNumber()
@@ -185,10 +196,12 @@ export function ComposePage() {
       </div>
 
       {/* conductor's podium — active after first Magnum Opus */}
-      <ConductorPodium active={opusPoints > 0} swell={crescendo} />
+      <ConductorPodium active={opusCount > 0} swell={crescendo} />
+      {/* Reach zone — records selling → Platinum, along the bottom of the stage (L2+) */}
+      <RecordsMeter />
 
       {/* Conduct control + live "what's multiplying right now" readout (center-bottom, above the podium) */}
-      {opusPoints > 0 && (
+      {opusCount > 0 && (
         <div className="absolute left-1/2 bottom-20 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5">
           <div className="px-3 py-1.5 rounded-lg border border-accent-purple/30 bg-bg-primary/75 backdrop-blur text-center pointer-events-none">
             <div className="text-[9px] uppercase tracking-[0.2em] text-text-muted">Now playing</div>
@@ -206,10 +219,10 @@ export function ComposePage() {
           <button
             type="button"
             className="px-6 py-2 rounded-full border border-accent-gold/50 bg-accent-gold/10 backdrop-blur text-accent-gold font-display text-sm font-semibold select-none touch-none hover:bg-accent-gold/20 active:bg-accent-gold/30 transition-colors"
-            onPointerDown={() => setConducting(true)}
-            onPointerUp={() => setConducting(false)}
-            onPointerLeave={() => setConducting(false)}
-            onPointerCancel={() => setConducting(false)}
+            onPointerDown={() => { pointerHeld.current = true; syncConducting() }}
+            onPointerUp={() => { pointerHeld.current = false; syncConducting() }}
+            onPointerLeave={() => { pointerHeld.current = false; syncConducting() }}
+            onPointerCancel={() => { pointerHeld.current = false; syncConducting() }}
           >
             Conduct <span className="opacity-60 text-[10px]">(hold / Space)</span>
           </button>

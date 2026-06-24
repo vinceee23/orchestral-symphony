@@ -1,11 +1,31 @@
 import { useEffect, useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
-import { ACHIEVEMENTS } from '../../core/achievements'
+import { ACHIEVEMENTS, type AchievementConfig } from '../../core/achievements'
 import { getMilestoneTickspeedMultiplier } from '../../core/formulas'
 
 const COLS = 7
 
-function AchievementImage({ id, icon, dim }: { id: string; icon: string; dim: boolean }) {
+function achievementDisplay(ach: AchievementConfig, unlocked: boolean) {
+  const masked = Boolean(ach.hidden) && !unlocked
+  return {
+    masked,
+    name: masked ? '???' : ach.name,
+    description: masked ? '???' : ach.description,
+    rewardDescription: masked ? '???' : ach.rewardDescription,
+  }
+}
+
+function AchievementImage({
+  id,
+  icon,
+  dim,
+  masked,
+}: {
+  id: string
+  icon: string
+  dim: boolean
+  masked: boolean
+}) {
   const [failed, setFailed] = useState(false)
 
   useEffect(() => {
@@ -13,6 +33,14 @@ function AchievementImage({ id, icon, dim }: { id: string; icon: string; dim: bo
   }, [id])
 
   const dimClass = dim ? 'grayscale opacity-40' : ''
+
+  if (masked) {
+    return (
+      <span className={`flex items-center justify-center w-full h-full text-lg font-display text-text-muted ${dimClass}`}>
+        ???
+      </span>
+    )
+  }
 
   if (failed) {
     return (
@@ -43,6 +71,7 @@ export function AchievementsPage() {
   const displayId = hoveredId ?? selectedId
   const displayed = displayId ? ACHIEVEMENTS.find((a) => a.id === displayId) : null
   const isDisplayedUnlocked = displayId ? achievementSet.has(displayId) : false
+  const displayedInfo = displayed ? achievementDisplay(displayed, isDisplayedUnlocked) : null
 
   const milestoneMult = getMilestoneTickspeedMultiplier(tiers)
   const milestonePercent = Math.round((milestoneMult - 1) * 100)
@@ -94,6 +123,7 @@ export function AchievementsPage() {
               <div key={rowIdx} className="grid grid-cols-7 gap-3">
                 {row.map((ach) => {
                   const unlocked = achievementSet.has(ach.id)
+                  const info = achievementDisplay(ach, unlocked)
                   const isSelected = selectedId === ach.id
                   return (
                     <button
@@ -110,8 +140,14 @@ export function AchievementsPage() {
                         ${isSelected ? 'ring-2 ring-accent-gold/60' : ''}
                         hover:scale-105
                       `}
+                      title={!unlocked && !info.masked ? info.description : undefined}
                     >
-                      <AchievementImage id={ach.id} icon={ach.icon} dim={!unlocked} />
+                      <AchievementImage
+                        id={ach.id}
+                        icon={ach.icon}
+                        dim={!unlocked}
+                        masked={info.masked}
+                      />
                     </button>
                   )
                 })}
@@ -128,7 +164,7 @@ export function AchievementsPage() {
 
         {/* Right: Detail Panel */}
         <div className="w-72 shrink-0">
-          {displayed ? (
+          {displayed && displayedInfo ? (
             <div className={`p-4 rounded-xl border sticky top-4 transition-all space-y-3 ${
               isDisplayedUnlocked
                 ? 'bg-accent-gold/5 border-accent-gold/30'
@@ -139,21 +175,25 @@ export function AchievementsPage() {
                   id={displayed.id}
                   icon={displayed.icon}
                   dim={!isDisplayedUnlocked}
+                  masked={displayedInfo.masked}
                 />
               </div>
               <div className="flex items-center gap-2">
                 {isDisplayedUnlocked && (
                   <span className="text-xs bg-success/20 text-success px-2 py-0.5 rounded-lg font-medium">UNLOCKED</span>
                 )}
+                {!isDisplayedUnlocked && !displayedInfo.masked && (
+                  <span className="text-xs bg-bg-secondary text-text-muted px-2 py-0.5 rounded-lg font-medium">LOCKED</span>
+                )}
               </div>
               <div className={`text-base font-display font-semibold ${isDisplayedUnlocked ? 'text-accent-gold' : 'text-text-secondary'}`}>
-                {displayed.name}
+                {displayedInfo.name}
               </div>
-              <div className="text-sm text-text-secondary leading-relaxed">{displayed.description}</div>
+              <div className="text-sm text-text-secondary leading-relaxed">{displayedInfo.description}</div>
               <div className="border-t border-border/50 pt-3 space-y-1">
                 <div className="text-xs text-text-muted uppercase tracking-wider">Reward</div>
                 <div className={`text-sm ${displayed.reward.none ? 'text-text-muted italic' : 'text-success'}`}>
-                  {displayed.rewardDescription}
+                  {displayedInfo.rewardDescription}
                 </div>
               </div>
             </div>

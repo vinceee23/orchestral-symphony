@@ -1,4 +1,13 @@
 import Decimal from 'break_infinity.js'
+import { GRAND_FINALE_SW_THRESHOLD } from './constants'
+import { getCrescendoMultiplier } from './crescendo'
+import {
+  getCrescendoCeiling,
+  hasAutoConduct,
+  isAutomatorUnlocked,
+  OPUS_UPGRADES,
+  type OpusUpgradeTrack,
+} from './opusUpgrades'
 import type { GameState } from '../store/types'
 
 export interface AchievementReward {
@@ -19,9 +28,24 @@ export interface AchievementConfig {
   check: (state: GameState) => boolean
   reward: AchievementReward
   rewardDescription: string
+  /** Easter eggs stay mysterious until unlocked. */
+  hidden?: boolean
 }
 
-// 49 achievements in a 7x7 grid — thematic rewards
+function isAnyOpusTrackMaxed(levels: Record<string, number>): boolean {
+  const tracks: OpusUpgradeTrack[] = ['AUTOMATORS', 'CRESCENDO', 'TEMPO', 'OP_GAIN']
+  return tracks.some((track) => {
+    const upgrades = OPUS_UPGRADES.filter((u) => u.track === track)
+    return upgrades.length > 0 && upgrades.every((u) => (levels[u.id] ?? 0) >= u.maxLevel)
+  })
+}
+
+function isAtCrescendoCeiling(state: GameState): boolean {
+  const ceiling = getCrescendoCeiling(state.opusUpgrades)
+  return getCrescendoMultiplier(state.crescendo, state.opusUpgrades) >= ceiling - 0.02
+}
+
+// 58 achievements — steady drip pacing, hybrid song-title + orchestral wit naming
 export const ACHIEVEMENTS: AchievementConfig[] = [
   // === Row 1: Early Game ===
   {
@@ -54,9 +78,9 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   {
     id: 'ach_dust',
     name: 'Another One Bites the Dust',
-    description: 'Reach 1,000 Soundwaves',
+    description: 'Complete your first Encore',
     icon: '\u{1F451}',
-    check: (s) => s.soundwaves.gte(1e3),
+    check: (s) => s.encoreCount >= 1,
     reward: { tierCostReduction: { tierId: 1, value: 0.05 } },
     rewardDescription: '-5% Notes cost',
   },
@@ -136,7 +160,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'ach_fur_elise',
-    name: 'Fur Elise',
+    name: 'Für Elise',
     description: 'Own 1 Melody',
     icon: '\u{1F3BB}',
     check: (s) => s.tiers[3].purchased >= 1,
@@ -148,12 +172,13 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     name: 'Never Gonna Give You Up',
     description: 'Have exactly 42 Notes purchased',
     icon: '\u{1F57A}',
+    hidden: true,
     check: (s) => s.tiers[0].purchased === 42,
     reward: { startingSW: 42 },
     rewardDescription: '+42 starting Soundwaves',
   },
 
-  // === Row 3: Post-Encore ===
+  // === Row 3: Encore Era ===
   {
     id: 'ach_hotel',
     name: 'Hotel California',
@@ -165,12 +190,12 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'ach_teen_spirit',
-    name: 'Smells Like Teen Spirit',
-    description: 'Reach 1,000,000,000 Soundwaves',
-    icon: '\u{1F9EA}',
-    check: (s) => s.soundwaves.gte(1e9),
-    reward: { globalPercent: 0.10 },
-    rewardDescription: '+10% all production',
+    name: 'Despacito',
+    description: 'Complete 5 Encores',
+    icon: '\u{1F4BF}',
+    check: (s) => s.encoreCount >= 5,
+    reward: { globalPercent: 0.12 },
+    rewardDescription: '+12% all production',
   },
   {
     id: 'ach_all_star',
@@ -202,11 +227,11 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   {
     id: 'ach_one_more',
     name: 'One More Time',
-    description: 'Complete your first Encore',
+    description: 'Complete 10 Encores',
     icon: '\u{1F504}',
-    check: (s) => s.encoreCount >= 1,
-    reward: { globalPercent: 0.20 },
-    rewardDescription: '+20% all production',
+    check: (s) => s.encoreCount >= 10,
+    reward: { globalPercent: 0.18 },
+    rewardDescription: '+18% all production',
   },
   {
     id: 'ach_feeling',
@@ -218,7 +243,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     rewardDescription: '+10% Movements production',
   },
 
-  // === Row 4: Mid-Late Game ===
+  // === Row 4: Symphony & Magnum Opus Gate ===
   {
     id: 'ach_champions',
     name: 'We Are the Champions',
@@ -249,20 +274,29 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   {
     id: 'ach_dont_stop_me',
     name: "Don't Stop Me Now",
-    description: 'Reach 600 BPM',
+    description: 'Unlock Auto-Conduct',
     icon: '\u{1F525}',
-    check: (s) => s.tempo.baseBPM >= 600,
+    check: (s) => hasAutoConduct(s.opusUpgrades),
     reward: { tempoBonus: 0.20 },
     rewardDescription: '+20% tempo speed',
   },
   {
     id: 'ach_hello',
-    name: "Hello, Is It Me You're Looking For?",
-    description: 'Play for 1 hour total',
-    icon: '\u{1F4DE}',
-    check: (s) => s.totalTimePlayed >= 60 * 60 * 1000,
+    name: 'Eye of the Tiger',
+    description: 'Have 500 purchased of any single tier',
+    icon: '\u{1F405}',
+    check: (s) => s.tiers.some((t) => t.purchased >= 500),
     reward: { none: true },
     rewardDescription: 'Collectible — no bonus',
+  },
+  {
+    id: 'ach_purple_rain',
+    name: 'Purple Rain',
+    description: 'Reach the Magnum Opus era',
+    icon: '\u{1F7E3}',
+    check: (s) => s.layer1WallReached,
+    reward: { globalPercent: 0.15 },
+    rewardDescription: '+15% all production',
   },
   {
     id: 'ach_grand_finale',
@@ -270,14 +304,17 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Complete your first Grand Finale',
     icon: '\u{1F386}',
     check: (s) => s.finaleCount >= 1,
-    reward: { globalPercent: 0.25 },
-    rewardDescription: '+25% all production',
+    reward: { globalPercent: 0.22 },
+    rewardDescription: '+22% all production',
   },
+
+  // === Row 5: Late Game ===
   {
     id: 'ach_sandstorm',
-    name: 'Darude - Sandstorm',
+    name: 'Darude — Sandstorm',
     description: 'Reach a production rate over 1e20/s',
     icon: '\u{1F3B5}',
+    hidden: true,
     check: (s) => {
       const t = s.tiers[0]
       if (t.quantity.eq(0)) return false
@@ -286,16 +323,14 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     reward: { none: true },
     rewardDescription: 'Collectible — no bonus',
   },
-
-  // === Row 5: Late Game ===
   {
     id: 'ach_around_world',
     name: 'Around the World',
     description: 'Complete 5 challenges',
     icon: '\u{1F30D}',
     check: (s) => s.completedChallenges.length >= 5,
-    reward: { globalPercent: 0.30 },
-    rewardDescription: '+30% all production',
+    reward: { globalPercent: 0.28 },
+    rewardDescription: '+28% all production',
   },
   {
     id: 'ach_lose_yourself',
@@ -307,31 +342,32 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     rewardDescription: '+15% all production',
   },
   {
-    id: 'ach_final_countdown',
-    name: 'The Final Countdown',
+    id: 'ach_despacito',
+    name: 'Rocket Man',
     description: 'Reach 1e50 Soundwaves',
-    icon: '\u{23F0}',
+    icon: '\u{1F680}',
     check: (s) => s.soundwaves.gte(1e50),
-    reward: { globalPercent: 0.20 },
-    rewardDescription: '+20% all production',
+    reward: { globalPercent: 0.10 },
+    rewardDescription: '+10% all production',
   },
   {
     id: 'ach_nyan',
     name: 'Nyan Cat Theme',
     description: 'Have exactly 999 quantity of any tier',
     icon: '\u{1F431}',
+    hidden: true,
     check: (s) => s.tiers.some((t) => t.quantity.floor().eq(999)),
     reward: { none: true },
     rewardDescription: 'Collectible — no bonus',
   },
   {
-    id: 'ach_despacito',
-    name: 'Despacito',
-    description: 'Complete 10 total Encores',
-    icon: '\u{1F4BF}',
-    check: (s) => s.encoreCount >= 10,
-    reward: { globalPercent: 0.15 },
-    rewardDescription: '+15% all production',
+    id: 'ach_beat_it',
+    name: 'Beat It',
+    description: 'Complete 3 Encores',
+    icon: '\u{1F94A}',
+    check: (s) => s.encoreCount >= 3,
+    reward: { globalPercent: 0.10 },
+    rewardDescription: '+10% all production',
   },
   {
     id: 'ach_magnum',
@@ -339,9 +375,11 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Complete your first Magnum Opus',
     icon: '\u{1F3C5}',
     check: (s) => s.opusCount >= 1,
-    reward: { globalPercent: 0.50 },
-    rewardDescription: '+50% all production',
+    reward: { globalPercent: 0.45 },
+    rewardDescription: '+45% all production',
   },
+
+  // === Row 6: Deep Progression ===
   {
     id: 'ach_twinkle',
     name: 'Twinkle Twinkle Little Star',
@@ -357,8 +395,6 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     reward: { startingSW: 500 },
     rewardDescription: '+500 starting Soundwaves',
   },
-
-  // === Row 6: Deep Progression ===
   {
     id: 'ach_night_fever',
     name: 'Night Fever',
@@ -369,13 +405,13 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     rewardDescription: '+25% tempo speed',
   },
   {
-    id: 'ach_beat_it',
-    name: 'Beat It',
-    description: 'Complete 3 Encores',
-    icon: '\u{1F94A}',
-    check: (s) => s.encoreCount >= 3,
-    reward: { globalPercent: 0.10 },
-    rewardDescription: '+10% all production',
+    id: 'ach_final_countdown',
+    name: 'The Final Countdown',
+    description: 'Reach the Grand Finale wall',
+    icon: '\u{23F0}',
+    check: (s) => s.peakSoundwaves.gte(GRAND_FINALE_SW_THRESHOLD),
+    reward: { globalPercent: 0.18 },
+    rewardDescription: '+18% all production',
   },
   {
     id: 'ach_symphony_no5',
@@ -413,25 +449,16 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     reward: { tempoBonus: 0.15 },
     rewardDescription: '+15% tempo speed',
   },
+
+  // === Row 7: Mastery ===
   {
     id: 'ach_opus_three',
     name: 'Three-peat',
     description: 'Complete 3 Magnum Opuses',
     icon: '\u{1F948}',
     check: (s) => s.opusCount >= 3,
-    reward: { globalPercent: 0.30 },
-    rewardDescription: '+30% all production',
-  },
-
-  // === Row 7: Mastery ===
-  {
-    id: 'ach_purple_rain',
-    name: 'Purple Rain',
-    description: 'Have 500 purchased of any single tier',
-    icon: '\u{1F7E3}',
-    check: (s) => s.tiers.some((t) => t.purchased >= 500),
-    reward: { globalPercent: 0.20 },
-    rewardDescription: '+20% all production',
+    reward: { globalPercent: 0.28 },
+    rewardDescription: '+28% all production',
   },
   {
     id: 'ach_stardust',
@@ -439,8 +466,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Reach 1e200 Soundwaves',
     icon: '\u{1FA90}',
     check: (s) => s.soundwaves.gte('1e200'),
-    reward: { globalPercent: 0.35 },
-    rewardDescription: '+35% all production',
+    reward: { globalPercent: 0.32 },
+    rewardDescription: '+32% all production',
   },
   {
     id: 'ach_back_in_black',
@@ -448,8 +475,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Complete 2 Grand Finales',
     icon: '\u{1F5A4}',
     check: (s) => s.finaleCount >= 2,
-    reward: { globalPercent: 0.40 },
-    rewardDescription: '+40% all production',
+    reward: { globalPercent: 0.36 },
+    rewardDescription: '+36% all production',
   },
   {
     id: 'ach_comfortably_numb',
@@ -466,8 +493,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Complete all challenges',
     icon: '\u{1F342}',
     check: (s) => s.completedChallenges.length >= 10,
-    reward: { globalPercent: 0.50 },
-    rewardDescription: '+50% all production',
+    reward: { globalPercent: 0.45 },
+    rewardDescription: '+45% all production',
   },
   {
     id: 'ach_speed_demon',
@@ -478,14 +505,104 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     reward: { tempoBonus: 0.30 },
     rewardDescription: '+30% tempo speed',
   },
+
+  // === Row 8: Layer 2 — Conducting, Records & Opus Tree ===
+  {
+    id: 'ach_raise_baton',
+    name: 'Raise the Baton',
+    description: 'Conduct for the first time',
+    icon: '\u{1F3BA}',
+    check: (s) => s.crescendo > 0,
+    reward: { globalPercent: 0.04 },
+    rewardDescription: '+4% all production',
+  },
+  {
+    id: 'ach_studio_time',
+    name: 'Studio Time',
+    description: 'Buy your first Opus upgrade',
+    icon: '\u{1F399}',
+    check: (s) => Object.keys(s.opusUpgrades).length > 0,
+    reward: { globalPercent: 0.03 },
+    rewardDescription: '+3% all production',
+  },
+  {
+    id: 'ach_turn_it_up',
+    name: 'Turn It Up to Eleven',
+    description: 'Hit the crescendo ceiling',
+    icon: '\u{1F50A}',
+    check: (s) => s.peakCrescendoMult >= 3 || isAtCrescendoCeiling(s),
+    reward: { globalPercent: 0.04 },
+    rewardDescription: '+4% all production',
+  },
+  {
+    id: 'ach_gold_record',
+    name: 'Gold Record',
+    description: 'Sell 100,000 records',
+    icon: '\u{1F4BF}',
+    check: (s) => s.recordsSold >= 100_000,
+    reward: { globalPercent: 0.04 },
+    rewardDescription: '+4% all production',
+  },
+  {
+    id: 'ach_going_platinum',
+    name: 'Going Platinum',
+    description: 'Go Platinum — 1,000,000 records sold',
+    icon: '\u{1F4FA}',
+    check: (s) => s.platinum || s.recordsSold >= 1_000_000,
+    reward: { globalPercent: 0.05 },
+    rewardDescription: '+5% all production',
+  },
+  {
+    id: 'ach_diamond_hands',
+    name: 'Diamond Hands',
+    description: 'Sell 10,000,000 records',
+    icon: '\u{1F48E}',
+    check: (s) => s.recordsSold >= 10_000_000,
+    reward: { globalPercent: 0.04 },
+    rewardDescription: '+4% all production',
+  },
+  {
+    id: 'ach_set_forget',
+    name: 'Set It and Forget It',
+    description: 'Unlock all tier auto-buyers',
+    icon: '\u{1F916}',
+    check: (s) => {
+      for (let i = 1; i <= 7; i++) {
+        if (!isAutomatorUnlocked(s.opusUpgrades, i)) return false
+      }
+      return true
+    },
+    reward: { globalPercent: 0.03 },
+    rewardDescription: '+3% all production',
+  },
+
+  // === Row 9: Layer 2 — Mastery ===
+  {
+    id: 'ach_whole_catalogue',
+    name: 'The Whole Catalogue',
+    description: 'Max out one full Opus upgrade track',
+    icon: '\u{1F4DA}',
+    check: (s) => isAnyOpusTrackMaxed(s.opusUpgrades),
+    reward: { globalPercent: 0.04 },
+    rewardDescription: '+4% all production',
+  },
+  {
+    id: 'ach_sold_out_tour',
+    name: 'Sold Out Tour',
+    description: 'Complete 5 Magnum Opuses',
+    icon: '\u{1F3DF}',
+    check: (s) => s.opusCount >= 5,
+    reward: { globalPercent: 0.04 },
+    rewardDescription: '+4% all production',
+  },
   {
     id: 'ach_ode_to_joy',
     name: 'Ode to Joy',
     description: 'Own 1,000 of every tier',
     icon: '\u{1F389}',
     check: (s) => s.tiers.every((t) => t.purchased >= 1000),
-    reward: { globalPercent: 0.50 },
-    rewardDescription: '+50% all production',
+    reward: { globalPercent: 0.45 },
+    rewardDescription: '+45% all production',
   },
 ]
 

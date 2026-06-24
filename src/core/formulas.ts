@@ -177,10 +177,12 @@ export function getFinaleMultiplier(fp: number): Decimal {
  * Applause, but the MO floor stays). Within a layer it still warms up with current Applause.
  *   pre-Encore 0 (bland) · Encore era 0.30-0.55 · Magnum Opus era 0.60-0.82 · Finale era 0.85-1.0
  */
-export function getLiveliness(lifetimeEncorePoints: number, opusPoints: number, finalePoints: number): number {
+export function getLiveliness(lifetimeEncorePoints: number, opusCount: number, finalePoints: number): number {
   const warmth = Math.log10(lifetimeEncorePoints + 1) // current-run Applause adds within-layer glow
   if (finalePoints > 0) return Math.min(1, 0.85 + finalePoints * 0.05)
-  if (opusPoints > 0) return Math.min(0.82, 0.6 + opusPoints * 0.04 + Math.min(0.12, warmth * 0.04))
+  // Magnum Opus era is keyed on opusCount (lifetime MOs), NOT spendable opusPoints — spending OP must
+  // not drop you out of the MO era / relock the stage.
+  if (opusCount > 0) return Math.min(0.82, 0.6 + opusCount * 0.04 + Math.min(0.12, warmth * 0.04))
   if (lifetimeEncorePoints > 0) return Math.min(0.55, 0.3 + warmth * 0.08)
   return 0
 }
