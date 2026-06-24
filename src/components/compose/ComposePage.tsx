@@ -68,12 +68,15 @@ export function ComposePage() {
   // 3 Repertoire · 4 Genre · 5 Virtuoso · 6 Canon). Only 0-2 reachable today; finale jumps to the top tier.
   const era = finalePoints > 0 ? 6 : opusCount > 0 ? 2 : lifetimeEncorePoints > 0 ? 1 : 0
   const orchestraScale = [1, 0.93, 0.86, 0.82, 0.78, 0.74, 0.7][era] ?? 0.7 // camera pulls back per layer
-  const stageGlow = 0.5 + (era / 6) * 0.5 // dim + intimate at era 0, brighter each prestige layer
+  // §11 "lights up as you climb": the hall brightens with your Soundwave climb and BLAZES as you conduct.
+  const climb = peakSoundwaves.gt(1) ? Math.min(1, Math.max(0, peakSoundwaves.log10()) / 100) : 0 // 0..1 across the climb
+  const blaze = Math.max(0, Math.min(1, crescendo)) // crescendo fraction — rises while holding Conduct
+  const stageGlow = Math.min(1, 0.45 + (era / 6) * 0.25 + climb * 0.15 + blaze * 0.4)
   // Live "conduct stage" multipliers (crescendo updates as you hold Conduct).
   const crescendoMult = getCrescendoMultiplier(crescendo, opusUpgrades)
   const tempoOpMult = getTempoOpMultiplier(opusUpgrades)
   const fameMult = platinum ? getFameMultiplier(recordsSold, opusUpgrades) : 1
-  const goldWash = (0.04 + liveliness * 0.12).toFixed(3)
+  const goldWash = (0.04 + liveliness * 0.10 + climb * 0.06 + blaze * 0.16).toFixed(3)
   // Magnum Opus era brings violet richness into the hall — a clear mood shift, not just brighter gold.
   const purpleWash = (opusCount > 0 ? 0.13 : liveliness * 0.03).toFixed(3)
 
