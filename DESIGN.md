@@ -294,6 +294,28 @@ keep-automation-forever ratchets, and eventually light scripting. (Re-designed w
      beat, but triggered by *reach* (a million listeners), not a number ceiling — distinctly ours.
   4. **Post-Platinum:** Records Sold keeps climbing as a permanent **"fame" multiplier** (small permanent
      production/OP bonus) — the meter never becomes vestigial.
+- **Platinum timing:** MID-L2 breakthrough. The flat-+1-OP grind runs long enough to feel limiting, THEN
+  the break lands and pays off (AD's grind-then-break rhythm). Not early, not a final-climax.
+- **OP upgrades = categorized tracks** (NOT a branching web — the branching choice-tree is L4 Genre's job):
+  clean panels for **Automators / Tempo / Crescendo / OP-gain**, each a short upgrade list.
+- **L2→L3 cliffhanger:** post-Platinum the sublinear OP itself eventually plateaus — "one album isn't a
+  career." That felt-slowdown wall + a *touring* teaser opens Layer 3 (Repertoire). Mirrors L1's cliffhanger.
+- **Scope:** confirmed all-in (crescendo + automators + OP tracks + Records Sold/Platinum + fame + auto-conduct)
+  — cohesive, each piece has a role. Build order may still ship a lean core first, but the design target is full.
+- **Automators:** first Magnum Opus gives ONE automator FREE (taste of relief); the other 6 tiers are OP
+  purchases (unlocking IS the upgrade). Power ceiling: through L2 maxed automators stay a notch BELOW manual
+  peak (active hands always out-earn idle); true full-idle arrives only with the deep **auto-conduct** node —
+  that's the on-ramp into the "idle late" phase. Reuse the existing `autobuyers` store scaffold.
+- **OP tracks (LOCKED node draft):**
+  - *Automators:* unlock each tier's auto-buyer · Speed · Bulk (auto-buy in 10s/milestones) · Auto-Conduct (deep).
+  - *Crescendo:* raise ceiling (×3→×5→…) · slower decay · faster build · stronger crescendo→OP bonus.
+  - *Tempo:* stronger tempo multiplier per OP · raise the BPM cap.
+  - *OP-gain:* +flat OP/MO (pre-Platinum) · post-Platinum sublinear-exponent & crescendo-OP boosters ·
+    faster record sales (reach Platinum sooner) · stronger fame multiplier.
+
+> **L2 DESIGN STATUS (2026-06-24): decision-locked.** All mechanics, the original "Go Platinum" break,
+> pacing shape, OP-track contents, automator behavior, and the L2→L3 cliffhanger are settled. Remaining
+> work is NUMBERS (sim-tuning curves/thresholds — pure math, the simulator's job) → then delegate the build.
 
 **Build order (when we build L2):** OP gain formula → first-MO unlocks the autobuyer system (reuse the
 existing `autobuyers` store scaffold, baseline rate) → OP upgrade TREE (automator speed/bulk, tempo,
