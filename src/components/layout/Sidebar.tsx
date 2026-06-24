@@ -7,8 +7,8 @@ const TABS = [
   { id: 'compose', label: 'Compose', icon: '\u{1F3B5}' },
   { id: 'prestige', label: 'Prestige', icon: '\u{2728}' },
   { id: 'achievements', label: 'Achievements', icon: '\u{1F3C6}' },
-  { id: 'challenges', label: 'Challenges', icon: '\u{2694}' },
   { id: 'stats', label: 'Stats', icon: '\u{1F4CA}' },
+  // Challenges hidden until Layer 5 (Virtuoso) — they ARE that layer's voluntary-difficulty content.
 ]
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
