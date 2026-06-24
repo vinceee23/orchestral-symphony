@@ -9,8 +9,14 @@ import { OpusPage } from '../opus/OpusPage'
 import { AutobuyersPage } from '../autobuyers/AutobuyersPage'
 import { StatsPanel } from '../shared/StatsPanel'
 
+// Dev/screenshot convenience: open a specific tab with ?tab=prestige (etc.). Harmless in prod.
+const initialTab = (() => {
+  const m = /[?&]tab=([a-z]+)/.exec(location.search)
+  return m ? m[1] : 'compose'
+})()
+
 export function AppShell() {
-  const [activeTab, setActiveTab] = useState('compose')
+  const [activeTab, setActiveTab] = useState(initialTab)
 
   return (
     <div className="flex flex-col h-full">

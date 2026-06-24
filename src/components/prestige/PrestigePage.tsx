@@ -153,7 +153,7 @@ export function PrestigePage() {
           </Button>
         )}
         {encoreCount === 0 && (
-          <p className="text-xs text-text-muted text-center">Your first Encore unlocks Movements & Symphonies.</p>
+          <p className="text-xs text-text-muted text-center">Your first Encore unlocks Movements — Symphonies arrive a few Encores later.</p>
         )}
       </section>
 
