@@ -8,7 +8,6 @@ import {
   TEMPO_BASE_COST,
   TEMPO_COST_GROWTH,
   TEMPO_SPEED_FACTOR,
-  TEMPO_MIN_INTERVAL,
   TEMPO_BASE_INTERVAL,
   ENCORE_REWARD_PER,
   ENCORE_EP_THRESHOLD,
@@ -89,12 +88,12 @@ export function getTierProductionPerTick(
   return getTierProductionPerSec(tier, config, globalMultiplier).times(tickMs / 1000)
 }
 
-/** Tick interval in ms based on tempo level */
+/** Tempo "interval" (display/achievement-derived only — the loop ticks per frame now).
+ *  Continuous + uncapped on purpose: every level smoothly raises BPM (+6/level) and the production
+ *  multiplier (+0.1x/level). Was floored + min-capped, which made high-level buys not budge BPM/n-per-sec
+ *  AND hard-capped tempo — neither wanted (tempo is uncapped; audio gets soft-capped separately). */
 export function getTempoTickInterval(level: number): number {
-  return Math.max(
-    TEMPO_MIN_INTERVAL,
-    Math.floor(TEMPO_BASE_INTERVAL / (1 + level * TEMPO_SPEED_FACTOR)),
-  )
+  return TEMPO_BASE_INTERVAL / (1 + level * TEMPO_SPEED_FACTOR)
 }
 
 /** Display BPM from tempo level */
