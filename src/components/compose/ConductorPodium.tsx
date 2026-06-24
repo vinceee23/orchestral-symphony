@@ -13,7 +13,7 @@ interface Props {
 
 export const ConductorPodium = memo(function ConductorPodium({ active, swell = 0 }: Props) {
   return (
-    <div className="pointer-events-none absolute left-1/2 bottom-2 -translate-x-1/2 z-10 flex flex-col items-center">
+    <div className="pointer-events-none flex flex-col items-center">
       {/* swell-meter: a column of light that fills as you conduct (hidden until active) */}
       {active && (
         <div className="relative w-1.5 h-24 mb-1 rounded-full bg-accent-gold/15 overflow-hidden">

@@ -151,39 +151,41 @@ export function ComposePage() {
         </div>
       </div>
 
-      {/* conductor's podium — active after first Magnum Opus */}
-      <ConductorPodium active={opusCount > 0} swell={crescendo} />
       {/* Reach zone — records selling → Platinum, along the bottom of the stage (L2+) */}
       <RecordsMeter />
 
-      {/* Conduct control + live "what's multiplying right now" readout (center-bottom, above the podium) */}
-      {opusCount > 0 && (
-        <div className="absolute left-1/2 bottom-20 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5">
-          <div className="px-3 py-1.5 rounded-lg border border-accent-purple/30 bg-bg-primary/75 backdrop-blur text-center pointer-events-none">
-            <div className="text-[9px] uppercase tracking-[0.2em] text-text-muted">Now playing</div>
-            <div className={`text-sm font-display font-semibold tabular-nums ${crescendo > 0.02 ? 'text-accent-gold' : 'text-text-secondary'}`}>
-              Crescendo ×{crescendoMult.toFixed(2)}
+      {/* Conduct unit, front-center bottom: a slim live readout, the Conduct button, and the podium
+          stacked as ONE column (gap-spaced, no overlap) so the swell-meter rises from the podium toward
+          the button. Active after the first Magnum Opus; dormant podium ("the baton awaits") before. */}
+      <div className="pointer-events-none absolute left-1/2 bottom-6 -translate-x-1/2 z-20 flex flex-col items-center gap-3">
+        {opusCount > 0 && (
+          <>
+            <div className="text-center leading-tight tabular-nums">
+              <span className={`text-sm font-display font-semibold ${crescendo > 0.02 ? 'text-accent-gold' : 'text-text-secondary'}`}>
+                Crescendo ×{crescendoMult.toFixed(2)}
+              </span>
+              {(tempoOpMult > 1 || fameMult > 1) && (
+                <span className="ml-2 text-[11px] text-text-muted">
+                  {tempoOpMult > 1 && <span>· Tempo ×{tempoOpMult.toFixed(2)}</span>}
+                  {fameMult > 1 && <span> · Fame ×{fameMult.toFixed(2)}</span>}
+                </span>
+              )}
             </div>
-            {(tempoOpMult > 1 || fameMult > 1) && (
-              <div className="text-[10px] text-text-secondary tabular-nums">
-                {tempoOpMult > 1 && <span>Tempo ×{tempoOpMult.toFixed(2)}</span>}
-                {tempoOpMult > 1 && fameMult > 1 && <span> · </span>}
-                {fameMult > 1 && <span>Fame ×{fameMult.toFixed(2)}</span>}
-              </div>
-            )}
-          </div>
-          <button
-            type="button"
-            className="px-6 py-2 rounded-full border border-accent-gold/50 bg-accent-gold/10 backdrop-blur text-accent-gold font-display text-sm font-semibold select-none touch-none hover:bg-accent-gold/20 active:bg-accent-gold/30 transition-colors"
-            onPointerDown={() => setPointerHeld(true)}
-            onPointerUp={() => setPointerHeld(false)}
-            onPointerLeave={() => setPointerHeld(false)}
-            onPointerCancel={() => setPointerHeld(false)}
-          >
-            Conduct <span className="opacity-60 text-[10px]">(hold / Space)</span>
-          </button>
-        </div>
-      )}
+            <button
+              type="button"
+              className="pointer-events-auto px-8 py-2.5 rounded-full border border-accent-gold/50 bg-accent-gold/10 backdrop-blur text-accent-gold font-display text-sm font-semibold tracking-wide select-none touch-none hover:bg-accent-gold/20 active:bg-accent-gold/30 transition-colors"
+              onPointerDown={() => setPointerHeld(true)}
+              onPointerUp={() => setPointerHeld(false)}
+              onPointerLeave={() => setPointerHeld(false)}
+              onPointerCancel={() => setPointerHeld(false)}
+            >
+              Conduct <span className="opacity-60 text-[10px] font-body">(hold / Space)</span>
+            </button>
+          </>
+        )}
+        {/* conductor's podium — swell-meter + base (dormant pre-L2) */}
+        <ConductorPodium active={opusCount > 0} swell={crescendo} />
+      </div>
 
       {/* Prestige actions — top-right of the stage. Trigger here to watch the animations on-stage;
           the Prestige tab holds the full stats + the same actions. Always visible with live progress. */}
