@@ -20,13 +20,46 @@ export function StageLife({ era, blaze = 0 }: { era: number; blaze?: number }) {
     }))
   }, [tier])
 
-  if (motes.length === 0) return null
   // conducting brightens + quickens the motes in the moment (blaze 0..1)
   const peak = Math.min(0.95, 0.3 + v * 0.45 + blaze * 0.3)
   const speed = 1 - blaze * 0.35 // duration multiplier — faster while conducting
 
+  // §11 audience: the house FILLS as you rise — sparse front row at Encore (era1) → packed by the Canon.
+  const rows = era >= 1 ? Math.min(5, 1 + Math.round(v * 5)) : 0
+  const seatsPerRow = 30
+
+  if (motes.length === 0 && rows === 0) return null
+
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden z-[2]">
+      {/* soft silhouetted crowd, receding rows; gentle warm rim catches the stage light at high eras */}
+      {rows > 0 && (
+        <svg
+          className="absolute inset-x-0 bottom-0 w-full h-[20%] transition-opacity duration-[1500ms]"
+          style={{ opacity: 0.35 + v * 0.45 }}
+          viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true"
+        >
+          {Array.from({ length: rows }, (_, r) => {
+            const cy = 17 - r * (12 / rows)            // rows recede upward
+            const rad = 1.2 - r * 0.12
+            const op = 0.85 - r * 0.12                  // back rows fainter
+            return (
+              <g key={r}>
+                {Array.from({ length: seatsPerRow }, (_, i) => (
+                  <circle
+                    key={i}
+                    cx={(i + (r % 2) * 0.5) * (100 / seatsPerRow) + 0.8}
+                    cy={cy}
+                    r={rad}
+                    fill="#05060a"
+                    opacity={op}
+                  />
+                ))}
+              </g>
+            )
+          })}
+        </svg>
+      )}
       {motes.map((m, i) => (
         <span
           key={i}
