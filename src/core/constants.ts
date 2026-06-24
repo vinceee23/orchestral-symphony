@@ -111,10 +111,12 @@ export function getEncoreCost(encoreCount: number): PrestigeCost {
   if (encoreCount === 0) return { tierIndex: 4, amount: 30, tierName: 'Harmonies' }
   if (encoreCount === 1) return { tierIndex: 5, amount: 30, tierName: 'Movements' }
   if (encoreCount === 2) return { tierIndex: 5, amount: 70, tierName: 'Movements' }
-  if (encoreCount === 3) return { tierIndex: 6, amount: 30, tierName: 'Symphonies' }
-  if (encoreCount === 4) return { tierIndex: 6, amount: 55, tierName: 'Symphonies' }
-  if (encoreCount === 5) return { tierIndex: 6, amount: 85, tierName: 'Symphonies' }
-  return { tierIndex: 6, amount: 85 + (encoreCount - 5) * 32, tierName: 'Symphonies' }
+  if (encoreCount === 3) return { tierIndex: 6, amount: 50, tierName: 'Symphonies' }
+  if (encoreCount === 4) return { tierIndex: 6, amount: 70, tierName: 'Symphonies' }
+  if (encoreCount === 5) return { tierIndex: 6, amount: 100, tierName: 'Symphonies' }
+  if (encoreCount === 6) return { tierIndex: 6, amount: 128, tierName: 'Symphonies' }
+  if (encoreCount === 7) return { tierIndex: 6, amount: 152, tierName: 'Symphonies' }
+  return { tierIndex: 6, amount: 152 + (encoreCount - 7) * 24, tierName: 'Symphonies' }
 }
 
 // Magnum Opus gate: gentle escalation — 100 Symphonies + floor(opusCount/3)
