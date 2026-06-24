@@ -116,13 +116,15 @@ export const StageHall = memo(function StageHall({ era, liveliness, blaze = 0 }:
         alt=""
         className="absolute inset-0 w-full h-full object-cover transition-all duration-[1800ms] ease-out"
         style={{
-          opacity: 0.45 + grand * 0.4,
+          // Pre-blurred/darkened master (atmospheric depth, not a literal scene). Kept subtle + heavily
+          // feathered so it MELTS into the dark stage — no hard image edge (per Vince: blend backdrop↔stage).
+          opacity: 0.3 + grand * 0.3,
           transform: `scale(${ERA_ZOOM[e] ?? 1})`,
           transformOrigin: '50% 38%',
           // conducting (blaze) brightens + warms the hall art live — the §11 "swell lights the room"
           filter: `saturate(${(ERA_SAT[e] ?? 1) + blaze * 0.25}) brightness(${(ERA_BRIGHT[e] ?? 1) + blaze * 0.35})`,
-          maskImage: 'radial-gradient(140% 110% at 50% 42%, #000 60%, transparent 100%)',
-          WebkitMaskImage: 'radial-gradient(140% 110% at 50% 42%, #000 60%, transparent 100%)',
+          maskImage: 'radial-gradient(125% 100% at 50% 40%, #000 28%, transparent 86%)',
+          WebkitMaskImage: 'radial-gradient(125% 100% at 50% 40%, #000 28%, transparent 86%)',
         }}
         onError={(ev) => { ev.currentTarget.style.display = 'none' }}
       />
