@@ -5,6 +5,8 @@ import { TempoBar } from './TempoBar'
 import { BuyAmountToggle } from './BuyAmountToggle'
 import { OrchestraStage } from './OrchestraStage'
 import { FloatingNotes } from '../shared/FloatingNotes'
+import { StageHall } from './StageHall'
+import { ConductorPodium } from './ConductorPodium'
 import { getEncoreCost } from '../../core/constants'
 import { getEncoreGain, getLiveliness, getEncoreMultiplier } from '../../core/formulas'
 import { getOvertureGainMultiplier } from '../../core/encoreUpgrades'
@@ -38,6 +40,9 @@ export function ComposePage() {
   // Spotlight heartbeat (capped) + ambient liveliness (bland pre-Encore, warmer each layer).
   const pulseDur = Math.min(2, Math.max(0.5, 60 / (tempo.baseBPM || 60)))
   const liveliness = getLiveliness(lifetimeEncorePoints, opusPoints, finalePoints)
+  // Stage era drives the "grander hall" pull-back: 0 intimate · 1 Encore · 2 Magnum Opus · 3 Finale.
+  const era = finalePoints > 0 ? 3 : opusPoints > 0 ? 2 : lifetimeEncorePoints > 0 ? 1 : 0
+  const orchestraScale = [1, 0.93, 0.86, 0.8][era] // camera pulls back as the hall grows
   const goldWash = (0.04 + liveliness * 0.12).toFixed(3)
   // Magnum Opus era brings violet richness into the hall — a clear mood shift, not just brighter gold.
   const purpleWash = (opusPoints > 0 ? 0.13 : liveliness * 0.03).toFixed(3)
@@ -86,6 +91,8 @@ export function ComposePage() {
         className="pointer-events-none absolute inset-x-0 bottom-0 h-48 z-0"
         style={{ background: 'radial-gradient(55% 100% at 50% 100%, rgba(212,168,67,0.12), transparent 70%)' }}
       />
+      {/* the living hall — risers, audience, architecture, overhead light (grows per era) */}
+      <StageHall era={era} liveliness={liveliness} />
       {/* ambient drifting notes — scoped to the Compose stage (scales with liveliness) */}
       <FloatingNotes />
 
@@ -107,9 +114,17 @@ export function ComposePage() {
         </div>
 
         <div className="w-full max-w-5xl flex-1 flex items-center justify-center pb-28">
-          <OrchestraStage />
+          <div
+            className="w-full transition-transform duration-[1500ms] ease-out"
+            style={{ transform: `scale(${orchestraScale})` }}
+          >
+            <OrchestraStage />
+          </div>
         </div>
       </div>
+
+      {/* conductor's podium — dormant tease until L2 unlocks Conduct */}
+      <ConductorPodium active={opusPoints > 0} />
 
       {/* Prominent Encore call-to-action when ready (full detail lives in the Prestige tab) */}
       {canEncore && (
