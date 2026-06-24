@@ -342,6 +342,20 @@ modules: `src/core/{opusUpgrades,crescendo,records}.ts` + appended `constants.ts
 - **Fame:** post-Platinum permanent `prod/OP ×= 1 + log10(recordsSold/1e6)·0.1` (slow permanent climb).
 - **L2→L3 plateau:** not in foundations; tuned later once OP curve is observed.
 
+**MO-progression sim (`sim/l2progression.mjs`, 2026-06-24) — found 3 STRUCTURAL issues the static check missed.**
+Coarse model (1h-cycle, active ×3 crescendo, abstractions stated in-file); human playtest is final arbiter.
+1. **OP-gain runaway (must fix).** Post-Platinum `(peakSW/1e30)^0.05` looks bounded but peakSW is 1e73–1e313,
+   so it yields +48,000 OP at MO#2 → +2e67 by MO#28 (OP→opPower→higher peakSW→more OP feedback). **Fix:**
+   make OP gain *log-based* (∝ `log10(peakSW)−~70`) or catalog-based, capped to a human range (~+1..+120/layer).
+2. **MO-gate escalation is the saboteur.** Shipped `100+80n` Symphonies = ×~1e61 SW cost PER MO; persistent
+   power can't keep up → eras explode 1h→104h→483h→stall. **A FIXED ~100-Symphony gate gives the target loop:**
+   steady ~1.2h/MO, opPower 1→3.4 (meaningful, not trivializing), reaches MO#30 in ~33h, NO runaway.
+3. **Records/Platinum + the "break" payoff (OPEN — needs Vince).** With the fixed gate, peakSW stays ~constant,
+   so a peakSW-based break gives no acceleration. Records tuned album-style (`~1·opusCount·cresc`) put Platinum
+   at **MO#13 / ~15.7h ≈ mid-L2** ✓. But Going Platinum needs a real payoff that ISN'T peakSW-growth — likely
+   **post-Platinum OP gain scales with opusCount (your catalog)** so the back half accelerates toward L3.
+   DECISION PENDING: what does the Platinum break actually boost?
+
 **Math self-check (`sim/l2check.mjs`, 2026-06-24 — all PASS):** OP-gain post-Platinum is finite/bounded
 & monotonic across peakSW 1e31..1e300 (+1 at 1e31, +47 at 1e60); crescendo build/decay/auto-conduct hit
 their marks; fame climbs slowly (×1.6 at 1e12 records). Two calibration findings:
