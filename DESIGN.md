@@ -317,6 +317,31 @@ keep-automation-forever ratchets, and eventually light scripting. (Re-designed w
 > pacing shape, OP-track contents, automator behavior, and the L2→L3 cliffhanger are settled. Remaining
 > work is NUMBERS (sim-tuning curves/thresholds — pure math, the simulator's job) → then delegate the build.
 
+### L2 MATH — v0 formulas + constants (2026-06-24)
+Formulas defined; numeric constants are **v0 starting values, tuned against the running build like L1 was**
+(blind pre-tuning is slower than tuning once the OP-over-time curve exists in code). Lives in new pure
+modules: `src/core/{opusUpgrades,crescendo,records}.ts` + appended `constants.ts` block.
+
+- **Magnum Opus:** cost = `100 + 80·opusCount` Symphonies (existing, keep). `opusPoints` = spendable OP
+  (spent on tracks); `opusCount` = lifetime MOs (monotonic, drives record sales).
+- **OP gain:** pre-Platinum **flat** `1 + opGainLevel` per MO. Post-Platinum **sublinear**:
+  `floor( (peakSoundwaves / 1e30)^0.05 × crescendoBonus )`, `crescendoBonus = 1 + peakCrescendo·0.25`.
+  (Mirrors the encore-EP root shape; 1e30 threshold & 0.05 root are v0.)
+- **Crescendo:** global production multiplier. `base ceiling ×3` (+1/level → ×6 max). Builds to ceiling over
+  `BUILD_SEC=12` of holding Conduct; decays to ×1 over `DECAY_SEC=25` when released. `peakCrescendo` (the
+  run's highest crescendo) feeds OP gain. Auto-conduct node sustains `0.5×` ceiling AFK.
+- **Automators:** Notes auto-buyer free at first MO; tiers 2-7 are OP unlocks. Baseline interval 500ms
+  (manual hold ≈90ms stays faster → active wins). Speed/bulk via existing `AUTOBUYER_SPEED_TIERS`/
+  `_BULK_TIERS`. Floor kept above manual until the auto-conduct era.
+- **Tempo track:** replaces the shipped auto-×2-BPM/OP. Each tempo node = `×1.5` global tempo/production;
+  cost escalates. (Cursor must stop `performMagnumOpus` auto-granting tempo — flagged store change, Claude does it.)
+- **Records Sold (the blend):** `recordsPerSec = 5 · log10(swPerSec + 10) · crescendoMult`. Production (via
+  log, bounded across the huge SW range) AND crescendo both raise sales — the blend. `RECORDS_PROD_K=5` v0
+  (≈1M in ~60-90 min of good active play → mid-L2 breakthrough).
+- **Go Platinum:** `recordsSold ≥ 1,000,000` → one-time flip to sublinear OP gain. Records keep accruing after.
+- **Fame:** post-Platinum permanent `prod/OP ×= 1 + log10(recordsSold/1e6)·0.1` (slow permanent climb).
+- **L2→L3 plateau:** not in foundations; tuned later once OP curve is observed.
+
 **Build order (when we build L2):** OP gain formula → first-MO unlocks the autobuyer system (reuse the
 existing `autobuyers` store scaffold, baseline rate) → OP upgrade TREE (automator speed/bulk, tempo,
 crescendo) in the Magnum Opus section → the Crescendo meter + Conduct mechanic on the stage (input-built,
