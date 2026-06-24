@@ -21,6 +21,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         BASE_TABS[0],
         BASE_TABS[1],
         { id: 'opus', label: 'Opus', icon: 'sparkle' as IconName },
+        { id: 'autobuyers', label: 'Autobuyers', icon: 'bars' as IconName },
         ...BASE_TABS.slice(2),
       ]
     : BASE_TABS

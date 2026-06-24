@@ -6,6 +6,7 @@ import { PrestigePage } from '../prestige/PrestigePage'
 import { AchievementsPage } from '../achievements/AchievementsPage'
 import { ChallengesPage } from '../challenges/ChallengesPage'
 import { OpusPage } from '../opus/OpusPage'
+import { AutobuyersPage } from '../autobuyers/AutobuyersPage'
 import { StatsPanel } from '../shared/StatsPanel'
 
 export function AppShell() {
@@ -20,6 +21,7 @@ export function AppShell() {
           {activeTab === 'compose' && <ComposePage />}
           {activeTab === 'prestige' && <PrestigePage />}
           {activeTab === 'opus' && <OpusPage />}
+          {activeTab === 'autobuyers' && <AutobuyersPage />}
           {activeTab === 'achievements' && <AchievementsPage />}
           {activeTab === 'challenges' && <ChallengesPage />}
           {activeTab === 'stats' && <StatsPanel />}

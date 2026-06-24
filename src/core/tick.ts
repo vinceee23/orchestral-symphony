@@ -13,7 +13,7 @@ import {
 } from './formulas'
 import { advanceCrescendo, getCrescendoMultiplier } from './crescendo'
 import { accrueRecords, isPlatinum } from './records'
-import { getAutomatorInterval, getAutomatorBulk } from './opusUpgrades'
+import { getAutomatorInterval, getAutomatorBulk, clampAutobuyerBulk } from './opusUpgrades'
 import {
   getAchievementGlobalMultiplier,
   getAchievementTierMultiplier,
@@ -184,7 +184,7 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
 
     let buyCount = 0
     const bulk = (state.opusCount > 0 && ab.unlocked)
-      ? getAutomatorBulk(state.opusUpgrades)
+      ? clampAutobuyerBulk(ab.bulk, getAutomatorBulk(state.opusUpgrades))
       : ab.bulk
     if (bulk === 'max') {
       buyCount = getMaxBuyable(config, tier.purchased, newSoundwaves, abCostMult)

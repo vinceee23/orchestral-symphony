@@ -273,6 +273,18 @@ export function getAutomatorBulk(levels: Record<string, number>): number | 'max'
   return AUTOBUYER_BULK_TIERS[idx]
 }
 
+/** Clamp configured bulk to the OP-unlocked cap using AUTOBUYER_BULK_TIERS ordering. */
+export function clampAutobuyerBulk(
+  configured: number | 'max',
+  cap: number | 'max',
+): number | 'max' {
+  const capIdx = AUTOBUYER_BULK_TIERS.indexOf(cap)
+  const configIdx = AUTOBUYER_BULK_TIERS.indexOf(configured)
+  if (configIdx < 0) return cap
+  if (capIdx < 0) return configured
+  return AUTOBUYER_BULK_TIERS[Math.min(configIdx, capIdx)]
+}
+
 export function hasAutoConduct(levels: Record<string, number>): boolean {
   return lvl(levels, 'auto-conduct') > 0
 }

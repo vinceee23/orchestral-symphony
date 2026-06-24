@@ -91,6 +91,7 @@ export interface GameActions {
   buyMaxTempo: () => void
   setBuyAmount: (amount: BuyAmount) => void
   toggleAutobuyer: (key: string) => void
+  setAutobuyerBulk: (key: string, bulk: number | 'max') => void
   buyEncoreUpgrade: (id: string) => void
   buyOpusUpgrade: (id: string) => void
   checkAchievements: () => void

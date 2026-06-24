@@ -290,6 +290,19 @@ export const useGameStore = create<GameState & GameActions>()(
         })
       },
 
+      setAutobuyerBulk: (key: string, bulk: number | 'max') => {
+        set((state) => {
+          const ab = state.autobuyers[key]
+          if (!ab) return state
+          return {
+            autobuyers: {
+              ...state.autobuyers,
+              [key]: { ...ab, bulk },
+            },
+          }
+        })
+      },
+
       buyEncoreUpgrade: (id: string) => {
         set((state) => {
           const config = ENCORE_UPGRADE_MAP[id]
@@ -609,7 +622,7 @@ export const useGameStore = create<GameState & GameActions>()(
       partialize: (state): GameState => {
         const {
           tick, buyTier, buyMaxTier, buyTempo, buyMaxTempo, setBuyAmount,
-          toggleAutobuyer, buyEncoreUpgrade, buyOpusUpgrade, checkAchievements, checkChallengeCompletion,
+          toggleAutobuyer, setAutobuyerBulk, buyEncoreUpgrade, buyOpusUpgrade, checkAchievements, checkChallengeCompletion,
           startChallenge, abandonChallenge,
           performEncore, performMagnumOpus, performGrandFinale,
           hardReset,
