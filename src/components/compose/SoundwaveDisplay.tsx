@@ -2,25 +2,28 @@ import Decimal from 'break_infinity.js'
 import { useGameStore } from '../../store/gameStore'
 import { formatNumber } from '../../core/format'
 import { TIER_CONFIGS } from '../../core/constants'
-import { getTierProductionPerSec, getEncoreMultiplier, getFinaleMultiplier } from '../../core/formulas'
-import { getPerfectPitchMultiplier } from '../../core/encoreUpgrades'
+import { getTierProductionPerSec, getEncoreMultiplier, getFinaleMultiplier, getCoreProductionMultiplier } from '../../core/formulas'
 import { getAchievementGlobalMultiplier, getAchievementTierMultiplier } from '../../core/achievements'
 import { SmoothNumber } from '../shared/SmoothNumber'
 
 export function SoundwaveDisplay() {
   const soundwaves = useGameStore((s) => s.soundwaves)
   const tiers = useGameStore((s) => s.tiers)
+  const tempo = useGameStore((s) => s.tempo)
   const achievements = useGameStore((s) => s.achievements)
   const encorePoints = useGameStore((s) => s.encorePoints)
   const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const encoreUpgrades = useGameStore((s) => s.encoreUpgrades)
+  const opusPoints = useGameStore((s) => s.opusPoints)
   const finalePoints = useGameStore((s) => s.finalePoints)
 
   const achievementSet = new Set(achievements)
   const achievementGlobal = getAchievementGlobalMultiplier(achievementSet)
-  const encoreMult = getEncoreMultiplier(lifetimeEncorePoints)
-  const finaleMult = getFinaleMultiplier(finalePoints)
-  const globalMult = achievementGlobal.times(encoreMult).times(finaleMult).times(getPerfectPitchMultiplier(encoreUpgrades))
+  // Production multiplier shared with the tick (prevents the displayed rate from drifting).
+  const encoreMult = getEncoreMultiplier(lifetimeEncorePoints) // for the EP label below
+  const globalMult = achievementGlobal.times(getCoreProductionMultiplier({
+    lifetimeEncorePoints, finalePoints, opusPoints, encoreUpgrades, tempoLevel: tempo.level, tiers,
+  }))
 
   const tier1 = tiers[0]
   const config1 = TIER_CONFIGS[0]
@@ -50,7 +53,7 @@ export function SoundwaveDisplay() {
       )}
       {finalePoints > 0 && (
         <div className="text-[10px] text-amber-400 mt-1">
-          FP: {finalePoints} (x{formatNumber(finaleMult, 0)})
+          FP: {finalePoints} (x{formatNumber(getFinaleMultiplier(finalePoints), 0)})
         </div>
       )}
     </div>

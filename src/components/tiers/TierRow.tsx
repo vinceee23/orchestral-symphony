@@ -1,8 +1,7 @@
 import Decimal from 'break_infinity.js'
 import { useGameStore } from '../../store/gameStore'
 import { TIER_CONFIGS } from '../../core/constants'
-import { getTierProductionPerSec, getMilestoneMultiplier, getTierBatchCost, getMaxBuyable, getEncoreMultiplier, getFinaleMultiplier } from '../../core/formulas'
-import { getPerfectPitchMultiplier } from '../../core/encoreUpgrades'
+import { getTierProductionPerSec, getMilestoneMultiplier, getTierBatchCost, getMaxBuyable, getCoreProductionMultiplier } from '../../core/formulas'
 import { formatNumber, formatCost } from '../../core/format'
 import { SmoothNumber } from '../shared/SmoothNumber'
 import { ProgressBar } from '../shared/ProgressBar'
@@ -15,12 +14,15 @@ interface TierRowProps {
 
 export function TierRow({ tierId }: TierRowProps) {
   const tier = useGameStore((s) => s.tiers[tierId - 1])
+  const allTiers = useGameStore((s) => s.tiers)
   const soundwaves = useGameStore((s) => s.soundwaves)
   const buyAmount = useGameStore((s) => s.buyAmount)
   const achievements = useGameStore((s) => s.achievements)
   const autobuyers = useGameStore((s) => s.autobuyers)
+  const tempo = useGameStore((s) => s.tempo)
   const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const encoreUpgrades = useGameStore((s) => s.encoreUpgrades)
+  const opusPoints = useGameStore((s) => s.opusPoints)
   const finalePoints = useGameStore((s) => s.finalePoints)
   const buyTier = useGameStore((s) => s.buyTier)
   const buyMaxTier = useGameStore((s) => s.buyMaxTier)
@@ -48,9 +50,10 @@ export function TierRow({ tierId }: TierRowProps) {
   // Build the full multiplier stack
   const achievementSet = new Set(achievements)
   const achievementGlobal = getAchievementGlobalMultiplier(achievementSet)
-  const encoreMult = getEncoreMultiplier(lifetimeEncorePoints)
-  const finaleMult = getFinaleMultiplier(finalePoints)
-  const globalMult = achievementGlobal.times(encoreMult).times(finaleMult).times(getPerfectPitchMultiplier(encoreUpgrades))
+  // Shared production multiplier — same source as the tick, so the displayed rate matches reality.
+  const globalMult = achievementGlobal.times(getCoreProductionMultiplier({
+    lifetimeEncorePoints, finalePoints, opusPoints, encoreUpgrades, tempoLevel: tempo.level, tiers: allTiers,
+  }))
   const tierAchMult = getAchievementTierMultiplier(achievementSet, tierId)
   const fullMult = globalMult.times(tierAchMult)
 

@@ -25,7 +25,7 @@ and tested.** The only thing intentionally missing is **art** (blocked on Gemini
 - Balance sim: `node sim/tune.mjs`. Tests: `npm test`.
 
 ## What's left (not tonight)
-1. **Art** — pipeline is built (`art/gen-tiers.mjs`) and *proven* (generated one glyph), but the **free Gemini image quota is tiny** and the 3.1-Flash/Pro models need **billing enabled** on your API project (your ~$6 credit is intact — it wasn't consumed; the 429s were free-tier rate limits). Enable billing, then: `node --env-file=.env art/gen-tiers.mjs` (override model with `IMG_MODEL=gemini-3.1-flash-image`). Tier→model policy is in the design.
+1. **Art** — pipeline is built (`art/gen-tiers.mjs`). **Correction:** the earlier 429s were NOT a billing/free-tier problem (my misdiagnosis) — the key is paid and works. They were **rate-limit contention**: the preview image models have low RPM, and this key is shared with another active project, so bursts of 7 collided. Single/spaced calls work fine. The script now spaces 20s + retries with backoff. Generated glyphs land in `art/tiers/`. Run: `IMG_MODEL=gemini-3.1-flash-image node --env-file=.env art/gen-tiers.mjs`. **Tip:** a dedicated key for this project (separate from your other one) removes the contention entirely.
 2. **Subjective feel** — math fixed the pacing; tweak `PRODUCTION_SCALE` / `ENCORE_WALL_COUNT` in `src/core/constants.ts` if the session length feels off.
 3. **Layers 2–6** — designed in `DESIGN.md` (§3), not built. Magnum Opus is stubbed + gated.
 

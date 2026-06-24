@@ -27,27 +27,40 @@ const TIERS = [
 mkdirSync('art/tiers', { recursive: true })
 const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${KEY}`
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-const SPACING_MS = 13000 // free tier is RPM-limited; space requests so we don't trip 429
+const SPACING_MS = 60000  // patient: preview image models have a tight RPM + cooldown that rapid retries re-trigger
+const MAX_RETRY = 2       // gentle, few retries — hammering only extends the penalty
 
-for (const [id, name, subj] of TIERS) {
-  if (id > 1) await sleep(SPACING_MS)
-  const body = {
-    contents: [{ parts: [{ text: `${STYLE} The emblem depicts: ${subj}.` }] }],
-    generationConfig: { responseModalities: ['IMAGE'] },
-  }
-  try {
+async function genOne(text) {
+  const body = { contents: [{ parts: [{ text }] }], generationConfig: { responseModalities: ['IMAGE'] } }
+  for (let attempt = 0; attempt <= MAX_RETRY; attempt++) {
     const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    if (res.status === 429) {
+      const wait = 90000 // flat, generous — let the cooldown fully clear
+      if (attempt === MAX_RETRY) throw new Error('429 after all retries (rate-limit contention — rerun later or use a key not shared with another active project)')
+      console.error(`  429 (rate limit), backing off ${wait / 1000}s [retry ${attempt + 1}/${MAX_RETRY}]`)
+      await sleep(wait)
+      continue
+    }
     const json = await res.json()
-    if (!res.ok) { console.error(`tier ${id} ${name}: HTTP ${res.status} ${JSON.stringify(json).slice(0, 200)}`); continue }
-    const parts = json?.candidates?.[0]?.content?.parts ?? []
-    const img = parts.find((p) => p.inlineData?.data)
-    if (!img) { console.error(`tier ${id} ${name}: no image in response ${JSON.stringify(json).slice(0, 200)}`); continue }
-    const ext = img.inlineData.mimeType?.includes('png') ? 'png' : 'jpg'
-    const file = `art/tiers/tier${id}_${name.toLowerCase()}.${ext}`
-    writeFileSync(file, Buffer.from(img.inlineData.data, 'base64'))
-    console.log(`OK  tier ${id} ${name} -> ${file}`)
-  } catch (e) {
-    console.error(`tier ${id} ${name}: ${e.message}`)
+    if (!res.ok) throw new Error(`HTTP ${res.status} ${JSON.stringify(json).slice(0, 180)}`)
+    const img = (json?.candidates?.[0]?.content?.parts ?? []).find((p) => p.inlineData?.data)
+    if (!img) throw new Error(`no image: ${JSON.stringify(json).slice(0, 180)}`)
+    return img.inlineData
   }
 }
-console.log('done')
+
+let ok = 0
+for (const [id, name, subj] of TIERS) {
+  if (id > 1) await sleep(SPACING_MS)
+  try {
+    const data = await genOne(`${STYLE} The emblem depicts: ${subj}.`)
+    const ext = data.mimeType?.includes('png') ? 'png' : 'jpg'
+    const file = `art/tiers/tier${id}_${name.toLowerCase()}.${ext}`
+    writeFileSync(file, Buffer.from(data.data, 'base64'))
+    console.log(`OK  tier ${id} ${name} -> ${file}`)
+    ok++
+  } catch (e) {
+    console.error(`FAIL tier ${id} ${name}: ${e.message}`)
+  }
+}
+console.log(`done: ${ok}/${TIERS.length} generated`)

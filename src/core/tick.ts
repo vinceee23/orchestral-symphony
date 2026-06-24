@@ -1,6 +1,6 @@
 import Decimal from 'break_infinity.js'
 import type { GameState } from '../store/types'
-import { TIER_CONFIGS, AUTOBUYER_DEFAULT_INTERVAL, PRODUCTION_SCALE } from './constants'
+import { TIER_CONFIGS, AUTOBUYER_DEFAULT_INTERVAL } from './constants'
 import {
   getTierProductionPerTick,
   getTierCost,
@@ -9,11 +9,7 @@ import {
   getTempoTickInterval,
   getTempoBPM,
   getMaxBuyable,
-  getEncoreMultiplier,
-  getFinaleMultiplier,
-  getTempoProductionMultiplier,
-  getMilestoneTickspeedMultiplier,
-  getOpusBPMMultiplier,
+  getCoreProductionMultiplier,
 } from './formulas'
 import {
   getAchievementGlobalMultiplier,
@@ -23,7 +19,6 @@ import {
 } from './achievements'
 import { getChallengeById, getActiveChallengeModifiers } from './challenges'
 import type { ChallengeModifiers } from './challenges'
-import { getPerfectPitchMultiplier } from './encoreUpgrades'
 
 export function calculateTick(state: GameState, deltaMs: number): Partial<GameState> {
   const achievementSet = new Set(state.achievements)
@@ -46,28 +41,18 @@ export function calculateTick(state: GameState, deltaMs: number): Partial<GameSt
   // === Global multiplier stack ===
   const achievementGlobal = getAchievementGlobalMultiplier(achievementSet)
 
-  // Prestige multipliers (disabled during noPrestige challenge)
-  let encoreMult = new Decimal(1)
-  let finaleMult = new Decimal(1)
-  let opusMult = 1
-  if (!mods.noPrestige) {
-    // Multiplier from TOTAL EP earned (lifetime) — spending in the shop doesn't reduce it.
-    encoreMult = getEncoreMultiplier(state.lifetimeEncorePoints)
-    finaleMult = getFinaleMultiplier(state.finalePoints)
-    // Opus (Magnum Opus, L2) is a real production multiplier too — same fix as tempo.
-    opusMult = getOpusBPMMultiplier(state.opusPoints)
-  }
-
-  // Tempo + milestone-tickspeed are now REAL production multipliers (previously dead — they only
-  // shrank the tick interval, which cancels out over real time). PRODUCTION_SCALE is the tuning knob.
-  let globalMult = achievementGlobal
-    .times(encoreMult)
-    .times(finaleMult)
-    .times(opusMult)
-    .times(getPerfectPitchMultiplier(state.encoreUpgrades))
-    .times(PRODUCTION_SCALE)
-    .times(getTempoProductionMultiplier(state.tempo.level))
-    .times(getMilestoneTickspeedMultiplier(state.tiers))
+  // Single source of truth for the production multiplier — shared with the UI rate displays so
+  // they can't drift (encore/finale/opus/perfectPitch/tempo/milestone-tickspeed/PRODUCTION_SCALE).
+  // noPrestige challenges zero out the prestige-point contributions.
+  const noP = mods.noPrestige
+  let globalMult = achievementGlobal.times(getCoreProductionMultiplier({
+    lifetimeEncorePoints: noP ? 0 : state.lifetimeEncorePoints,
+    finalePoints: noP ? 0 : state.finalePoints,
+    opusPoints: noP ? 0 : state.opusPoints,
+    encoreUpgrades: state.encoreUpgrades,
+    tempoLevel: state.tempo.level,
+    tiers: state.tiers,
+  }))
 
   // Apply production divisor from challenge
   if (mods.productionDivisor > 1) {

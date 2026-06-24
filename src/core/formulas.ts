@@ -13,7 +13,9 @@ import {
   ENCORE_REWARD_PER,
   ENCORE_EP_THRESHOLD,
   ENCORE_EP_ROOT,
+  PRODUCTION_SCALE,
 } from './constants'
+import { getPerfectPitchMultiplier } from './encoreUpgrades'
 import type { TierState } from '../store/types'
 
 /**
@@ -165,4 +167,27 @@ export function getOpusBPMMultiplier(op: number): number {
 /** Grand Finale multiplier: each FP = x10 all production */
 export function getFinaleMultiplier(fp: number): Decimal {
   return Decimal.pow(10, fp)
+}
+
+/**
+ * THE global production multiplier — the single source of truth shared by the tick and the UI
+ * rate displays (so the displayed rate can't drift from real production). Excludes only
+ * achievement/tier-achievement mults and challenge-only modifiers (handled by their callers).
+ * For noPrestige challenges, the caller passes 0 for the prestige point fields.
+ */
+export function getCoreProductionMultiplier(p: {
+  lifetimeEncorePoints: number
+  finalePoints: number
+  opusPoints: number
+  encoreUpgrades: Record<string, number>
+  tempoLevel: number
+  tiers: { purchased: number }[]
+}): Decimal {
+  return getEncoreMultiplier(p.lifetimeEncorePoints)
+    .times(getFinaleMultiplier(p.finalePoints))
+    .times(getOpusBPMMultiplier(p.opusPoints))
+    .times(getPerfectPitchMultiplier(p.encoreUpgrades))
+    .times(PRODUCTION_SCALE)
+    .times(getTempoProductionMultiplier(p.tempoLevel))
+    .times(getMilestoneTickspeedMultiplier(p.tiers))
 }
