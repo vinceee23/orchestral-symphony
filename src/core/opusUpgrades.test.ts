@@ -5,7 +5,6 @@ import {
   CRESCENDO_BUILD_SEC,
   CRESCENDO_DECAY_SEC,
   CRESCENDO_BASE_MAX,
-  AUTO_CONDUCT_FRACTION,
 } from './constants'
 import {
   OPUS_UPGRADES,
