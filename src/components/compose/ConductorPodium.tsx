@@ -4,12 +4,14 @@
  * Once L2 unlocks Conduct, `active` is true and holding Conduct fills the `swell` column of light.
  * (The live hold/swell wiring lands with the L2 tick-pass; this renders the structure + dormant tease.)
  */
+import { memo } from 'react'
+
 interface Props {
   active: boolean
   swell?: number // 0..1 crescendo intensity (only meaningful when active)
 }
 
-export function ConductorPodium({ active, swell = 0 }: Props) {
+export const ConductorPodium = memo(function ConductorPodium({ active, swell = 0 }: Props) {
   return (
     <div className="pointer-events-none absolute left-1/2 bottom-2 -translate-x-1/2 z-10 flex flex-col items-center">
       {/* swell-meter: a column of light that fills as you conduct (hidden until active) */}
@@ -35,4 +37,4 @@ export function ConductorPodium({ active, swell = 0 }: Props) {
       )}
     </div>
   )
-}
+})

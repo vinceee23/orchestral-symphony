@@ -4,6 +4,8 @@
  * Driven by `era` (0=pre-Encore intimate · 1=Encore warm · 2=Magnum Opus grand · 3=Finale blaze)
  * and `liveliness` (0..1). Everything fades/recolors with the era — the room fills as you rise.
  */
+import { memo } from 'react'
+
 const ERA_COLORS = ['#d4a843', '#d4a843', '#7c3aed', '#f59e0b'] // gold · gold · violet · amber-blaze
 
 interface Props {
@@ -11,7 +13,8 @@ interface Props {
   liveliness: number
 }
 
-export function StageHall({ era, liveliness }: Props) {
+// Memoized: era/liveliness only change on prestige, so this renders ~once instead of every game-loop frame.
+export const StageHall = memo(function StageHall({ era, liveliness }: Props) {
   const color = ERA_COLORS[Math.min(era, 3)]
   // each layer grows as you rise — but keep a visible baseline so the stage always reads as a real hall.
   const grand = Math.min(1, 0.25 + (era / 3) * 0.7 + liveliness * 0.1)
@@ -75,4 +78,4 @@ export function StageHall({ era, liveliness }: Props) {
       </svg>
     </div>
   )
-}
+})
