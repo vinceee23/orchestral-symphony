@@ -1,5 +1,6 @@
 import { useGameStore } from '../../store/gameStore'
 import { Icon, type IconName } from '../shared/Icon'
+import { getEra, eraTintCss } from '../../core/eraTheme'
 
 interface SidebarProps {
   activeTab: string
@@ -16,6 +17,9 @@ const BASE_TABS: { id: string; label: string; icon: IconName }[] = [
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const opusCount = useGameStore((s) => s.opusCount)
+  const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
+  const finalePoints = useGameStore((s) => s.finalePoints)
+  const era = getEra(lifetimeEncorePoints, opusCount, finalePoints)
   const tabs = opusCount > 0
     ? [
         BASE_TABS[0],
@@ -27,7 +31,10 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     : BASE_TABS
 
   return (
-    <nav className="w-16 md:w-52 bg-bg-secondary border-r border-border flex flex-col py-4 gap-0.5 shrink-0">
+    <nav
+      className="w-16 md:w-52 bg-bg-secondary border-r border-border flex flex-col py-4 gap-0.5 shrink-0"
+      style={{ backgroundImage: eraTintCss(era) }}
+    >
       {tabs.map((tab) => (
         <button
           key={tab.id}

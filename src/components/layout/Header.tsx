@@ -8,6 +8,7 @@ import { formatNumber } from '../../core/format'
 import { getTierProductionPerSec, getCoreProductionMultiplier } from '../../core/formulas'
 import { getCrescendoMultiplier } from '../../core/crescendo'
 import { hasPerk } from '../../core/perks'
+import { getEra, eraTintCss } from '../../core/eraTheme'
 import { SmoothNumber } from '../shared/SmoothNumber'
 import { Icon } from '../shared/Icon'
 
@@ -33,6 +34,7 @@ export function Header() {
   const crescendoMult = getCrescendoMultiplier(crescendo, opusUpgrades)
   const showCrescendo = opusCount > 0 && (conducting || crescendo > 0.02)
 
+  const era = getEra(lifetimeEncorePoints, opusCount, finalePoints)
   const achievementSet = new Set(achievements)
   const globalMult = getAchievementGlobalMultiplier(achievementSet).times(getCoreProductionMultiplier({
     lifetimeEncorePoints, finalePoints, encoreUpgrades, tempoLevel: tempo.level, tiers,
@@ -50,7 +52,10 @@ export function Header() {
     : null
 
   return (
-    <header className="flex items-center justify-between px-6 py-3.5 border-b border-border bg-bg-secondary/90">
+    <header
+      className="flex items-center justify-between px-6 py-3.5 border-b border-border bg-bg-secondary/90"
+      style={{ backgroundImage: eraTintCss(era) }}
+    >
       <div className="flex items-center gap-3">
         <Icon name="brand" size={24} className="text-accent-gold" />
         <h1 className="text-lg font-display font-semibold text-accent-gold tracking-[0.04em]">

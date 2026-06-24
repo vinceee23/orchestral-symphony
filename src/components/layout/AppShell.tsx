@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import { useUiStore } from '../../store/uiStore'
+import { getEra, eraTintCss } from '../../core/eraTheme'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 import { ComposePage } from '../compose/ComposePage'
@@ -24,6 +25,9 @@ export function AppShell() {
   // Opus). Lives in the always-mounted shell so switching tabs doesn't drop the hold. The pointer
   // "Conduct" button on the Compose stage is the other held-source (see uiStore.setPointerHeld).
   const opusCount = useGameStore((s) => s.opusCount)
+  const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
+  const finalePoints = useGameStore((s) => s.finalePoints)
+  const era = getEra(lifetimeEncorePoints, opusCount, finalePoints)
   useEffect(() => {
     if (opusCount <= 0) return
     const { setSpaceHeld, releaseConduct } = useUiStore.getState()
@@ -58,7 +62,10 @@ export function AppShell() {
         {/* main starts after the sidebar, so centered content lands right-of-screen. Padding-right ==
             sidebar width (w-16/w-52) makes the centering box symmetric about the TRUE viewport. Compose
             is full-bleed (its stage centers itself), so skip it. */}
-        <main className={`flex-1 min-w-0 overflow-y-auto ${activeTab === 'compose' ? '' : 'pr-16 md:pr-52'}`}>
+        <main
+          className={`flex-1 min-w-0 overflow-y-auto ${activeTab === 'compose' ? '' : 'pr-16 md:pr-52'}`}
+          style={{ backgroundImage: eraTintCss(era, 0.7) }}
+        >
           {activeTab === 'compose' && <ComposePage />}
           {activeTab === 'prestige' && <PrestigePage />}
           {activeTab === 'opus' && <OpusPage />}
