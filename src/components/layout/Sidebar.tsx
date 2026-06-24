@@ -20,28 +20,28 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     ? [
         BASE_TABS[0],
         BASE_TABS[1],
-        { id: 'opus', label: 'Opus', icon: 'sparkle' as IconName },
-        { id: 'autobuyers', label: 'Autobuyers', icon: 'bars' as IconName },
+        { id: 'opus', label: 'Opus', icon: 'disc' as IconName },
+        { id: 'autobuyers', label: 'Autobuyers', icon: 'gear' as IconName },
         ...BASE_TABS.slice(2),
       ]
     : BASE_TABS
 
   return (
-    <nav className="w-14 md:w-44 bg-bg-secondary border-r border-border flex flex-col py-3 shrink-0">
+    <nav className="w-16 md:w-52 bg-bg-secondary border-r border-border flex flex-col py-4 gap-0.5 shrink-0">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
           className={`
-            flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors duration-150
+            flex items-center gap-3 px-4 py-3 text-left transition-colors duration-150
             ${activeTab === tab.id
               ? 'bg-bg-tertiary text-accent-gold border-r-2 border-accent-gold'
               : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
             }
           `}
         >
-          <Icon name={tab.icon} size={20} />
-          <span className="hidden md:inline text-sm font-medium">{tab.label}</span>
+          <Icon name={tab.icon} size={21} />
+          <span className="hidden md:inline text-sm font-medium tracking-wide">{tab.label}</span>
         </button>
       ))}
     </nav>

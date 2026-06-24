@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Button } from '../shared/Button'
 
 export type PrestigeKind = 'encore' | 'mo' | 'gf'
 
@@ -50,6 +51,7 @@ interface Props {
 export function PrestigeDialog({ type, onConfirm, onCancel }: Props) {
   const [dontShow, setDontShow] = useState(false)
   const info = PRESTIGE_INFO[type]
+  const confirmVariant = type === 'mo' ? 'purple' : 'gold'
 
   const handleConfirm = () => {
     if (dontShow) localStorage.setItem(`prestige_skip_${type}`, '1')
@@ -57,18 +59,18 @@ export function PrestigeDialog({ type, onConfirm, onCancel }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onCancel}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onCancel}>
       <div
-        className={`max-w-md w-full mx-4 p-5 rounded-xl border ${info.border} ${info.bg} bg-bg-primary shadow-2xl`}
+        className={`max-w-md w-full p-6 rounded-xl border ${info.border} ${info.bg} bg-bg-primary shadow-2xl space-y-4`}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className={`text-lg font-display font-bold ${info.color} mb-3`}>{info.title}</h3>
-        <div className="space-y-2 mb-4">
+        <h3 className={`text-lg font-display font-bold ${info.color}`}>{info.title}</h3>
+        <div className="space-y-3">
           {info.description.map((line, i) => (
             <p key={i} className="text-sm text-text-secondary leading-relaxed">{line}</p>
           ))}
         </div>
-        <label className="flex items-center gap-2 mb-4 cursor-pointer">
+        <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
             checked={dontShow}
@@ -77,19 +79,13 @@ export function PrestigeDialog({ type, onConfirm, onCancel }: Props) {
           />
           <span className="text-xs text-text-muted">Don't show this again</span>
         </label>
-        <div className="flex gap-2">
-          <button
-            onClick={onCancel}
-            className="flex-1 py-2 px-3 text-sm rounded border border-border text-text-secondary hover:bg-bg-secondary transition-colors"
-          >
+        <div className="flex gap-3 pt-1">
+          <Button onClick={onCancel} variant="ghost" size="md" className="flex-1">
             Cancel
-          </button>
-          <button
-            onClick={handleConfirm}
-            className={`flex-1 py-2 px-3 text-sm rounded border ${info.border} ${info.color} font-semibold hover:brightness-125 transition-all`}
-          >
+          </Button>
+          <Button onClick={handleConfirm} variant={confirmVariant} size="md" display className="flex-1">
             Confirm {info.title}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

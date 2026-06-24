@@ -9,6 +9,7 @@ import { playPrestigeSound, playBuySound } from '../../core/audio'
 import { getChallengeById, getActiveChallengeModifiers } from '../../core/challenges'
 import { PrestigeDialog, type PrestigeKind } from './PrestigeDialog'
 import { useUiStore } from '../../store/uiStore'
+import { Button } from '../shared/Button'
 
 const LADDER = [
   { name: 'Encore', icon: '\u{266A}' },
@@ -80,26 +81,26 @@ export function PrestigePage() {
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-3xl mx-auto space-y-6">
+    <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
       <header className="text-center">
         <h1 className="text-2xl font-display font-semibold text-accent-gold tracking-wide">Prestige</h1>
-        <p className="text-sm text-text-muted mt-1">Reset what you've built to rise on a higher arc.</p>
+        <p className="text-sm text-text-muted mt-2">Reset what you've built to rise on a higher arc.</p>
       </header>
 
       {/* Prestige ladder */}
-      <div className="flex items-center justify-center gap-1.5 flex-wrap">
+      <div className="flex items-center justify-center gap-2 flex-wrap">
         {LADDER.map((l, i) => {
           const unlocked = i === 0 || (i === 1 && layer1WallReached)
           return (
-            <div key={l.name} className="flex items-center gap-1.5">
+            <div key={l.name} className="flex items-center gap-2">
               <div
-                className={`flex flex-col items-center px-2.5 py-1.5 rounded-lg border text-center ${
-                  unlocked ? 'border-accent-gold/40 bg-accent-gold/10' : 'border-border/40 bg-bg-secondary/30 opacity-50'
+                className={`flex flex-col items-center px-3 py-2 rounded-xl border text-center ${
+                  unlocked ? 'border-accent-gold/40 bg-accent-gold/10' : 'border-border bg-bg-secondary/40 opacity-50'
                 }`}
                 title={unlocked ? l.name : 'A future layer — keep playing to reveal it'}
               >
                 <span className="text-base">{unlocked ? l.icon : '\u{1F512}'}</span>
-                <span className="text-[9px] text-text-muted mt-0.5">{unlocked ? l.name : '???'}</span>
+                <span className="text-xs text-text-muted mt-1">{unlocked ? l.name : '???'}</span>
               </div>
               {i < LADDER.length - 1 && <span className="text-text-muted/40 text-xs">{'→'}</span>}
             </div>
@@ -108,32 +109,32 @@ export function PrestigePage() {
       </div>
 
       {/* Encore — Layer 1 */}
-      <section className="rounded-2xl border border-accent-gold/30 bg-gradient-to-b from-accent-gold/10 to-transparent p-5">
-        <div className="flex items-start justify-between">
+      <section className="rounded-xl border border-accent-gold/30 bg-bg-secondary/40 p-5 space-y-4">
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-display font-semibold text-accent-gold">Encore</h2>
-            <p className="text-xs text-text-muted mt-0.5">Layer 1 · the performance, replayed</p>
+            <h2 className="text-lg font-display font-semibold text-accent-gold">Encore</h2>
+            <p className="text-xs text-text-muted mt-1">Layer 1 · the performance, replayed</p>
           </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-accent-gold tabular-nums">x{formatNumber(currentEncoreMult, 2)}</div>
-            <div className="text-[10px] text-text-muted">production from {lifetimeEncorePoints} total Applause</div>
+          <div className="text-right shrink-0">
+            <div className="text-2xl font-display font-bold text-accent-gold tabular-nums">x{formatNumber(currentEncoreMult, 2)}</div>
+            <div className="text-xs text-text-muted tabular-nums">production from {lifetimeEncorePoints} total Applause</div>
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-          <div className="rounded-lg bg-bg-secondary/50 p-3">
-            <div className="text-[10px] text-text-muted uppercase tracking-wider">Spendable Applause</div>
-            <div className="text-lg font-semibold text-text-primary">{encorePoints}</div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl border border-border bg-bg-primary/50 p-4">
+            <div className="text-xs text-text-muted uppercase tracking-wider">Spendable Applause</div>
+            <div className="text-lg font-display font-semibold text-text-primary tabular-nums mt-1">{encorePoints}</div>
           </div>
-          <div className="rounded-lg bg-bg-secondary/50 p-3">
-            <div className="text-[10px] text-text-muted uppercase tracking-wider">Next Encore grants</div>
-            <div className="text-lg font-semibold text-success">+{projectedGain} Applause</div>
+          <div className="rounded-xl border border-border bg-bg-primary/50 p-4">
+            <div className="text-xs text-text-muted uppercase tracking-wider">Next Encore grants</div>
+            <div className="text-lg font-display font-semibold text-success tabular-nums mt-1">+{projectedGain} Applause</div>
           </div>
         </div>
 
         {!canEncore ? (
-          <div className="mt-4">
-            <div className="text-xs text-text-muted mb-1">
+          <div>
+            <div className="text-sm text-text-muted mb-2 tabular-nums">
               {encorePurchased}/{encoreCost.amount} {encoreCost.tierName} to perform an Encore
             </div>
             <div className="h-2 rounded-full bg-bg-primary overflow-hidden">
@@ -141,24 +142,27 @@ export function PrestigePage() {
             </div>
           </div>
         ) : (
-          <button
+          <Button
             onClick={() => tryPrestige('encore')}
-            className="mt-4 w-full py-3 rounded-xl border border-accent-gold/50 bg-accent-gold/15 text-accent-gold font-display font-semibold text-lg hover:bg-accent-gold/25 hover:brightness-110 transition-all"
+            variant="gold"
+            size="lg"
+            display
+            className="w-full"
           >
             Perform Encore  ·  x{formatNumber(currentEncoreMult, 2)} {'→'} x{formatNumber(nextEncoreMult, 2)}
-          </button>
+          </Button>
         )}
         {encoreCount === 0 && (
-          <p className="text-[11px] text-text-muted mt-2 text-center">Your first Encore unlocks Movements & Symphonies.</p>
+          <p className="text-xs text-text-muted text-center">Your first Encore unlocks Movements & Symphonies.</p>
         )}
       </section>
 
       {/* Encore Upgrades */}
       {encoreCount > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-display font-semibold text-accent-gold uppercase tracking-wider">Encore Upgrades</h3>
-            <span className="text-xs text-text-muted">{encorePoints} Applause to spend</span>
+        <section className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-xs font-semibold text-accent-gold uppercase tracking-wider">Encore Upgrades</h3>
+            <span className="text-xs text-text-muted tabular-nums">{encorePoints} Applause to spend</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {ENCORE_UPGRADES.map((u) => {
@@ -168,25 +172,23 @@ export function PrestigePage() {
               const affordable = encorePoints >= cost
               const buy = () => { if (!maxed && affordable) { buyEncoreUpgrade(u.id); playBuySound(7) } }
               return (
-                <button
+                <Button
                   key={u.id}
                   onClick={buy}
                   disabled={maxed || !affordable}
-                  className={`p-3 rounded-xl border text-left transition-all ${
-                    maxed ? 'bg-bg-secondary/40 border-border/40 opacity-60 cursor-default'
-                      : affordable ? 'bg-accent-gold/10 border-accent-gold/30 hover:bg-accent-gold/20 cursor-pointer'
-                        : 'bg-bg-secondary/50 border-border/50 opacity-50 cursor-not-allowed'
-                  }`}
+                  variant={maxed ? 'ghost' : affordable ? 'gold' : 'ghost'}
+                  size="md"
+                  className="w-full !flex !flex-col !items-stretch !justify-start text-left gap-1.5"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-3 w-full">
                     <span className="text-sm font-semibold text-text-primary">{u.name}</span>
-                    <span className="text-[10px] text-text-muted">Lv {level}/{u.maxLevel}</span>
+                    <span className="text-xs text-text-muted tabular-nums shrink-0">Lv {level}/{u.maxLevel}</span>
                   </div>
-                  <div className="text-[11px] text-text-muted mt-1 leading-snug">{u.description}</div>
-                  <div className={`text-xs mt-2 font-medium ${maxed || !affordable ? 'text-text-muted' : 'text-accent-gold'}`}>
+                  <div className="text-sm text-text-muted leading-relaxed">{u.description}</div>
+                  <div className={`text-xs font-medium tabular-nums ${maxed || !affordable ? 'text-text-muted' : 'text-accent-gold'}`}>
                     {maxed ? 'MAX' : `${cost} Applause`}
                   </div>
-                </button>
+                </Button>
               )
             })}
           </div>
@@ -194,43 +196,44 @@ export function PrestigePage() {
       )}
 
       {/* Magnum Opus — Layer 2 */}
-      <section className={`rounded-2xl border p-5 ${layer1WallReached ? 'border-accent-purple/40 bg-gradient-to-b from-accent-purple/10 to-transparent' : 'border-border/50 bg-bg-secondary/30'}`}>
-        <div className="flex items-center justify-between">
-          <h2 className={`text-xl font-display font-semibold ${layer1WallReached ? 'text-accent-purple' : 'text-text-muted'}`}>
+      <section className={`rounded-xl border p-5 space-y-4 ${layer1WallReached ? 'border-accent-purple/40 bg-bg-secondary/40' : 'border-border bg-bg-secondary/40'}`}>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className={`text-lg font-display font-semibold ${layer1WallReached ? 'text-accent-purple' : 'text-text-muted'}`}>
             {layer1WallReached ? 'Magnum Opus' : '\u{1F512} ???'}
           </h2>
-          <span className="text-[10px] text-text-muted">{layer1WallReached ? 'Layer 2 · record the album' : 'Layer 2 · ???'}</span>
+          <span className="text-xs text-text-muted">{layer1WallReached ? 'Layer 2 · record the album' : 'Layer 2 · ???'}</span>
         </div>
 
         {!layer1WallReached ? (
-          <div className="mt-3">
+          <div className="space-y-3">
             <p className="text-sm text-text-secondary leading-relaxed">
               Perform <span className="text-text-primary">{ENCORE_WALL_COUNT} Encores</span> to master the stage — then a new path will reveal itself.
             </p>
-            <div className="mt-2 text-xs text-text-muted">{encoreCount}/{ENCORE_WALL_COUNT} Encores</div>
-            <div className="mt-1 h-2 rounded-full bg-bg-primary overflow-hidden">
+            <div className="text-sm text-text-muted tabular-nums">{encoreCount}/{ENCORE_WALL_COUNT} Encores</div>
+            <div className="h-2 rounded-full bg-bg-primary overflow-hidden">
               <div className="h-full rounded-full bg-text-muted/40 transition-all" style={{ width: `${wallProgress}%` }} />
             </div>
           </div>
         ) : (
-          <div className="mt-3">
+          <div className="space-y-3">
             {opusCount === 0 && (
-              <p className="text-sm text-text-secondary leading-relaxed mb-3">
+              <p className="text-sm text-text-secondary leading-relaxed">
                 You've mastered the stage. A performance fades by morning — to make your music <em>endure</em>, record it.
               </p>
             )}
-            <div className="text-right text-xs text-text-muted mb-2">
+            <div className="text-right text-sm text-text-muted tabular-nums">
               {opusCount > 0 ? `${opusPoints} OP · Next MO +${projectedOpGain} OP` : `Next MO +${projectedOpGain} OP`}
             </div>
-            <button
+            <Button
               onClick={() => canMO && tryPrestige('mo')}
               disabled={!canMO}
-              className={`w-full py-3 rounded-xl border font-display font-semibold transition-all ${
-                canMO ? 'border-accent-purple/50 bg-accent-purple/15 text-accent-purple hover:bg-accent-purple/25' : 'border-border/50 bg-bg-secondary/50 text-text-muted cursor-not-allowed'
-              }`}
+              variant="purple"
+              size="lg"
+              display
+              className="w-full"
             >
               {canMO ? 'Perform Magnum Opus' : `${moPurchased}/${moCost.amount} ${moCost.tierName}`}
-            </button>
+            </Button>
           </div>
         )}
       </section>

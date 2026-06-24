@@ -2,6 +2,7 @@ import { useGameStore } from '../../store/gameStore'
 import { ACHIEVEMENTS } from '../../core/achievements'
 import { CHALLENGES } from '../../core/challenges'
 import { formatNumber } from '../../core/format'
+import { Button } from './Button'
 
 function formatTime(ms: number): string {
   const seconds = Math.floor(ms / 1000)
@@ -33,78 +34,82 @@ export function StatsPanel() {
   const totalPurchased = tiers.reduce((sum, t) => sum + t.purchased, 0)
 
   return (
-    <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-4">
-      <h2 className="text-lg font-semibold text-text-primary mb-2">Stats</h2>
+    <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
+      <header>
+        <h1 className="text-2xl font-display font-semibold text-text-primary">Stats</h1>
+      </header>
 
-      <div className="bg-bg-secondary rounded-lg border border-border p-5 space-y-3">
-        <div className="flex justify-between">
-          <span className="text-text-secondary text-sm">Time Played</span>
-          <span className="text-text-primary text-sm font-medium">{formatTime(totalTimePlayed)}</span>
+      <div className="rounded-xl border border-border bg-bg-secondary/40 p-4 space-y-4">
+        <div className="flex justify-between items-baseline gap-4">
+          <span className="text-sm text-text-secondary">Time Played</span>
+          <span className="text-sm text-text-primary font-medium tabular-nums">{formatTime(totalTimePlayed)}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-text-secondary text-sm">Total Purchased</span>
-          <span className="text-text-primary text-sm font-medium">{totalPurchased}</span>
+        <div className="flex justify-between items-baseline gap-4">
+          <span className="text-sm text-text-secondary">Total Purchased</span>
+          <span className="text-sm text-text-primary font-medium tabular-nums">{totalPurchased}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-text-secondary text-sm">Tiers Unlocked</span>
-          <span className="text-text-primary text-sm font-medium">{tiers.filter((t) => t.unlocked).length} / {tiers.length}</span>
+        <div className="flex justify-between items-baseline gap-4">
+          <span className="text-sm text-text-secondary">Tiers Unlocked</span>
+          <span className="text-sm text-text-primary font-medium tabular-nums">{tiers.filter((t) => t.unlocked).length} / {tiers.length}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-text-secondary text-sm">Tempo</span>
-          <span className="text-text-primary text-sm font-medium">Lv.{tempo.level} ({tempo.baseBPM} BPM)</span>
+        <div className="flex justify-between items-baseline gap-4">
+          <span className="text-sm text-text-secondary">Tempo</span>
+          <span className="text-sm text-text-primary font-medium tabular-nums">Lv.{tempo.level} ({tempo.baseBPM} BPM)</span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-text-secondary text-sm">Peak Soundwaves (run)</span>
-          <span className="text-text-primary text-sm font-medium">{formatNumber(peakSoundwaves)}</span>
+        <div className="flex justify-between items-baseline gap-4">
+          <span className="text-sm text-text-secondary">Peak Soundwaves (run)</span>
+          <span className="text-sm text-text-primary font-medium tabular-nums">{formatNumber(peakSoundwaves)}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-text-secondary text-sm">Achievements</span>
-          <span className="text-text-primary text-sm font-medium">{achievements.length} / {ACHIEVEMENTS.length}</span>
+        <div className="flex justify-between items-baseline gap-4">
+          <span className="text-sm text-text-secondary">Achievements</span>
+          <span className="text-sm text-text-primary font-medium tabular-nums">{achievements.length} / {ACHIEVEMENTS.length}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-text-secondary text-sm">Challenges</span>
-          <span className="text-text-primary text-sm font-medium">{completedChallenges.length} / {CHALLENGES.length}</span>
+        <div className="flex justify-between items-baseline gap-4">
+          <span className="text-sm text-text-secondary">Challenges</span>
+          <span className="text-sm text-text-primary font-medium tabular-nums">{completedChallenges.length} / {CHALLENGES.length}</span>
         </div>
       </div>
 
       {/* Prestige Stats */}
       {(encoreCount > 0 || opusCount > 0 || finaleCount > 0) && (
-        <div className="bg-bg-secondary rounded-lg border border-border p-5 space-y-3">
-          <h3 className="text-sm font-semibold text-text-primary mb-1">Prestige</h3>
+        <div className="rounded-xl border border-border bg-bg-secondary/40 p-4 space-y-4">
+          <h2 className="text-xs font-semibold text-text-muted uppercase tracking-wider">Prestige</h2>
           {encoreCount > 0 && (
-            <div className="flex justify-between">
-              <span className="text-text-secondary text-sm">Encores</span>
-              <span className="text-accent-gold text-sm font-medium">{encoreCount} ({encorePoints} EP)</span>
+            <div className="flex justify-between items-baseline gap-4">
+              <span className="text-sm text-text-secondary">Encores</span>
+              <span className="text-sm text-accent-gold font-medium tabular-nums">{encoreCount} ({encorePoints} EP)</span>
             </div>
           )}
           {opusCount > 0 && (
-            <div className="flex justify-between">
-              <span className="text-text-secondary text-sm">Magnum Opuses</span>
-              <span className="text-red-400 text-sm font-medium">{opusCount} ({opusPoints} OP)</span>
+            <div className="flex justify-between items-baseline gap-4">
+              <span className="text-sm text-text-secondary">Magnum Opuses</span>
+              <span className="text-sm text-accent-purple font-medium tabular-nums">{opusCount} ({opusPoints} OP)</span>
             </div>
           )}
           {finaleCount > 0 && (
-            <div className="flex justify-between">
-              <span className="text-text-secondary text-sm">Grand Finales</span>
-              <span className="text-amber-400 text-sm font-medium">{finaleCount} ({finalePoints} FP)</span>
+            <div className="flex justify-between items-baseline gap-4">
+              <span className="text-sm text-text-secondary">Grand Finales</span>
+              <span className="text-sm text-accent-gold font-medium tabular-nums">{finaleCount} ({finalePoints} FP)</span>
             </div>
           )}
         </div>
       )}
 
-      <div className="bg-bg-secondary rounded-lg border border-danger/30 p-5">
-        <h3 className="text-sm font-semibold text-danger mb-2">Danger Zone</h3>
-        <p className="text-xs text-text-muted mb-3">Reset all progress. This cannot be undone.</p>
-        <button
+      <div className="rounded-xl border border-danger/30 bg-bg-secondary/40 p-4 space-y-3">
+        <h2 className="text-xs font-semibold text-danger uppercase tracking-wider">Danger Zone</h2>
+        <p className="text-sm text-text-muted">Reset all progress. This cannot be undone.</p>
+        <Button
           onClick={() => {
             if (window.confirm('Are you sure? All progress will be lost!')) {
               hardReset()
             }
           }}
-          className="py-2 px-4 rounded text-sm font-medium bg-danger/20 text-danger border border-danger/30 hover:bg-danger/30 transition-colors"
+          variant="ghost"
+          size="md"
+          className="border-danger/30 text-danger hover:bg-danger/20 hover:border-danger/50 hover:text-danger"
         >
           Hard Reset
-        </button>
+        </Button>
       </div>
     </div>
   )

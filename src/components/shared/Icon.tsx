@@ -10,6 +10,8 @@ export type IconName =
   | 'medal'        // medallion + ribbon — Achievements
   | 'bars'         // bar chart — Stats
   | 'metronome'    // tempo device — TempoBar
+  | 'disc'         // vinyl record — Opus / records / platinum
+  | 'gear'         // cog — Autobuyers
   | 'lock'         // locked layer/feature
 
 interface IconProps {
@@ -60,6 +62,26 @@ const ICONS: Record<IconName, React.ReactNode> = {
       <line x1="7.5" y1="20" x2="16.5" y2="20" />
       <line x1="12" y1="18" x2="14" y2="7" />
       <circle cx="14" cy="7" r="1" fill="currentColor" stroke="none" />
+    </>
+  ),
+  disc: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="3.2" />
+      <circle cx="12" cy="12" r="0.8" fill="currentColor" stroke="none" />
+    </>
+  ),
+  gear: (
+    <>
+      <circle cx="12" cy="12" r="3.4" />
+      <line x1="12" y1="2.5" x2="12" y2="5.4" />
+      <line x1="12" y1="18.6" x2="12" y2="21.5" />
+      <line x1="2.5" y1="12" x2="5.4" y2="12" />
+      <line x1="18.6" y1="12" x2="21.5" y2="12" />
+      <line x1="5.3" y1="5.3" x2="7.3" y2="7.3" />
+      <line x1="16.7" y1="16.7" x2="18.7" y2="18.7" />
+      <line x1="5.3" y1="18.7" x2="7.3" y2="16.7" />
+      <line x1="16.7" y1="7.3" x2="18.7" y2="5.3" />
     </>
   ),
   lock: (

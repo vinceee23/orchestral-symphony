@@ -5,6 +5,7 @@ import {
   getAutomatorBulk,
   clampAutobuyerBulk,
 } from '../../core/opusUpgrades'
+import { Button } from '../shared/Button'
 
 function formatBulkLabel(bulk: number | 'max'): string {
   return bulk === 'max' ? 'Max' : String(bulk)
@@ -45,10 +46,10 @@ export function AutobuyersPage() {
   const unlocked = ALL_KEYS.filter((key) => autobuyers[key]?.unlocked)
 
   return (
-    <div className="p-4 md:p-8 max-w-3xl mx-auto space-y-6">
+    <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
       <header className="text-center">
         <h1 className="text-2xl font-display font-semibold text-accent-purple tracking-wide">Autobuyers</h1>
-        <p className="text-sm text-text-muted mt-1">
+        <p className="text-sm text-text-muted mt-2">
           Opus upgrades raise the speed &amp; bulk caps; configure each section here.
         </p>
       </header>
@@ -56,7 +57,7 @@ export function AutobuyersPage() {
       {unlocked.length === 0 ? (
         <p className="text-sm text-text-muted text-center">No autobuyers unlocked yet.</p>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {unlocked.map((key) => {
             const ab = autobuyers[key]!
             const isTier = key.startsWith('tier_')
@@ -67,49 +68,44 @@ export function AutobuyersPage() {
             return (
               <section
                 key={key}
-                className="rounded-xl border border-accent-purple/30 bg-gradient-to-b from-accent-purple/10 to-transparent p-4"
+                className="rounded-xl border border-border bg-bg-secondary/40 p-4 space-y-4"
               >
                 <div className="flex items-center justify-between gap-3">
-                  <h2 className="text-sm font-display font-semibold text-text-primary">
+                  <h2 className="text-base font-display font-semibold text-text-primary">
                     {getAutobuyerLabel(key)}
                   </h2>
-                  <button
+                  <Button
                     onClick={() => toggleAutobuyer(key)}
-                    className={`py-1.5 px-3 rounded-lg text-xs font-medium transition-all border ${
-                      ab.enabled
-                        ? 'bg-success/20 text-success border-success/30'
-                        : 'bg-bg-tertiary text-text-muted border-border hover:text-text-secondary'
-                    }`}
+                    variant={ab.enabled ? 'success' : 'ghost'}
+                    size="sm"
                   >
                     {ab.enabled ? 'ON' : 'OFF'}
-                  </button>
+                  </Button>
                 </div>
 
                 {isTier && (
-                  <div className="mt-3">
-                    <div className="text-[10px] text-text-muted uppercase tracking-wider mb-1.5">Bulk per buy</div>
-                    <div className="flex flex-wrap gap-1.5">
+                  <div>
+                    <div className="text-xs text-text-muted uppercase tracking-wider mb-2">Bulk per buy</div>
+                    <div className="inline-flex items-center gap-1 rounded-xl border border-border bg-bg-secondary p-1">
                       {availableBulkTiers.map((tier) => {
                         const selected = displayBulk === tier
                         return (
-                          <button
+                          <Button
                             key={String(tier)}
                             onClick={() => setAutobuyerBulk(key, tier)}
-                            className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
-                              selected
-                                ? 'bg-accent-purple/20 text-accent-purple border-accent-purple/40'
-                                : 'bg-bg-secondary/50 text-text-muted border-border/50 hover:text-text-secondary hover:border-border'
-                            }`}
+                            variant={selected ? 'purple' : 'ghost'}
+                            size="sm"
+                            className={selected ? '' : 'border-transparent'}
                           >
                             {formatBulkLabel(tier)}
-                          </button>
+                          </Button>
                         )
                       })}
                     </div>
                   </div>
                 )}
 
-                <p className={`text-xs mt-3 ${ab.enabled ? 'text-success' : 'text-text-muted'}`}>
+                <p className={`text-sm ${ab.enabled ? 'text-success' : 'text-text-muted'}`}>
                   {ab.enabled ? formatAutobuyerRate(interval) : 'Off'}
                   {ab.enabled && isTier && effectiveBulk !== ab.bulk && (
                     <span className="text-text-muted ml-1">(bulk capped to {formatBulkLabel(effectiveBulk)})</span>
