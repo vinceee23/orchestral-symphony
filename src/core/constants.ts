@@ -104,13 +104,17 @@ export const DELTA_CAP_MS = 5000
 
 // Escalating Encore cost: each Encore demands more
 export interface PrestigeCost { tierIndex: number; amount: number; tierName: string }
+// Tier reveal paced so Symphonies aren't spoiled immediately: 1st Encore reveals Movements,
+// Symphonies only enter the gate at the 4th Encore (they unlock once encoreCount >= 3 — see tick.ts).
+// Tuned to keep total time-to-Magnum-Opus ~95-99% of the original (sim-validate).
 export function getEncoreCost(encoreCount: number): PrestigeCost {
   if (encoreCount === 0) return { tierIndex: 4, amount: 30, tierName: 'Harmonies' }
   if (encoreCount === 1) return { tierIndex: 5, amount: 30, tierName: 'Movements' }
-  if (encoreCount === 2) return { tierIndex: 6, amount: 30, tierName: 'Symphonies' }
-  if (encoreCount === 3) return { tierIndex: 6, amount: 50, tierName: 'Symphonies' }
-  if (encoreCount === 4) return { tierIndex: 6, amount: 70, tierName: 'Symphonies' }
-  return { tierIndex: 6, amount: 70 + (encoreCount - 4) * 30, tierName: 'Symphonies' }
+  if (encoreCount === 2) return { tierIndex: 5, amount: 70, tierName: 'Movements' }
+  if (encoreCount === 3) return { tierIndex: 6, amount: 30, tierName: 'Symphonies' }
+  if (encoreCount === 4) return { tierIndex: 6, amount: 55, tierName: 'Symphonies' }
+  if (encoreCount === 5) return { tierIndex: 6, amount: 85, tierName: 'Symphonies' }
+  return { tierIndex: 6, amount: 85 + (encoreCount - 5) * 32, tierName: 'Symphonies' }
 }
 
 // Magnum Opus gate: gentle escalation — 100 Symphonies + floor(opusCount/3)

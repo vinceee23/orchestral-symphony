@@ -146,7 +146,8 @@ export function OrchestraStage() {
           const fillRate = producer?.unlocked
             ? getTierProductionPerSec(producer, TIER_CONFIGS[i + 1], globalMult.times(getAchievementTierMultiplier(achievementSet, config.id + 1)))
             : new Decimal(0)
-          const glow = Math.min(1, tier.purchased / 40) // 0..1 — brighter the more you own
+          const owned = Math.min(1, tier.purchased / 40) // faint base tint from ownership
+          const lit = canAfford // light up ONLY when it can be upgraded — clarity on what's ready
           const milestone = tier.purchased % 10 // progress toward next x2
 
           const onBuy = () => {
@@ -168,16 +169,16 @@ export function OrchestraStage() {
               className={`group relative flex flex-col items-center w-[112px] sm:w-[140px] rounded-2xl border px-3 py-4 transition-all duration-150 ${
                 burst === config.id ? 'animate-section-buy' : ''
               } ${
-                canAfford
-                  ? 'border-accent-gold/40 hover:border-accent-gold cursor-pointer'
-                  : 'border-border/50 cursor-not-allowed'
+                lit
+                  ? 'border-accent-gold/70 hover:border-accent-gold cursor-pointer'
+                  : 'border-border/30 cursor-not-allowed'
               }`}
               style={{
                 transform: `translateY(${arc}px)`,
-                background: `linear-gradient(180deg, rgba(212,168,67,${0.05 + glow * 0.12}), rgba(18,18,26,0.6))`,
-                boxShadow: glow > 0
-                  ? `0 0 ${8 + glow * 34}px ${glow * 6}px rgba(212,168,67,${0.12 + glow * 0.42}), inset 0 0 ${glow * 18}px rgba(212,168,67,${glow * 0.18})`
-                  : 'none',
+                background: `linear-gradient(180deg, rgba(212,168,67,${0.03 + (lit ? 0.13 : 0) + owned * 0.05}), rgba(18,18,26,0.6))`,
+                boxShadow: lit
+                  ? '0 0 24px 3px rgba(212,168,67,0.4), inset 0 0 16px rgba(212,168,67,0.15)'
+                  : (owned > 0 ? `inset 0 0 ${owned * 10}px rgba(212,168,67,0.1)` : 'none'),
               }}
             >
               {resonating.has(config.id) && (
@@ -191,7 +192,7 @@ export function OrchestraStage() {
                   +{formatNumber(pop.n)}
                 </span>
               )}
-              <EmblemIcon name={config.name.toLowerCase()} glyph={config.icon} glow={glow} />
+              <EmblemIcon name={config.name.toLowerCase()} glyph={config.icon} glow={lit ? 0.85 : 0.2 + owned * 0.25} />
               <span className="mt-1.5 text-[11px] font-display font-semibold text-accent-gold tracking-wide">
                 {config.name}
               </span>

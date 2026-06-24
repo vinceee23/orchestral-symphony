@@ -248,8 +248,10 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
       if (newTiers[i - 1].purchased >= 1) {
         // Challenge: only unlock if within allowed tiers
         if (mods.singleTierId === null && i < mods.maxTiers) {
-          // Tier 6 (index 5): requires at least 1 Encore
+          // Reveal pacing: Movements (idx 5) after the 1st Encore; Symphonies (idx 6) held until
+          // the 4th Encore (encoreCount >= 3) so they aren't spoiled immediately.
           if (i === 5 && state.encoreCount < 1) continue
+          if (i === 6 && state.encoreCount < 3) continue
           newTiers[i] = { ...newTiers[i], unlocked: true }
         }
       }
