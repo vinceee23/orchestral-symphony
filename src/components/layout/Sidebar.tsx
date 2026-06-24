@@ -1,3 +1,4 @@
+import { useGameStore } from '../../store/gameStore'
 import { Icon, type IconName } from '../shared/Icon'
 
 interface SidebarProps {
@@ -5,7 +6,7 @@ interface SidebarProps {
   onTabChange: (tab: string) => void
 }
 
-const TABS: { id: string; label: string; icon: IconName }[] = [
+const BASE_TABS: { id: string; label: string; icon: IconName }[] = [
   { id: 'compose', label: 'Compose', icon: 'note' },
   { id: 'prestige', label: 'Prestige', icon: 'sparkle' },
   { id: 'achievements', label: 'Achievements', icon: 'medal' },
@@ -14,9 +15,19 @@ const TABS: { id: string; label: string; icon: IconName }[] = [
 ]
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
+  const opusCount = useGameStore((s) => s.opusCount)
+  const tabs = opusCount > 0
+    ? [
+        BASE_TABS[0],
+        BASE_TABS[1],
+        { id: 'opus', label: 'Opus', icon: 'sparkle' as IconName },
+        ...BASE_TABS.slice(2),
+      ]
+    : BASE_TABS
+
   return (
     <nav className="w-14 md:w-44 bg-bg-secondary border-r border-border flex flex-col py-3 shrink-0">
-      {TABS.map((tab) => (
+      {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}

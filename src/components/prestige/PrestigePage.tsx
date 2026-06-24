@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import { formatNumber } from '../../core/format'
 import { getEncoreCost, getMagnumOpusCost, ENCORE_WALL_COUNT } from '../../core/constants'
-import { getEncoreMultiplier, getOpusBPMMultiplier, getEncoreGain } from '../../core/formulas'
+import { getEncoreMultiplier, getEncoreGain } from '../../core/formulas'
+import { getOpusGain } from '../../core/records'
 import { ENCORE_UPGRADES, getEncoreUpgradeCost, getOvertureGainMultiplier } from '../../core/encoreUpgrades'
 import { playPrestigeSound, playBuySound } from '../../core/audio'
 import { getChallengeById, getActiveChallengeModifiers } from '../../core/challenges'
@@ -28,6 +29,9 @@ export function PrestigePage() {
   const layer1WallReached = useGameStore((s) => s.layer1WallReached)
   const opusPoints = useGameStore((s) => s.opusPoints)
   const opusCount = useGameStore((s) => s.opusCount)
+  const opusUpgrades = useGameStore((s) => s.opusUpgrades)
+  const peakCrescendoMult = useGameStore((s) => s.peakCrescendoMult)
+  const platinum = useGameStore((s) => s.platinum)
   const performEncore = useGameStore((s) => s.performEncore)
   const performMagnumOpus = useGameStore((s) => s.performMagnumOpus)
   const buyEncoreUpgrade = useGameStore((s) => s.buyEncoreUpgrade)
@@ -53,7 +57,13 @@ export function PrestigePage() {
   const projectedGain = Math.floor(getEncoreGain(peakSoundwaves) * overtureMult)
   const currentEncoreMult = getEncoreMultiplier(lifetimeEncorePoints)
   const nextEncoreMult = getEncoreMultiplier(lifetimeEncorePoints + projectedGain)
-  const currentOpusMult = getOpusBPMMultiplier(opusPoints)
+  const projectedOpGain = getOpusGain({
+    platinum,
+    opGainFlatLevel: opusUpgrades['op-gain-flat'] ?? 0,
+    opusCount,
+    peakCrescendoMult,
+    levels: opusUpgrades,
+  })
 
   const run = (kind: PrestigeKind) => {
     if (kind === 'encore') {
@@ -209,7 +219,9 @@ export function PrestigePage() {
                 You've mastered the stage. A performance fades by morning — to make your music <em>endure</em>, record it.
               </p>
             )}
-            <div className="text-right text-xs text-text-muted mb-2">Tempo x{currentOpusMult} {opusCount > 0 ? `· ${opusPoints} OP` : ''}</div>
+            <div className="text-right text-xs text-text-muted mb-2">
+              {opusCount > 0 ? `${opusPoints} OP · Next MO +${projectedOpGain} OP` : `Next MO +${projectedOpGain} OP`}
+            </div>
             <button
               onClick={() => canMO && tryPrestige('mo')}
               disabled={!canMO}

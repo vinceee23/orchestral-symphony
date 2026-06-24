@@ -9,6 +9,8 @@ interface UiState {
   encoreCelebration: { from: number; to: number } | null
   celebrateEncore: (from: number, to: number) => void
   clearEncoreCelebration: () => void
+  conducting: boolean
+  setConducting: (b: boolean) => void
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -18,4 +20,6 @@ export const useUiStore = create<UiState>((set) => ({
   encoreCelebration: null,
   celebrateEncore: (from, to) => set({ encoreCelebration: { from, to } }),
   clearEncoreCelebration: () => set({ encoreCelebration: null }),
+  conducting: false,
+  setConducting: (b) => set({ conducting: b }),
 }))

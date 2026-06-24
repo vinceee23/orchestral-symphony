@@ -16,14 +16,18 @@ export function Header() {
   const achievements = useGameStore((s) => s.achievements)
   const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const encoreUpgrades = useGameStore((s) => s.encoreUpgrades)
-  const opusPoints = useGameStore((s) => s.opusPoints)
+  const opusUpgrades = useGameStore((s) => s.opusUpgrades)
+  const crescendo = useGameStore((s) => s.crescendo)
+  const recordsSold = useGameStore((s) => s.recordsSold)
+  const platinum = useGameStore((s) => s.platinum)
   const finalePoints = useGameStore((s) => s.finalePoints)
   const activeChallenge = useGameStore((s) => s.activeChallenge)
   const toggleHelp = useUiStore((s) => s.toggleHelp)
 
   const achievementSet = new Set(achievements)
   const globalMult = getAchievementGlobalMultiplier(achievementSet).times(getCoreProductionMultiplier({
-    lifetimeEncorePoints, finalePoints, opusPoints, encoreUpgrades, tempoLevel: tempo.level, tiers,
+    lifetimeEncorePoints, finalePoints, encoreUpgrades, tempoLevel: tempo.level, tiers,
+    opusUpgrades, crescendoLevel: crescendo, recordsSold, platinum,
   }))
   const tier1 = tiers[0]
   const fullMult = globalMult.times(getAchievementTierMultiplier(achievementSet, 1))

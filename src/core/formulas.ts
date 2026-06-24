@@ -16,6 +16,9 @@ import {
   PRODUCTION_SCALE,
 } from './constants'
 import { getPerfectPitchMultiplier } from './encoreUpgrades'
+import { getTempoOpMultiplier } from './opusUpgrades'
+import { getCrescendoMultiplier } from './crescendo'
+import { getFameMultiplier } from './records'
 import type { TierState } from '../store/types'
 
 /**
@@ -192,14 +195,22 @@ export function getLiveliness(lifetimeEncorePoints: number, opusPoints: number, 
 export function getCoreProductionMultiplier(p: {
   lifetimeEncorePoints: number
   finalePoints: number
-  opusPoints: number
   encoreUpgrades: Record<string, number>
   tempoLevel: number
   tiers: { purchased: number }[]
+  opusUpgrades: Record<string, number>
+  crescendoLevel: number
+  recordsSold: number
+  platinum: boolean
 }): Decimal {
+  const crescendoMult = getCrescendoMultiplier(p.crescendoLevel, p.opusUpgrades)
+  const fameMult = p.platinum ? getFameMultiplier(p.recordsSold, p.opusUpgrades) : 1
+
   return getEncoreMultiplier(p.lifetimeEncorePoints)
     .times(getFinaleMultiplier(p.finalePoints))
-    .times(getOpusBPMMultiplier(p.opusPoints))
+    .times(getTempoOpMultiplier(p.opusUpgrades))
+    .times(crescendoMult)
+    .times(fameMult)
     .times(getPerfectPitchMultiplier(p.encoreUpgrades))
     .times(PRODUCTION_SCALE)
     .times(getTempoProductionMultiplier(p.tempoLevel))

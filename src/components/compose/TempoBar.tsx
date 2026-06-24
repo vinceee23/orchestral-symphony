@@ -1,7 +1,8 @@
 import { useGameStore } from '../../store/gameStore'
-import { getTempoCost, getTempoBPM, getTempoTickInterval, getOpusBPMMultiplier, getMaxTempoLevels, getMilestoneTickspeedMultiplier } from '../../core/formulas'
+import { getTempoCost, getTempoBPM, getTempoTickInterval, getMaxTempoLevels, getMilestoneTickspeedMultiplier } from '../../core/formulas'
 import { formatCost } from '../../core/format'
 import { playTempoSound } from '../../core/audio'
+import { getTempoOpMultiplier } from '../../core/opusUpgrades'
 import { getChallengeById, getActiveChallengeModifiers } from '../../core/challenges'
 import { Icon } from '../shared/Icon'
 
@@ -9,7 +10,7 @@ export function TempoBar() {
   const tempo = useGameStore((s) => s.tempo)
   const soundwaves = useGameStore((s) => s.soundwaves)
   const tiers = useGameStore((s) => s.tiers)
-  const opusPoints = useGameStore((s) => s.opusPoints)
+  const opusUpgrades = useGameStore((s) => s.opusUpgrades)
   const autobuyers = useGameStore((s) => s.autobuyers)
   const buyTempo = useGameStore((s) => s.buyTempo)
   const buyMaxTempo = useGameStore((s) => s.buyMaxTempo)
@@ -30,16 +31,14 @@ export function TempoBar() {
   const hasAutoTempo = tempoAb?.unlocked ?? false
   const isAutoOn = tempoAb?.enabled ?? false
 
-  // Display effective ticks/s with all tickspeed multipliers
-  const opusBPMMult = getOpusBPMMultiplier(opusPoints)
+  // Display effective ticks/s with milestone tickspeed bonus
   const milestoneTSMult = getMilestoneTickspeedMultiplier(tiers)
-  const totalTSMult = opusBPMMult * milestoneTSMult
-  const effectiveInterval = Math.max(1, tempo.tickInterval / totalTSMult)
+  const effectiveInterval = Math.max(1, tempo.tickInterval / milestoneTSMult)
   const ticksPerSec = (1000 / effectiveInterval).toFixed(1)
 
   // Next level effective ticks/s
   const nextInterval = getTempoTickInterval(tempo.level + 1)
-  const nextEffective = Math.max(1, nextInterval / totalTSMult)
+  const nextEffective = Math.max(1, nextInterval / milestoneTSMult)
   const nextTicksPerSec = (1000 / nextEffective).toFixed(1)
 
   // Max buyable levels
@@ -53,9 +52,9 @@ export function TempoBar() {
         <div className="min-w-0">
           <div className="text-sm font-semibold text-accent-purple">
             {tempo.baseBPM} BPM
-            {opusPoints > 0 && (
+            {(opusUpgrades['tempo-op-mult'] ?? 0) > 0 && (
               <span className="text-[10px] text-accent-purple ml-1.5">
-                (x{opusBPMMult} MO)
+                (×{getTempoOpMultiplier(opusUpgrades).toFixed(2)} OP tempo)
               </span>
             )}
           </div>

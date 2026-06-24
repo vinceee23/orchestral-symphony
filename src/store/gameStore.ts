@@ -14,7 +14,8 @@ import {
   ENCORE_UPGRADE_MAP, getEncoreUpgradeCost,
   getSightReadingStartNotes, getOvertureGainMultiplier,
 } from '../core/encoreUpgrades'
-import { OPUS_UPGRADES, getOpusUpgradeCost } from '../core/opusUpgrades'
+import { OPUS_UPGRADES, OPUS_UPGRADE_MAP, getOpusUpgradeCost } from '../core/opusUpgrades'
+import { getOpusGain } from '../core/records'
 import { calculateTick } from '../core/tick'
 import {
   getTierCost,
@@ -29,6 +30,7 @@ import {
 import { ACHIEVEMENTS, getAchievementStartingSW, getAchievementCostReduction, getAchievementTierCostReduction } from '../core/achievements'
 import { getChallengeById, getActiveChallengeModifiers } from '../core/challenges'
 import { createDecimalStorage } from '../core/save'
+import { useUiStore } from './uiStore'
 
 function createDefaultAutobuyer(): AutobuyerState {
   return {
@@ -135,7 +137,8 @@ export const useGameStore = create<GameState & GameActions>()(
 
       tick: (deltaMs: number) => {
         const state = get()
-        const updates = calculateTick(state, deltaMs)
+        const conducting = useUiStore.getState().conducting
+        const updates = calculateTick(state, deltaMs, conducting)
         set(updates)
       },
 
@@ -304,15 +307,34 @@ export const useGameStore = create<GameState & GameActions>()(
 
       buyOpusUpgrade: (id: string) => {
         set((state) => {
-          const config = OPUS_UPGRADES.find((u) => u.id === id)
+          const config = OPUS_UPGRADE_MAP[id] ?? OPUS_UPGRADES.find((u) => u.id === id)
           if (!config) return state
           const level = state.opusUpgrades[id] ?? 0
           if (level >= config.maxLevel) return state
           const cost = getOpusUpgradeCost(config, level)
           if (state.opusPoints < cost) return state
+
+          let autobuyers = state.autobuyers
+          const unlockMatch = id.match(/^automator-unlock-(\d+)$/)
+          if (unlockMatch) {
+            const tierId = unlockMatch[1]
+            const key = `tier_${tierId}`
+            autobuyers = {
+              ...autobuyers,
+              [key]: {
+                unlocked: true,
+                enabled: true,
+                interval: AUTOBUYER_DEFAULT_INTERVAL,
+                bulk: 1,
+                lastTick: 0,
+              },
+            }
+          }
+
           return {
             opusPoints: state.opusPoints - cost,
             opusUpgrades: { ...state.opusUpgrades, [id]: level + 1 },
+            autobuyers,
           }
         })
       },
@@ -489,7 +511,7 @@ export const useGameStore = create<GameState & GameActions>()(
         })
       },
 
-      // === Prestige Layer 2: Magnum Opus (always +1 OP, x2 BPM each, resets EP) ===
+      // === Prestige Layer 2: Magnum Opus (OP from catalog/crescendo, resets Encore layer) ===
       performMagnumOpus: () => {
         const state = get()
 
@@ -507,6 +529,29 @@ export const useGameStore = create<GameState & GameActions>()(
         const moPurchased = state.tiers[moCost.tierIndex]?.purchased ?? 0
         if (moPurchased < moCost.amount) return
 
+        const gain = getOpusGain({
+          platinum: state.platinum,
+          opGainFlatLevel: state.opusUpgrades['op-gain-flat'] ?? 0,
+          opusCount: state.opusCount,
+          peakCrescendoMult: state.peakCrescendoMult,
+          levels: state.opusUpgrades,
+        })
+        const newOpusCount = state.opusCount + 1
+
+        let autobuyers = { ...state.autobuyers }
+        if (newOpusCount === 1) {
+          autobuyers = {
+            ...autobuyers,
+            tier_1: {
+              unlocked: true,
+              enabled: true,
+              interval: AUTOBUYER_DEFAULT_INTERVAL,
+              bulk: 1,
+              lastTick: 0,
+            },
+          }
+        }
+
         // Magnum Opus fully resets the Encore layer (production mult comes from lifetimeEncorePoints).
         set({
           ...resetTiersAndSW(state.achievements),
@@ -515,8 +560,11 @@ export const useGameStore = create<GameState & GameActions>()(
           lifetimeEncorePoints: 0,
           encoreCount: 0,
           encoreUpgrades: {},
-          opusPoints: state.opusPoints + 1,
-          opusCount: state.opusCount + 1,
+          opusPoints: state.opusPoints + gain,
+          opusCount: newOpusCount,
+          crescendo: 0,
+          peakCrescendoMult: 1,
+          autobuyers,
         })
       },
 
@@ -646,6 +694,10 @@ export const useGameStore = create<GameState & GameActions>()(
             state.autobuyers = currentState.autobuyers
             state.totalTimePlayed = currentState.totalTimePlayed
             state.peakSoundwaves = currentState.peakSoundwaves
+            state.crescendo = currentState.crescendo
+            state.peakCrescendoMult = currentState.peakCrescendoMult
+            state.recordsSold = currentState.recordsSold
+            state.platinum = currentState.platinum
           }
           state.lastSaveTimestamp = now
         }

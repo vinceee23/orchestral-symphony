@@ -11,6 +11,9 @@ import {
   getMaxBuyable,
   getCoreProductionMultiplier,
 } from './formulas'
+import { advanceCrescendo, getCrescendoMultiplier } from './crescendo'
+import { accrueRecords, isPlatinum } from './records'
+import { getAutomatorInterval, getAutomatorBulk } from './opusUpgrades'
 import {
   getAchievementGlobalMultiplier,
   getAchievementTierMultiplier,
@@ -20,7 +23,7 @@ import {
 import { getChallengeById, getActiveChallengeModifiers } from './challenges'
 import type { ChallengeModifiers } from './challenges'
 
-export function calculateTick(state: GameState, deltaMs: number): Partial<GameState> {
+export function calculateTick(state: GameState, deltaMs: number, conducting = false): Partial<GameState> {
   const achievementSet = new Set(state.achievements)
 
   // Get active challenge modifiers
@@ -45,13 +48,30 @@ export function calculateTick(state: GameState, deltaMs: number): Partial<GameSt
   // they can't drift (encore/finale/opus/perfectPitch/tempo/milestone-tickspeed/PRODUCTION_SCALE).
   // noPrestige challenges zero out the prestige-point contributions.
   const noP = mods.noPrestige
+
+  // === Layer 2: crescendo + records ===
+  const nextCresc = advanceCrescendo(state.crescendo, conducting, deltaMs / 1000, state.opusUpgrades)
+  const crescendoMult = getCrescendoMultiplier(nextCresc, state.opusUpgrades)
+  const peakCrescendoMult = Math.max(state.peakCrescendoMult, crescendoMult)
+  const recordsSold = accrueRecords(
+    state.recordsSold,
+    state.opusCount,
+    crescendoMult,
+    deltaMs / 1000,
+    state.opusUpgrades,
+  )
+  const platinum = state.platinum || isPlatinum(recordsSold)
+
   let globalMult = achievementGlobal.times(getCoreProductionMultiplier({
     lifetimeEncorePoints: noP ? 0 : state.lifetimeEncorePoints,
     finalePoints: noP ? 0 : state.finalePoints,
-    opusPoints: noP ? 0 : state.opusPoints,
     encoreUpgrades: state.encoreUpgrades,
     tempoLevel: state.tempo.level,
     tiers: state.tiers,
+    opusUpgrades: state.opusUpgrades,
+    crescendoLevel: nextCresc,
+    recordsSold,
+    platinum,
   }))
 
   // Apply production divisor from challenge
@@ -146,7 +166,9 @@ export function calculateTick(state: GameState, deltaMs: number): Partial<GameSt
     const ab = newAutobuyers[key]
     if (!ab || !ab.unlocked || !ab.enabled) continue
 
-    const interval = ab.interval || AUTOBUYER_DEFAULT_INTERVAL
+    const interval = (state.opusCount > 0 && ab.unlocked)
+      ? getAutomatorInterval(state.opusUpgrades)
+      : (ab.interval || AUTOBUYER_DEFAULT_INTERVAL)
     if (now - ab.lastTick < interval) continue
 
     const tier = newTiers[i]
@@ -161,10 +183,13 @@ export function calculateTick(state: GameState, deltaMs: number): Partial<GameSt
     const abCostMult = totalCostMult * tierCostRed
 
     let buyCount = 0
-    if (ab.bulk === 'max') {
+    const bulk = (state.opusCount > 0 && ab.unlocked)
+      ? getAutomatorBulk(state.opusUpgrades)
+      : ab.bulk
+    if (bulk === 'max') {
       buyCount = getMaxBuyable(config, tier.purchased, newSoundwaves, abCostMult)
     } else {
-      buyCount = ab.bulk as number
+      buyCount = bulk as number
     }
 
     // Challenge: maxPerTier limit
@@ -243,6 +268,10 @@ export function calculateTick(state: GameState, deltaMs: number): Partial<GameSt
     tempo: newTempo,
     autobuyers: newAutobuyers,
     peakSoundwaves: newPeak,
+    crescendo: nextCresc,
+    peakCrescendoMult,
+    recordsSold,
+    platinum,
     totalTimePlayed: state.totalTimePlayed + deltaMs,
   }
 }

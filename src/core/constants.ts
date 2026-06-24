@@ -113,9 +113,9 @@ export function getEncoreCost(encoreCount: number): PrestigeCost {
   return { tierIndex: 6, amount: 70 + (encoreCount - 4) * 30, tierName: 'Symphonies' }
 }
 
-// Escalating Magnum Opus cost: starts at 100 Symphonies, +80 each time
+// Magnum Opus gate: gentle escalation — 100 Symphonies + floor(opusCount/3)
 export function getMagnumOpusCost(opusCount: number): PrestigeCost {
-  const amount = 100 + opusCount * 80
+  const amount = 100 + Math.floor(opusCount / 3)
   return { tierIndex: 6, amount, tierName: 'Symphonies' }
 }
 // Grand Finale: the "infinity" of music — 1.79e308 (JS Number.MAX_VALUE)
@@ -137,6 +137,8 @@ export const CRESCENDO_BUILD_SEC = 12                   // seconds of holding Co
 export const CRESCENDO_DECAY_SEC = 25                   // seconds to decay ceiling -> x1 when released
 export const AUTO_CONDUCT_FRACTION = 0.5                // auto-conduct sustains this fraction of ceiling AFK
 export const TEMPO_OP_MULT_PER_LEVEL = 1.5              // each Tempo OP-node = x1.5 global tempo/production
-export const RECORDS_PROD_K = 5                         // recordsPerSec = K * log10(swPerSec+10) * crescendoMult
+export const RECORDS_PROD_K = 5                         // legacy v0 constant (superseded by RECORDS_ALBUM_K)
+export const RECORDS_ALBUM_K = 1                        // recordsPerSec = K * opusCount * crescendoMult
+export const OPUS_CATALOG_K = 0.5                       // post-Platinum OP gain scales with catalog size
 export const PLATINUM_THRESHOLD = 1_000_000             // records sold to Go Platinum
 export const FAME_PER = 0.1                             // post-Platinum: prod/OP *= 1 + log10(recordsSold/1e6)*FAME_PER

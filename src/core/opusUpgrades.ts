@@ -8,7 +8,7 @@ import {
   FAME_PER,
   OPUS_CRESCENDO_BONUS_PER,
   OPUS_PLAT_ROOT,
-  RECORDS_PROD_K,
+  RECORDS_ALBUM_K,
   TEMPO_OP_MULT_PER_LEVEL,
 } from './constants'
 
@@ -245,7 +245,7 @@ export function getOpGainFlat(levels: Record<string, number>): number {
 }
 
 export function getEffectiveRecordsK(levels: Record<string, number>): number {
-  return RECORDS_PROD_K * Math.pow(1.5, lvl(levels, 'records-sell-rate'))
+  return RECORDS_ALBUM_K * Math.pow(1.5, lvl(levels, 'records-sell-rate'))
 }
 
 export function getPlatRoot(levels: Record<string, number>): number {

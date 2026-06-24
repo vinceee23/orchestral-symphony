@@ -14,7 +14,10 @@ export function SoundwaveDisplay() {
   const encorePoints = useGameStore((s) => s.encorePoints)
   const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const encoreUpgrades = useGameStore((s) => s.encoreUpgrades)
-  const opusPoints = useGameStore((s) => s.opusPoints)
+  const opusUpgrades = useGameStore((s) => s.opusUpgrades)
+  const crescendo = useGameStore((s) => s.crescendo)
+  const recordsSold = useGameStore((s) => s.recordsSold)
+  const platinum = useGameStore((s) => s.platinum)
   const finalePoints = useGameStore((s) => s.finalePoints)
 
   const achievementSet = new Set(achievements)
@@ -22,7 +25,8 @@ export function SoundwaveDisplay() {
   // Production multiplier shared with the tick (prevents the displayed rate from drifting).
   const encoreMult = getEncoreMultiplier(lifetimeEncorePoints) // for the EP label below
   const globalMult = achievementGlobal.times(getCoreProductionMultiplier({
-    lifetimeEncorePoints, finalePoints, opusPoints, encoreUpgrades, tempoLevel: tempo.level, tiers,
+    lifetimeEncorePoints, finalePoints, encoreUpgrades, tempoLevel: tempo.level, tiers,
+    opusUpgrades, crescendoLevel: crescendo, recordsSold, platinum,
   }))
 
   const tier1 = tiers[0]

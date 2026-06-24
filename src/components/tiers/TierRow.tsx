@@ -22,7 +22,10 @@ export function TierRow({ tierId }: TierRowProps) {
   const tempo = useGameStore((s) => s.tempo)
   const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const encoreUpgrades = useGameStore((s) => s.encoreUpgrades)
-  const opusPoints = useGameStore((s) => s.opusPoints)
+  const opusUpgrades = useGameStore((s) => s.opusUpgrades)
+  const crescendo = useGameStore((s) => s.crescendo)
+  const recordsSold = useGameStore((s) => s.recordsSold)
+  const platinum = useGameStore((s) => s.platinum)
   const finalePoints = useGameStore((s) => s.finalePoints)
   const buyTier = useGameStore((s) => s.buyTier)
   const buyMaxTier = useGameStore((s) => s.buyMaxTier)
@@ -52,7 +55,8 @@ export function TierRow({ tierId }: TierRowProps) {
   const achievementGlobal = getAchievementGlobalMultiplier(achievementSet)
   // Shared production multiplier — same source as the tick, so the displayed rate matches reality.
   const globalMult = achievementGlobal.times(getCoreProductionMultiplier({
-    lifetimeEncorePoints, finalePoints, opusPoints, encoreUpgrades, tempoLevel: tempo.level, tiers: allTiers,
+    lifetimeEncorePoints, finalePoints, encoreUpgrades, tempoLevel: tempo.level, tiers: allTiers,
+    opusUpgrades, crescendoLevel: crescendo, recordsSold, platinum,
   }))
   const tierAchMult = getAchievementTierMultiplier(achievementSet, tierId)
   const fullMult = globalMult.times(tierAchMult)

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import { SoundwaveDisplay } from './SoundwaveDisplay'
 import { TempoBar } from './TempoBar'
@@ -22,13 +22,49 @@ export function ComposePage() {
   const encoreUpgrades = useGameStore((s) => s.encoreUpgrades)
   const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const opusPoints = useGameStore((s) => s.opusPoints)
+  const crescendo = useGameStore((s) => s.crescendo)
   const finalePoints = useGameStore((s) => s.finalePoints)
   const tempo = useGameStore((s) => s.tempo)
   const performEncore = useGameStore((s) => s.performEncore)
   const activeChallenge = useGameStore((s) => s.activeChallenge)
   const celebrateEncore = useUiStore((s) => s.celebrateEncore)
+  const setConducting = useUiStore((s) => s.setConducting)
 
   const [pendingEncore, setPendingEncore] = useState(false)
+
+  const releaseConducting = useCallback(() => setConducting(false), [setConducting])
+
+  useEffect(() => {
+    if (opusPoints <= 0) return
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code !== 'Space' || e.repeat) return
+      const tag = (e.target as HTMLElement)?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.isContentEditable) return
+      e.preventDefault()
+      setConducting(true)
+    }
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.code !== 'Space') return
+      setConducting(false)
+    }
+    const onBlur = () => releaseConducting()
+    const onVisibility = () => {
+      if (document.hidden) releaseConducting()
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('keyup', onKeyUp)
+    window.addEventListener('blur', onBlur)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('keyup', onKeyUp)
+      window.removeEventListener('blur', onBlur)
+      document.removeEventListener('visibilitychange', onVisibility)
+      releaseConducting()
+    }
+  }, [opusPoints, setConducting, releaseConducting])
 
   const activeCh = activeChallenge ? getChallengeById(activeChallenge.challengeId) ?? null : null
   const prestigeBlocked = getActiveChallengeModifiers(activeCh).noPrestige
@@ -124,8 +160,21 @@ export function ComposePage() {
         </div>
       </div>
 
-      {/* conductor's podium — dormant tease until L2 unlocks Conduct */}
-      <ConductorPodium active={opusPoints > 0} />
+      {/* conductor's podium — active after first Magnum Opus */}
+      <ConductorPodium active={opusPoints > 0} swell={crescendo} />
+
+      {opusPoints > 0 && (
+        <button
+          type="button"
+          className="absolute left-1/2 bottom-24 -translate-x-1/2 z-20 px-5 py-2 rounded-full border border-accent-gold/50 bg-accent-gold/10 backdrop-blur text-accent-gold font-display text-sm font-semibold select-none touch-none hover:bg-accent-gold/20 active:bg-accent-gold/30 transition-colors"
+          onPointerDown={() => setConducting(true)}
+          onPointerUp={() => setConducting(false)}
+          onPointerLeave={() => setConducting(false)}
+          onPointerCancel={() => setConducting(false)}
+        >
+          Conduct
+        </button>
+      )}
 
       {/* Prominent Encore call-to-action when ready (full detail lives in the Prestige tab) */}
       {canEncore && (

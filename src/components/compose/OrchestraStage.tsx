@@ -74,7 +74,10 @@ export function OrchestraStage() {
   const tempo = useGameStore((s) => s.tempo)
   const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const encoreUpgrades = useGameStore((s) => s.encoreUpgrades)
-  const opusPoints = useGameStore((s) => s.opusPoints)
+  const opusUpgrades = useGameStore((s) => s.opusUpgrades)
+  const crescendo = useGameStore((s) => s.crescendo)
+  const recordsSold = useGameStore((s) => s.recordsSold)
+  const platinum = useGameStore((s) => s.platinum)
   const finalePoints = useGameStore((s) => s.finalePoints)
   const buyTier = useGameStore((s) => s.buyTier)
   const buyMaxTier = useGameStore((s) => s.buyMaxTier)
@@ -101,7 +104,8 @@ export function OrchestraStage() {
 
   const achievementSet = new Set(achievements)
   const globalMult = getAchievementGlobalMultiplier(achievementSet).times(getCoreProductionMultiplier({
-    lifetimeEncorePoints, finalePoints, opusPoints, encoreUpgrades, tempoLevel: tempo.level, tiers,
+    lifetimeEncorePoints, finalePoints, encoreUpgrades, tempoLevel: tempo.level, tiers,
+    opusUpgrades, crescendoLevel: crescendo, recordsSold, platinum,
   }))
 
   return (
