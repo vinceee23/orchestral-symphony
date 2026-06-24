@@ -4,6 +4,7 @@ import { SoundwaveDisplay } from './SoundwaveDisplay'
 import { TempoBar } from './TempoBar'
 import { BuyAmountToggle } from './BuyAmountToggle'
 import { OrchestraStage } from './OrchestraStage'
+import { FloatingNotes } from '../shared/FloatingNotes'
 import { getEncoreCost } from '../../core/constants'
 import { getEncoreGain, getLiveliness } from '../../core/formulas'
 import { getOvertureGainMultiplier } from '../../core/encoreUpgrades'
@@ -36,7 +37,8 @@ export function ComposePage() {
   const pulseDur = Math.min(2, Math.max(0.5, 60 / (tempo.baseBPM || 60)))
   const liveliness = getLiveliness(lifetimeEncorePoints, opusPoints, finalePoints)
   const goldWash = (0.04 + liveliness * 0.12).toFixed(3)
-  const purpleWash = (liveliness * 0.1).toFixed(3)
+  // Magnum Opus era brings violet richness into the hall — a clear mood shift, not just brighter gold.
+  const purpleWash = (opusPoints > 0 ? 0.13 : liveliness * 0.03).toFixed(3)
 
   const doEncore = () => { performEncore(); playPrestigeSound(); setPendingEncore(false) }
   const onEncore = () => {
@@ -77,6 +79,8 @@ export function ComposePage() {
         className="pointer-events-none absolute inset-x-0 bottom-0 h-48 z-0"
         style={{ background: 'radial-gradient(55% 100% at 50% 100%, rgba(212,168,67,0.12), transparent 70%)' }}
       />
+      {/* ambient drifting notes — scoped to the Compose stage (scales with liveliness) */}
+      <FloatingNotes />
 
       {/* content */}
       <div className="relative z-10 h-full overflow-y-auto flex flex-col items-center px-4 py-5">
