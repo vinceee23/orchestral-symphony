@@ -181,9 +181,9 @@ export function ComposePage() {
       className="relative h-full overflow-hidden"
       style={{
         background:
-          'radial-gradient(120% 70% at 50% -5%, rgba(212,168,67,0.10), transparent 55%),' +
-          'radial-gradient(90% 60% at 50% 115%, rgba(124,58,237,0.08), transparent 60%),' +
-          'linear-gradient(180deg, #0b0b12 0%, #07070c 100%)',
+          'radial-gradient(110% 65% at 50% -5%, rgba(212,168,67,0.06), transparent 50%),' +
+          'radial-gradient(90% 55% at 50% 118%, rgba(124,58,237,0.05), transparent 60%),' +
+          'linear-gradient(180deg, #050507 0%, #020203 100%)',
       }}
     >
       {/* spotlight beam — a cone of light from above */}

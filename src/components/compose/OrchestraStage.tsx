@@ -24,7 +24,8 @@ function EmblemIcon({ name, glyph, glow }: { name: string; glyph: string; glow: 
       alt=""
       onError={() => setFailed(true)}
       className="w-16 h-16 sm:w-20 sm:h-20 object-contain"
-      style={{ filter, opacity }}
+      // screen blend drops the emblem's black JPEG background (black = transparent in screen)
+      style={{ filter, opacity, mixBlendMode: 'screen' }}
     />
   )
 }
