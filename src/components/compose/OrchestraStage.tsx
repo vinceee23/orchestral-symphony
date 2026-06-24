@@ -34,40 +34,21 @@ export function OrchestraStage() {
   }))
 
   return (
-    <div
-      className="relative rounded-2xl border border-border/60 overflow-hidden px-3 py-6 sm:px-6 sm:py-8"
-      style={{
-        background:
-          'radial-gradient(120% 80% at 50% -10%, rgba(212,168,67,0.16), transparent 55%),' +
-          'radial-gradient(80% 50% at 50% 115%, rgba(124,58,237,0.10), transparent 60%),' +
-          'linear-gradient(180deg, #0c0c14 0%, #08080d 100%)',
-      }}
-    >
-      {/* spotlight wash */}
-      <div
-        className="pointer-events-none absolute inset-0 animate-spotlight"
-        style={{ background: 'radial-gradient(60% 45% at 50% 0%, rgba(212,168,67,0.14), transparent 70%)' }}
-      />
-      {/* stage floor */}
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-24"
-        style={{ background: 'radial-gradient(80% 100% at 50% 100%, rgba(212,168,67,0.10), transparent 70%)' }}
-      />
-
-      <div className="relative flex justify-center items-end gap-2 sm:gap-4 flex-wrap">
+    <div className="w-full">
+      <div className="flex justify-center items-end gap-3 sm:gap-5 flex-wrap">
         {TIER_CONFIGS.map((config, i) => {
           const tier = tiers[i]
-          const arc = Math.pow((i - 3) / 3, 2) * 34 // parabola: center sits highest (stage curve)
+          const arc = Math.pow((i - 3) / 3, 2) * 50 // parabola: center sits highest (stage curve)
           if (!tier?.unlocked) {
             return (
               <div
                 key={config.id}
-                className="flex flex-col items-center justify-center w-[88px] sm:w-[104px] h-[120px] rounded-xl border border-border/40 bg-bg-secondary/30"
+                className="flex flex-col items-center justify-center w-[112px] sm:w-[140px] h-[164px] rounded-2xl border border-border/40 bg-bg-secondary/30"
                 style={{ transform: `translateY(${arc}px)` }}
                 title="Locked — buy the tier before it to reveal this section"
               >
-                <span className="text-2xl opacity-20">{'\u{1F512}'}</span>
-                <span className="mt-1 text-[10px] text-text-muted/60 font-display">???</span>
+                <span className="text-3xl opacity-20">{'\u{1F512}'}</span>
+                <span className="mt-1 text-xs text-text-muted/60 font-display">???</span>
               </div>
             )
           }
@@ -104,7 +85,7 @@ export function OrchestraStage() {
               onClick={onBuy}
               disabled={!canAfford}
               title={`${config.name} — produces ${config.produces}\nRate: ${formatNumber(rate)}/s\n${amount} for ${formatCost(cost)}\n${milestone}/10 to next x2`}
-              className={`group relative flex flex-col items-center w-[88px] sm:w-[104px] rounded-xl border px-2 py-3 transition-all duration-150 ${
+              className={`group relative flex flex-col items-center w-[112px] sm:w-[140px] rounded-2xl border px-3 py-4 transition-all duration-150 ${
                 burst === config.id ? 'animate-section-buy' : ''
               } ${
                 canAfford
@@ -120,7 +101,7 @@ export function OrchestraStage() {
               }}
             >
               <span
-                className="text-3xl sm:text-4xl leading-none"
+                className="text-4xl sm:text-5xl leading-none"
                 style={{
                   filter: `drop-shadow(0 0 ${4 + glow * 14}px rgba(212,168,67,${0.3 + glow * 0.6}))`,
                   opacity: 0.55 + glow * 0.45,

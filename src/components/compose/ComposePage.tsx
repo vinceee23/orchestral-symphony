@@ -127,6 +127,7 @@ export function ComposePage() {
   const performMagnumOpus = useGameStore((s) => s.performMagnumOpus)
   const performGrandFinale = useGameStore((s) => s.performGrandFinale)
   const buyEncoreUpgrade = useGameStore((s) => s.buyEncoreUpgrade)
+  const tempo = useGameStore((s) => s.tempo)
   const activeChallenge = useGameStore((s) => s.activeChallenge)
 
   const [pendingPrestige, setPendingPrestige] = useState<'encore' | 'mo' | 'gf' | null>(null)
@@ -161,6 +162,9 @@ export function ComposePage() {
   const moProgress = moCost.amount > 0 ? Math.min(100, (moPurchased / moCost.amount) * 100) : 0
   const wallProgress = Math.min(100, (encoreCount / ENCORE_WALL_COUNT) * 100)
 
+  // Tempo heartbeat for the spotlight — CAPPED so a high BPM never strobes (epilepsy-safe).
+  const pulseDur = Math.min(2, Math.max(0.5, 60 / (tempo.baseBPM || 60)))
+
   // Production multiplier from TOTAL Applause (lifetime); projected gain from this run's peak.
   const overtureMult = getOvertureGainMultiplier(encoreUpgrades)
   const projectedGain = Math.floor(getEncoreGain(peakSoundwaves) * overtureMult)
@@ -172,26 +176,58 @@ export function ComposePage() {
   const nextFinaleMult = getFinaleMultiplier(finalePoints + 1)
 
   return (
-    <div className="p-4 md:p-6 space-y-4 max-w-6xl mx-auto">
-      <SoundwaveDisplay />
+    <div
+      className="relative h-full overflow-hidden"
+      style={{
+        background:
+          'radial-gradient(120% 70% at 50% -5%, rgba(212,168,67,0.10), transparent 55%),' +
+          'radial-gradient(90% 60% at 50% 115%, rgba(124,58,237,0.08), transparent 60%),' +
+          'linear-gradient(180deg, #0b0b12 0%, #07070c 100%)',
+      }}
+    >
+      {/* spotlight beam — a cone of light from above */}
+      <div
+        className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 z-0"
+        style={{
+          width: '72%', height: '80%',
+          background: 'linear-gradient(180deg, rgba(212,168,67,0.20), rgba(212,168,67,0.05) 50%, transparent 80%)',
+          clipPath: 'polygon(46% 0%, 54% 0%, 100% 100%, 0% 100%)',
+        }}
+      />
+      {/* lamp source + CAPPED tempo heartbeat */}
+      <div
+        className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 z-0"
+        style={{
+          width: 170, height: 130,
+          background: 'radial-gradient(50% 70% at 50% 0%, rgba(255,236,180,0.55), rgba(212,168,67,0.18) 45%, transparent 75%)',
+          animation: `tempo-pulse ${pulseDur}s ease-in-out infinite`,
+        }}
+      />
+      {/* stage floor pool */}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-48 z-0"
+        style={{ background: 'radial-gradient(55% 100% at 50% 100%, rgba(212,168,67,0.12), transparent 70%)' }}
+      />
 
-      <div className="border-t border-border" />
+      {/* content layer */}
+      <div className="relative z-10 h-full overflow-y-auto flex flex-col items-center px-4 py-5">
+        <SoundwaveDisplay />
+        <div className="w-full max-w-3xl mt-1"><TempoBar /></div>
 
-      <TempoBar />
+        <div className="w-full max-w-5xl flex items-center justify-between mt-5 mb-1">
+          <h2 className="text-lg font-display font-semibold text-accent-gold tracking-wide">Your Orchestra</h2>
+          <BuyAmountToggle />
+        </div>
 
-      <div className="flex items-center justify-between">
-        <h2 className="text-base font-display font-semibold text-accent-gold tracking-wide">
-          Your Orchestra
-        </h2>
-        <BuyAmountToggle />
-      </div>
+        <div className="w-full max-w-5xl flex-1 flex items-center justify-center pb-24">
+          <OrchestraStage />
+        </div>
+      </div>{/* end content layer */}
 
-      <OrchestraStage />
-
-      {/* Prestige */}
+      {/* Prestige — docked bottom-right */}
       {(canEncore || encoreCount > 0) && !prestigeBlocked && (
-        <div className="border-t border-border pt-4 space-y-3">
-          <h2 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">
+        <aside className="absolute bottom-3 right-3 z-20 w-[300px] max-h-[78%] overflow-y-auto rounded-xl border border-border/60 bg-bg-secondary/85 backdrop-blur-sm p-3 space-y-3 shadow-2xl">
+          <h2 className="text-xs font-display font-semibold text-accent-gold uppercase tracking-wider">
             Prestige
           </h2>
 
@@ -354,7 +390,7 @@ export function ComposePage() {
               </div>
             </>
           )}
-        </div>
+        </aside>
       )}
 
       {/* First-time prestige explanation dialog */}
