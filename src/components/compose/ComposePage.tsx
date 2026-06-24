@@ -146,7 +146,7 @@ export function ComposePage() {
         style={{ opacity: stageGlow, background: 'radial-gradient(55% 100% at 50% 100%, rgba(212,168,67,0.12), transparent 70%)' }}
       />
       {/* the living hall — risers, audience, architecture, overhead light (grows per era) */}
-      <StageHall era={era} liveliness={liveliness} />
+      <StageHall era={era} liveliness={liveliness} blaze={blaze} />
       {/* ambient drifting notes — scoped to the Compose stage (scales with liveliness) */}
       <FloatingNotes />
       {/* §11 era-reveal bloom — one-shot flash when the era steps up (camera pulls back to a grander hall) */}

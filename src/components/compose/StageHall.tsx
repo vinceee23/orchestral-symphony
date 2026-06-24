@@ -22,9 +22,10 @@ const ERA_BRIGHT = [0.34, 0.55, 0.8, 0.92, 1.0, 1.05, 1.1]   // murky/dim early 
 interface Props {
   era: number
   liveliness: number
+  blaze?: number // 0..1 crescendo — conducting brightens the hall art itself
 }
 
-export const StageHall = memo(function StageHall({ era, liveliness }: Props) {
+export const StageHall = memo(function StageHall({ era, liveliness, blaze = 0 }: Props) {
   const e = Math.max(0, Math.min(TOTAL_LAYERS, era))
   const color = ERA_COLORS[e]
   // Grandeur ramps across all 6 layers from a DIM intimate base — earned, not given.
@@ -118,7 +119,8 @@ export const StageHall = memo(function StageHall({ era, liveliness }: Props) {
           opacity: 0.45 + grand * 0.4,
           transform: `scale(${ERA_ZOOM[e] ?? 1})`,
           transformOrigin: '50% 38%',
-          filter: `saturate(${ERA_SAT[e] ?? 1}) brightness(${ERA_BRIGHT[e] ?? 1})`,
+          // conducting (blaze) brightens + warms the hall art live — the §11 "swell lights the room"
+          filter: `saturate(${(ERA_SAT[e] ?? 1) + blaze * 0.25}) brightness(${(ERA_BRIGHT[e] ?? 1) + blaze * 0.35})`,
           maskImage: 'radial-gradient(140% 110% at 50% 42%, #000 60%, transparent 100%)',
           WebkitMaskImage: 'radial-gradient(140% 110% at 50% 42%, #000 60%, transparent 100%)',
         }}
