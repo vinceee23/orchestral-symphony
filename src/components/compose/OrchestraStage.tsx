@@ -86,6 +86,9 @@ export function OrchestraStage() {
   const [burst, setBurst] = useState<number | null>(null)
   const [pop, setPop] = useState<{ id: number; n: number; seq: number } | null>(null)
   const popSeq = useRef(0)
+  // §11 gold wave: while conducting (crescendo up), a brightness pulse rolls across the sections
+  // (staggered per-section animation-delay). Disabled while a section is bursting from a buy.
+  const waving = crescendo > 0.1
 
   // Resonate: when a section first unlocks, fire an expanding ring of light.
   const [resonating, setResonating] = useState<Set<number>>(() => new Set())
@@ -169,7 +172,7 @@ export function OrchestraStage() {
               disabled={!canAfford}
               title={`${config.name} — produces ${config.produces}\nRate: ${formatNumber(rate)}/s\n${amount} for ${formatCost(cost)}\n${milestone}/10 to next x2`}
               className={`group relative flex flex-col items-center w-[112px] sm:w-[140px] rounded-2xl border px-3 py-4 transition-all duration-150 ${
-                burst === config.id ? 'animate-section-buy' : ''
+                burst === config.id ? 'animate-section-buy' : (waving ? 'animate-section-wave' : '')
               } ${
                 lit
                   ? 'border-accent-gold/70 hover:border-accent-gold cursor-pointer'
@@ -177,6 +180,7 @@ export function OrchestraStage() {
               }`}
               style={{
                 transform: `translateY(${arc}px)`,
+                animationDelay: waving && burst !== config.id ? `${i * 0.12}s` : undefined,
                 background: `linear-gradient(180deg, rgba(212,168,67,${0.03 + (lit ? 0.13 : 0) + owned * 0.05}), rgba(18,18,26,0.6))`,
                 boxShadow: lit
                   ? '0 0 24px 3px rgba(212,168,67,0.4), inset 0 0 16px rgba(212,168,67,0.15)'

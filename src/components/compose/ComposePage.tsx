@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import { SoundwaveDisplay } from './SoundwaveDisplay'
 import { TempoBar } from './TempoBar'
@@ -44,6 +44,10 @@ export function ComposePage() {
 
   const [pendingEncore, setPendingEncore] = useState(false)
   const [pendingMO, setPendingMO] = useState(false)
+  // §11 era-reveal: when the era increments (1st Encore → gold, 1st MO → violet, Finale → blaze), flash a
+  // one-shot bloom as the camera pulls back to the grander hall.
+  const [revealEra, setRevealEra] = useState<number | null>(null)
+  const prevEra = useRef<number | null>(null)
 
   const activeCh = activeChallenge ? getChallengeById(activeChallenge.challengeId) ?? null : null
   const prestigeBlocked = getActiveChallengeModifiers(activeCh).noPrestige
@@ -79,6 +83,18 @@ export function ComposePage() {
   const goldWash = (0.04 + liveliness * 0.10 + climb * 0.06 + blaze * 0.16).toFixed(3)
   // Magnum Opus era brings violet richness into the hall — a clear mood shift, not just brighter gold.
   const purpleWash = (opusCount > 0 ? 0.13 : liveliness * 0.03).toFixed(3)
+
+  // §11 era-reveal: fire a one-shot bloom whenever the era steps up.
+  useEffect(() => {
+    if (prevEra.current !== null && era > prevEra.current) {
+      setRevealEra(era)
+      const t = setTimeout(() => setRevealEra(null), 1800)
+      prevEra.current = era
+      return () => clearTimeout(t)
+    }
+    prevEra.current = era
+  }, [era])
+  const revealColor = ['#d4a843', '#d4a843', '#7c3aed', '#2dd4bf', '#ec4899', '#ef4444', '#fbbf24'][revealEra ?? 0]
 
   const doEncore = () => {
     const from = getEncoreMultiplier(lifetimeEncorePoints).toNumber()
@@ -133,6 +149,14 @@ export function ComposePage() {
       <StageHall era={era} liveliness={liveliness} />
       {/* ambient drifting notes — scoped to the Compose stage (scales with liveliness) */}
       <FloatingNotes />
+      {/* §11 era-reveal bloom — one-shot flash when the era steps up (camera pulls back to a grander hall) */}
+      {revealEra != null && (
+        <div
+          key={revealEra}
+          className="era-reveal pointer-events-none absolute inset-0 z-30"
+          style={{ background: `radial-gradient(60% 50% at 50% 40%, ${revealColor}55, transparent 70%)` }}
+        />
+      )}
 
       {/* content */}
       <div className="relative z-10 h-full overflow-y-auto flex flex-col items-center px-4 py-5 [scrollbar-gutter:stable_both-edges]">
