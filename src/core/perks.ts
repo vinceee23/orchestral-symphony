@@ -8,6 +8,7 @@ export type PerkId =
   | 'perk-encore-discount'
   | 'perk-bulk-unlock'
   | 'perk-second-wind'
+  | 'perk-platinum-press'
 
 export interface PerkConfig {
   id: PerkId
@@ -71,6 +72,12 @@ export const PERKS: PerkConfig[] = [
     name: 'Second Wind',
     blurb: 'One free Encore per Magnum Opus cycle',
   },
+  {
+    id: 'perk-platinum-press',
+    achievementId: 'ach_a_side',
+    name: 'Platinum Press',
+    blurb: 'Records sell 50% faster',
+  },
 ]
 
 export function hasPerk(unlocked: Set<string>, perkId: PerkId): boolean {
@@ -85,3 +92,4 @@ export const FAST_AUTOMATOR_SPEED_TIERS = 1
 export const TEMPO_HEADSTART_LEVEL = 8
 export const CRESCENDO_HEADSTART = 0.4
 export const ENCORE_UPGRADE_DISCOUNT = 0.25
+export const PLATINUM_PRESS_MULT = 1.5

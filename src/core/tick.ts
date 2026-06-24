@@ -14,7 +14,7 @@ import {
 import { advanceCrescendo, getCrescendoMultiplier } from './crescendo'
 import { accrueRecords, isPlatinum } from './records'
 import { getAutomatorInterval, getAutomatorBulk, clampAutobuyerBulk } from './opusUpgrades'
-import { hasPerk, FAST_AUTOMATOR_SPEED_TIERS } from './perks'
+import { hasPerk, FAST_AUTOMATOR_SPEED_TIERS, PLATINUM_PRESS_MULT } from './perks'
 import {
   getAchievementGlobalMultiplier,
   getAchievementTierMultiplier,
@@ -54,10 +54,13 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
   const nextCresc = advanceCrescendo(state.crescendo, conducting, deltaMs / 1000, state.opusUpgrades)
   const crescendoMult = getCrescendoMultiplier(nextCresc, state.opusUpgrades)
   const peakCrescendoMult = Math.max(state.peakCrescendoMult, crescendoMult)
+  // perk-platinum-press: records sell PLATINUM_PRESS_MULT× faster (injected via the records-per-sec
+  // crescendo factor so only record accrual is boosted, not the production crescendoMult).
+  const recordsMult = hasPerk(achievementSet, 'perk-platinum-press') ? PLATINUM_PRESS_MULT : 1
   const recordsSold = accrueRecords(
     state.recordsSold,
     state.opusCount,
-    crescendoMult,
+    crescendoMult * recordsMult,
     deltaMs / 1000,
     state.opusUpgrades,
   )
