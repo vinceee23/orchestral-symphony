@@ -5,6 +5,7 @@ interface SidebarProps {
 
 const TABS = [
   { id: 'compose', label: 'Compose', icon: '\u{1F3B5}' },
+  { id: 'prestige', label: 'Prestige', icon: '\u{2728}' },
   { id: 'achievements', label: 'Achievements', icon: '\u{1F3C6}' },
   { id: 'challenges', label: 'Challenges', icon: '\u{2694}' },
   { id: 'stats', label: 'Stats', icon: '\u{1F4CA}' },

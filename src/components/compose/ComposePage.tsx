@@ -4,182 +4,45 @@ import { SoundwaveDisplay } from './SoundwaveDisplay'
 import { TempoBar } from './TempoBar'
 import { BuyAmountToggle } from './BuyAmountToggle'
 import { OrchestraStage } from './OrchestraStage'
-import { formatNumber } from '../../core/format'
-import {
-  getEncoreCost,
-  getMagnumOpusCost,
-  GRAND_FINALE_SW_THRESHOLD,
-  ENCORE_WALL_COUNT,
-} from '../../core/constants'
-import { getEncoreMultiplier, getFinaleMultiplier, getOpusBPMMultiplier, getEncoreGain, getLiveliness } from '../../core/formulas'
-import { ENCORE_UPGRADES, getEncoreUpgradeCost, getOvertureGainMultiplier } from '../../core/encoreUpgrades'
-import Decimal from 'break_infinity.js'
-import { playPrestigeSound, playBuySound } from '../../core/audio'
+import { getEncoreCost } from '../../core/constants'
+import { getEncoreGain, getLiveliness } from '../../core/formulas'
+import { getOvertureGainMultiplier } from '../../core/encoreUpgrades'
+import { playPrestigeSound } from '../../core/audio'
 import { getChallengeById, getActiveChallengeModifiers } from '../../core/challenges'
-
-interface PrestigeDialogProps {
-  type: 'encore' | 'mo' | 'gf'
-  onConfirm: () => void
-  onCancel: () => void
-}
-
-const PRESTIGE_INFO = {
-  encore: {
-    title: 'Encore',
-    color: 'text-accent-gold',
-    border: 'border-accent-gold/40',
-    bg: 'bg-accent-gold/10',
-    description: [
-      'Take a bow and play again. An Encore resets your tiers, soundwaves, and tempo to the start.',
-      'In return you earn Applause. Your total Applause permanently multiplies all production — and you keep a spendable pool to buy Encore upgrades.',
-      'Each Encore is faster than the last. Keep performing to build toward your Magnum Opus.',
-    ],
-  },
-  mo: {
-    title: 'Magnum Opus',
-    color: 'text-red-400',
-    border: 'border-red-500/40',
-    bg: 'bg-red-500/10',
-    description: [
-      'A Magnum Opus is a bigger reset. It resets everything an Encore does, plus your Encore Points.',
-      'In return, you gain +1 Opus Point (OP). Each OP permanently doubles your BPM (tick speed).',
-      'This is a powerful boost — tick speed is the biggest factor in production!',
-    ],
-  },
-  gf: {
-    title: 'Grand Finale',
-    color: 'text-amber-400',
-    border: 'border-amber-500/40',
-    bg: 'bg-amber-500/10',
-    description: [
-      'The Grand Finale is the ultimate reset. It resets everything — tiers, EP, and OP.',
-      'In return, you gain +1 Finale Point (FP). Each FP gives a permanent x10 multiplier to all production.',
-      'Grand Finales also unlock new challenges as you accumulate them!',
-    ],
-  },
-}
-
-function PrestigeDialog({ type, onConfirm, onCancel }: PrestigeDialogProps) {
-  const [dontShow, setDontShow] = useState(false)
-  const info = PRESTIGE_INFO[type]
-
-  const handleConfirm = () => {
-    if (dontShow) {
-      localStorage.setItem(`prestige_skip_${type}`, '1')
-    }
-    onConfirm()
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onCancel}>
-      <div
-        className={`max-w-md w-full mx-4 p-5 rounded-xl border ${info.border} ${info.bg} bg-bg-primary shadow-2xl`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className={`text-lg font-bold ${info.color} mb-3`}>{info.title}</h3>
-        <div className="space-y-2 mb-4">
-          {info.description.map((line, i) => (
-            <p key={i} className="text-sm text-text-secondary leading-relaxed">{line}</p>
-          ))}
-        </div>
-        <label className="flex items-center gap-2 mb-4 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={dontShow}
-            onChange={(e) => setDontShow(e.target.checked)}
-            className="w-4 h-4 rounded border-border accent-accent-gold"
-          />
-          <span className="text-xs text-text-muted">Don't show this again</span>
-        </label>
-        <div className="flex gap-2">
-          <button
-            onClick={onCancel}
-            className="flex-1 py-2 px-3 text-sm rounded border border-border text-text-secondary hover:bg-bg-secondary transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleConfirm}
-            className={`flex-1 py-2 px-3 text-sm rounded border ${info.border} ${info.color} font-semibold hover:brightness-125 transition-all`}
-          >
-            Confirm {info.title}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
+import { PrestigeDialog } from '../prestige/PrestigeDialog'
 
 export function ComposePage() {
   const tiers = useGameStore((s) => s.tiers)
-  const soundwaves = useGameStore((s) => s.soundwaves)
   const peakSoundwaves = useGameStore((s) => s.peakSoundwaves)
-  const encorePoints = useGameStore((s) => s.encorePoints)
-  const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const encoreCount = useGameStore((s) => s.encoreCount)
   const encoreUpgrades = useGameStore((s) => s.encoreUpgrades)
-  const layer1WallReached = useGameStore((s) => s.layer1WallReached)
+  const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const opusPoints = useGameStore((s) => s.opusPoints)
-  const opusCount = useGameStore((s) => s.opusCount)
   const finalePoints = useGameStore((s) => s.finalePoints)
-  const finaleCount = useGameStore((s) => s.finaleCount)
-  const performEncore = useGameStore((s) => s.performEncore)
-  const performMagnumOpus = useGameStore((s) => s.performMagnumOpus)
-  const performGrandFinale = useGameStore((s) => s.performGrandFinale)
-  const buyEncoreUpgrade = useGameStore((s) => s.buyEncoreUpgrade)
   const tempo = useGameStore((s) => s.tempo)
+  const performEncore = useGameStore((s) => s.performEncore)
   const activeChallenge = useGameStore((s) => s.activeChallenge)
 
-  const [pendingPrestige, setPendingPrestige] = useState<'encore' | 'mo' | 'gf' | null>(null)
-  const [shopOpen, setShopOpen] = useState(false)
+  const [pendingEncore, setPendingEncore] = useState(false)
 
   const activeCh = activeChallenge ? getChallengeById(activeChallenge.challengeId) ?? null : null
-  const mods = getActiveChallengeModifiers(activeCh)
-  const prestigeBlocked = mods.noPrestige
-
+  const prestigeBlocked = getActiveChallengeModifiers(activeCh).noPrestige
   const encoreCost = getEncoreCost(encoreCount)
   const encorePurchased = tiers[encoreCost.tierIndex]?.purchased ?? 0
   const canEncore = !prestigeBlocked && encorePurchased >= encoreCost.amount
+  const projectedGain = Math.floor(getEncoreGain(peakSoundwaves) * getOvertureGainMultiplier(encoreUpgrades))
 
-  const moCost = getMagnumOpusCost(opusCount)
-  const moPurchased = tiers[moCost.tierIndex]?.purchased ?? 0
-  const canMO = !prestigeBlocked && layer1WallReached && moPurchased >= moCost.amount
-  const canGF = !prestigeBlocked && layer1WallReached && new Decimal(soundwaves).gte(GRAND_FINALE_SW_THRESHOLD)
-
-  const shouldShowDialog = (type: 'encore' | 'mo' | 'gf') => !localStorage.getItem(`prestige_skip_${type}`)
-  const handlePrestige = (type: 'encore' | 'mo' | 'gf') => {
-    if (shouldShowDialog(type)) setPendingPrestige(type)
-    else doPrestige(type)
-  }
-  const doPrestige = (type: 'encore' | 'mo' | 'gf') => {
-    if (type === 'encore') performEncore()
-    else if (type === 'mo') performMagnumOpus()
-    else performGrandFinale()
-    playPrestigeSound()
-    setPendingPrestige(null)
-  }
-
-  const encoreProgress = encoreCost.amount > 0 ? Math.min(100, (encorePurchased / encoreCost.amount) * 100) : 0
-  const moProgress = moCost.amount > 0 ? Math.min(100, (moPurchased / moCost.amount) * 100) : 0
-  const wallProgress = Math.min(100, (encoreCount / ENCORE_WALL_COUNT) * 100)
-
-  // Tempo heartbeat for the spotlight — CAPPED so a high BPM never strobes (epilepsy-safe).
+  // Spotlight heartbeat (capped) + ambient liveliness (bland pre-Encore, warmer each layer).
   const pulseDur = Math.min(2, Math.max(0.5, 60 / (tempo.baseBPM || 60)))
-
-  // Stage liveliness: bland pre-Encore, warmer/livelier each prestige layer.
   const liveliness = getLiveliness(lifetimeEncorePoints, opusPoints, finalePoints)
   const goldWash = (0.04 + liveliness * 0.12).toFixed(3)
   const purpleWash = (liveliness * 0.1).toFixed(3)
 
-  // Production multiplier from TOTAL Applause (lifetime); projected gain from this run's peak.
-  const overtureMult = getOvertureGainMultiplier(encoreUpgrades)
-  const projectedGain = Math.floor(getEncoreGain(peakSoundwaves) * overtureMult)
-  const currentEncoreMult = getEncoreMultiplier(lifetimeEncorePoints)
-  const nextEncoreMult = getEncoreMultiplier(lifetimeEncorePoints + projectedGain)
-  const currentOpusMult = getOpusBPMMultiplier(opusPoints)
-  const nextOpusMult = getOpusBPMMultiplier(opusPoints + 1)
-  const currentFinaleMult = getFinaleMultiplier(finalePoints)
-  const nextFinaleMult = getFinaleMultiplier(finalePoints + 1)
+  const doEncore = () => { performEncore(); playPrestigeSound(); setPendingEncore(false) }
+  const onEncore = () => {
+    if (localStorage.getItem('prestige_skip_encore')) doEncore()
+    else setPendingEncore(true)
+  }
 
   return (
     <div
@@ -191,7 +54,7 @@ export function ComposePage() {
           'linear-gradient(180deg, #050507 0%, #020203 100%)',
       }}
     >
-      {/* spotlight beam — a cone of light from above */}
+      {/* spotlight beam from above */}
       <div
         className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 z-0"
         style={{
@@ -200,7 +63,7 @@ export function ComposePage() {
           clipPath: 'polygon(46% 0%, 54% 0%, 100% 100%, 0% 100%)',
         }}
       />
-      {/* lamp source + CAPPED tempo heartbeat */}
+      {/* lamp source + capped tempo heartbeat */}
       <div
         className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 z-0"
         style={{
@@ -215,7 +78,7 @@ export function ComposePage() {
         style={{ background: 'radial-gradient(55% 100% at 50% 100%, rgba(212,168,67,0.12), transparent 70%)' }}
       />
 
-      {/* content layer */}
+      {/* content */}
       <div className="relative z-10 h-full overflow-y-auto flex flex-col items-center px-4 py-5">
         <SoundwaveDisplay />
         <div className="w-full max-w-3xl mt-1"><TempoBar /></div>
@@ -225,207 +88,22 @@ export function ComposePage() {
           <BuyAmountToggle />
         </div>
 
-        <div className="w-full max-w-5xl flex-1 flex items-center justify-center pb-24">
+        <div className="w-full max-w-5xl flex-1 flex items-center justify-center pb-28">
           <OrchestraStage />
         </div>
-      </div>{/* end content layer */}
+      </div>
 
-      {/* Prestige — docked bottom-right */}
-      {(canEncore || encoreCount > 0) && !prestigeBlocked && (
-        <aside className="absolute bottom-3 right-3 z-20 w-[290px] max-w-[calc(100vw-1.5rem)] rounded-xl border border-accent-gold/25 bg-bg-secondary/90 backdrop-blur-sm p-3 space-y-2.5 shadow-2xl">
-          <h2 className="text-xs font-display font-semibold text-accent-gold uppercase tracking-wider">
-            Prestige
-          </h2>
-
-          {/* Encore — Layer 1 */}
-          <button
-            onClick={() => canEncore && handlePrestige('encore')}
-            disabled={!canEncore}
-            className={`w-full p-3 rounded-lg border text-left transition-all ${
-              canEncore
-                ? 'bg-accent-gold/10 border-accent-gold/30 hover:bg-accent-gold/20 cursor-pointer'
-                : 'bg-bg-secondary/50 border-border/50 opacity-50 cursor-not-allowed'
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-accent-gold">Encore</span>
-              {encoreCount > 0 && (
-                <span className="text-[10px] text-text-muted">#{encoreCount} · {encorePoints} Applause</span>
-              )}
-            </div>
-            <div className="text-[10px] text-text-muted mt-1">
-              {encorePurchased}/{encoreCost.amount} {encoreCost.tierName} · resets tiers & tempo
-            </div>
-            {!canEncore && encoreProgress > 0 && (
-              <div className="mt-1 h-1 rounded-full bg-bg-primary overflow-hidden">
-                <div className="h-full rounded-full bg-accent-gold/40 transition-all" style={{ width: `${encoreProgress}%` }} />
-              </div>
-            )}
-            <div className="text-[10px] text-accent-gold mt-1">
-              Production x{formatNumber(currentEncoreMult, 2)}
-              {canEncore && projectedGain > 0 && (
-                <span className="text-success"> {'\u{2192}'} x{formatNumber(nextEncoreMult, 2)}</span>
-              )}
-              {encoreCount === 0 && ' · unlocks Movements & Symphonies'}
-            </div>
-            {canEncore && <div className="text-xs text-success mt-1">+{projectedGain} Applause</div>}
-          </button>
-
-          {/* Encore upgrades open in a modal (keeps the dock clean) */}
-          {encoreCount > 0 && (
-            <button
-              onClick={() => setShopOpen(true)}
-              className="w-full flex items-center justify-between p-2 rounded-lg border border-accent-gold/30 bg-accent-gold/5 hover:bg-accent-gold/15 transition-all"
-            >
-              <span className="text-xs font-semibold text-accent-gold">{'⚙'} Encore Upgrades</span>
-              <span className="text-[10px] text-text-muted">{encorePoints} Applause</span>
-            </button>
-          )}
-
-          {/* Layer 2+ gate: locked until the Layer-1 wall (cliffhanger) */}
-          {!layer1WallReached ? (
-            <div className="p-3 rounded-lg border border-border/50 bg-bg-secondary/40">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-text-muted">{'\u{1F512}'} Magnum Opus</span>
-                <span className="text-[10px] text-text-muted">{encoreCount}/{ENCORE_WALL_COUNT} Encores</span>
-              </div>
-              <p className="text-[10px] text-text-muted mt-1 leading-snug">
-                Perform {ENCORE_WALL_COUNT} Encores to master the stage — then a new path opens.
-              </p>
-              <div className="mt-1.5 h-1 rounded-full bg-bg-primary overflow-hidden">
-                <div className="h-full rounded-full bg-text-muted/40 transition-all" style={{ width: `${wallProgress}%` }} />
-              </div>
-            </div>
-          ) : (
-            <>
-              {opusCount === 0 && (
-                <div className="p-3 rounded-lg border border-red-500/40 bg-red-500/10">
-                  <div className="text-sm font-semibold text-red-400 mb-1">You've mastered the stage</div>
-                  <p className="text-xs text-text-secondary leading-relaxed">
-                    Eight encores to a roaring hall — the crowd knows every note. But a performance fades by
-                    morning. To make your music <em>endure</em>, you must record it. Your Magnum Opus awaits.
-                  </p>
-                </div>
-              )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {/* Magnum Opus — Layer 2 */}
-                <button
-                  onClick={() => canMO && handlePrestige('mo')}
-                  disabled={!canMO}
-                  className={`p-3 rounded-lg border text-left transition-all ${
-                    canMO
-                      ? 'bg-red-500/10 border-red-500/30 hover:bg-red-500/20 cursor-pointer'
-                      : 'bg-bg-secondary/50 border-border/50 opacity-50 cursor-not-allowed'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-red-400">Magnum Opus</span>
-                    {opusCount > 0 && <span className="text-[10px] text-text-muted">{opusPoints} OP</span>}
-                  </div>
-                  <div className="text-[10px] text-text-muted mt-1">
-                    {moPurchased}/{moCost.amount} {moCost.tierName} · resets Applause + tiers
-                  </div>
-                  {!canMO && moProgress > 0 && (
-                    <div className="mt-1 h-1 rounded-full bg-bg-primary overflow-hidden">
-                      <div className="h-full rounded-full bg-red-500/40 transition-all" style={{ width: `${moProgress}%` }} />
-                    </div>
-                  )}
-                  <div className="text-[10px] text-red-400 mt-1">
-                    Tick speed x{currentOpusMult}
-                    {canMO && <span className="text-success"> {'\u{2192}'} x{nextOpusMult}</span>}
-                  </div>
-                  {canMO && <div className="text-xs text-success mt-1">+1 OP</div>}
-                </button>
-
-                {/* Grand Finale — Layer 3 */}
-                {(canGF || finaleCount > 0) && (
-                  <button
-                    onClick={() => canGF && handlePrestige('gf')}
-                    disabled={!canGF}
-                    className={`p-3 rounded-lg border text-left transition-all ${
-                      canGF
-                        ? 'bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20 cursor-pointer'
-                        : 'bg-bg-secondary/50 border-border/50 opacity-50 cursor-not-allowed'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-amber-400">Grand Finale</span>
-                      {finaleCount > 0 && <span className="text-[10px] text-text-muted">{finalePoints} FP</span>}
-                    </div>
-                    <div className="text-[10px] text-text-muted mt-1">
-                      SW {'\u{2265}'}{formatNumber(GRAND_FINALE_SW_THRESHOLD)} · resets Applause + OP + tiers
-                    </div>
-                    <div className="text-[10px] text-amber-400 mt-1">
-                      Production x{formatNumber(currentFinaleMult, 0)}
-                      {canGF && <span className="text-success"> {'\u{2192}'} x{formatNumber(nextFinaleMult, 0)}</span>}
-                    </div>
-                    {canGF && <div className="text-xs text-success mt-1">+1 FP</div>}
-                  </button>
-                )}
-              </div>
-            </>
-          )}
-        </aside>
+      {/* Prominent Encore call-to-action when ready (full detail lives in the Prestige tab) */}
+      {canEncore && (
+        <button
+          onClick={onEncore}
+          className="absolute left-1/2 -translate-x-1/2 bottom-6 z-20 px-6 py-3 rounded-full border border-accent-gold/60 bg-accent-gold/15 backdrop-blur text-accent-gold font-display font-semibold shadow-2xl hover:bg-accent-gold/25 hover:brightness-110 transition-all animate-pulse-gold"
+        >
+          ✦ Encore Ready{projectedGain > 0 ? ` · +${projectedGain} Applause` : ''} ✦
+        </button>
       )}
 
-      {/* First-time prestige explanation dialog */}
-      {pendingPrestige && (
-        <PrestigeDialog
-          type={pendingPrestige}
-          onConfirm={() => doPrestige(pendingPrestige)}
-          onCancel={() => setPendingPrestige(null)}
-        />
-      )}
-
-      {/* Encore Upgrades modal */}
-      {shopOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setShopOpen(false)}>
-          <div className="max-w-lg w-full rounded-xl border border-accent-gold/40 bg-bg-primary p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-display font-semibold text-accent-gold">Encore Upgrades</h3>
-              <span className="text-xs text-text-muted">{encorePoints} Applause to spend</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {ENCORE_UPGRADES.map((u) => {
-                const level = encoreUpgrades[u.id] ?? 0
-                const maxed = level >= u.maxLevel
-                const cost = getEncoreUpgradeCost(u, level)
-                const affordable = encorePoints >= cost
-                const buy = () => { if (!maxed && affordable) { buyEncoreUpgrade(u.id); playBuySound(7) } }
-                return (
-                  <button
-                    key={u.id}
-                    onClick={buy}
-                    disabled={maxed || !affordable}
-                    className={`p-3 rounded-lg border text-left transition-all ${
-                      maxed
-                        ? 'bg-bg-secondary/40 border-border/40 opacity-60 cursor-default'
-                        : affordable
-                          ? 'bg-accent-gold/10 border-accent-gold/30 hover:bg-accent-gold/20 cursor-pointer'
-                          : 'bg-bg-secondary/50 border-border/50 opacity-50 cursor-not-allowed'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-text-primary">{u.name}</span>
-                      <span className="text-[10px] text-text-muted">Lv {level}/{u.maxLevel}</span>
-                    </div>
-                    <div className="text-[10px] text-text-muted mt-0.5 leading-snug">{u.description}</div>
-                    <div className={`text-[10px] mt-1 font-medium ${maxed || !affordable ? 'text-text-muted' : 'text-accent-gold'}`}>
-                      {maxed ? 'MAX' : `${cost} Applause`}
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
-            <button
-              onClick={() => setShopOpen(false)}
-              className="mt-4 w-full py-2 text-sm rounded border border-border text-text-secondary hover:bg-bg-secondary transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      {pendingEncore && <PrestigeDialog type="encore" onConfirm={doEncore} onCancel={() => setPendingEncore(false)} />}
     </div>
   )
 }

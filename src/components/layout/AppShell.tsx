@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 import { ComposePage } from '../compose/ComposePage'
+import { PrestigePage } from '../prestige/PrestigePage'
 import { AchievementsPage } from '../achievements/AchievementsPage'
 import { ChallengesPage } from '../challenges/ChallengesPage'
 import { StatsPanel } from '../shared/StatsPanel'
@@ -16,6 +17,7 @@ export function AppShell() {
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
         <main className="flex-1 overflow-y-auto">
           {activeTab === 'compose' && <ComposePage />}
+          {activeTab === 'prestige' && <PrestigePage />}
           {activeTab === 'achievements' && <AchievementsPage />}
           {activeTab === 'challenges' && <ChallengesPage />}
           {activeTab === 'stats' && <StatsPanel />}
