@@ -5,6 +5,7 @@ import { AppShell } from './components/layout/AppShell'
 import { AchievementToast } from './components/shared/AchievementToast'
 import { HelpModal } from './components/shared/HelpModal'
 import { EncoreCelebration } from './components/compose/EncoreCelebration'
+import { DevPanel } from './dev/DevPanel'
 
 function App() {
   useGameLoop()
@@ -17,6 +18,7 @@ function App() {
       <AppShell />
       <HelpModal />
       <EncoreCelebration />
+      <DevPanel />
     </>
   )
 }

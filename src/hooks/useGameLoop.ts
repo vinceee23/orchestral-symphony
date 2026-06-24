@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useGameStore } from '../store/gameStore'
+import { useUiStore } from '../store/uiStore'
 import { DELTA_CAP_MS } from '../core/constants'
 
 /**
@@ -18,7 +19,8 @@ export function useGameLoop() {
       if (lastTimeRef.current === 0) lastTimeRef.current = timestamp
       const deltaMs = timestamp - lastTimeRef.current
       lastTimeRef.current = timestamp
-      const cappedDelta = Math.min(deltaMs, DELTA_CAP_MS)
+      // DEV pacing tool: multiply game-time per frame (1 in production — devSpeed is dev-gated in DevPanel).
+      const cappedDelta = Math.min(deltaMs, DELTA_CAP_MS) * (useUiStore.getState().devSpeed || 1)
 
       if (cappedDelta > 0) {
         useGameStore.getState().tick(cappedDelta)

@@ -11,6 +11,9 @@ interface UiState {
   clearEncoreCelebration: () => void
   conducting: boolean
   setConducting: (b: boolean) => void
+  // DEV-only pacing tool: game-loop time multiplier (1 = normal). See DevPanel + useGameLoop.
+  devSpeed: number
+  setDevSpeed: (n: number) => void
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -22,4 +25,6 @@ export const useUiStore = create<UiState>((set) => ({
   clearEncoreCelebration: () => set({ encoreCelebration: null }),
   conducting: false,
   setConducting: (b) => set({ conducting: b }),
+  devSpeed: 1,
+  setDevSpeed: (n) => set({ devSpeed: n }),
 }))
