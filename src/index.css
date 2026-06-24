@@ -188,6 +188,16 @@ body {
 }
 .animate-section-wave { animation: section-wave 1.4s ease-in-out infinite; }
 
+/* §11 liveliness: gold light motes/embers rising off the stage. Density + brightness ramp per era
+   (none in the gloomy start → a celebratory shower by the Canon). Cheap: transform+opacity only. */
+@keyframes mote-rise {
+  0% { opacity: 0; transform: translateY(0) translateX(0); }
+  12% { opacity: var(--mote-peak, 0.5); }
+  88% { opacity: var(--mote-peak, 0.5); }
+  100% { opacity: 0; transform: translateY(-88vh) translateX(var(--mote-drift, 10px)); }
+}
+.animate-mote { animation: mote-rise linear infinite; }
+
 @keyframes encore-pop {
   0% { transform: scale(0.6); opacity: 0; }
   30% { transform: scale(1.08); opacity: 1; }

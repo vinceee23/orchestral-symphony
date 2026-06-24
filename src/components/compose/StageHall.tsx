@@ -16,8 +16,10 @@ const ERA_COLORS = ['#d4a843', '#d4a843', '#7c3aed', '#2dd4bf', '#ec4899', '#ef4
 // warms the hall toward blazing gold. BASE_URL keeps the path correct under the GH Pages subpath.
 const HALL_MASTER = `${import.meta.env.BASE_URL}backdrops/hall-master.jpg`
 const ERA_ZOOM = [2.4, 1.7, 1.3, 1.15, 1.08, 1.03, 1.0]      // camera pull-back per era
-const ERA_SAT = [0.18, 0.45, 0.75, 0.9, 1.0, 1.1, 1.2]       // near-grey & cold early → vivid gold late
-const ERA_BRIGHT = [0.34, 0.55, 0.8, 0.92, 1.0, 1.05, 1.1]   // murky/dim early → blazing late
+const ERA_SAT = [0.18, 0.45, 0.7, 0.85, 0.95, 1.05, 1.15]    // near-grey & cold early → rich colour late
+// Keep it RICH + DARK, never a washed-out bright sheet — so the bright motes + conduct-blaze pop against
+// deep gold (the "blazing" comes from the lively sparks, not a flat bright wash).
+const ERA_BRIGHT = [0.34, 0.5, 0.64, 0.72, 0.78, 0.83, 0.88]
 
 interface Props {
   era: number
@@ -49,7 +51,7 @@ export const StageHall = memo(function StageHall({ era, liveliness, blaze = 0 }:
         style={{
           // Pre-blurred/darkened master (atmospheric depth, not a literal scene). Kept subtle + heavily
           // feathered so it MELTS into the dark stage — no hard image edge (per Vince: blend backdrop↔stage).
-          opacity: 0.3 + grand * 0.3,
+          opacity: 0.28 + grand * 0.22,
           transform: `scale(${ERA_ZOOM[e] ?? 1})`,
           transformOrigin: '50% 38%',
           // conducting (blaze) brightens + warms the hall art live — the §11 "swell lights the room"

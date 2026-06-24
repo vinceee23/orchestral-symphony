@@ -6,6 +6,7 @@ import { BuyAmountToggle } from './BuyAmountToggle'
 import { OrchestraStage } from './OrchestraStage'
 import { FloatingNotes } from '../shared/FloatingNotes'
 import { StageHall } from './StageHall'
+import { StageLife } from './StageLife'
 import { ConductorPodium } from './ConductorPodium'
 import { RecordsMeter } from './RecordsMeter'
 import { getEncoreCost, getMagnumOpusCost } from '../../core/constants'
@@ -122,6 +123,8 @@ export function ComposePage() {
       {/* spotlight beam / lamp / floor pool removed (per Vince) — the near-abstract blurred backdrop
           carries all the stage lighting now, so nothing overwhelms the orchestra buttons. */}
       <StageHall era={era} liveliness={liveliness} blaze={blaze} />
+      {/* §11 liveliness: rising gold motes that emerge + multiply per era, brighten/quicken on Conduct */}
+      <StageLife era={era} blaze={blaze} />
       {/* ambient drifting notes — scoped to the Compose stage (scales with liveliness) */}
       <FloatingNotes />
       {/* §11 era-reveal bloom — one-shot flash when the era steps up (camera pulls back to a grander hall) */}
