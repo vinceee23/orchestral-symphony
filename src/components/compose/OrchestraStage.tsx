@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Decimal from 'break_infinity.js'
 import { useGameStore } from '../../store/gameStore'
 import { TIER_CONFIGS } from '../../core/constants'
@@ -10,24 +10,54 @@ import { formatNumber, formatCost } from '../../core/format'
 import { playBuySound } from '../../core/audio'
 import { SmoothNumber } from '../shared/SmoothNumber'
 
-/** A tier's gilded emblem, with a graceful fallback to the unicode glyph if its art isn't generated yet. */
+// Cache processed (background-keyed) emblem data URLs so we only do canvas work once per emblem.
+const emblemCache = new Map<string, string | null>() // name -> dataURL, or null = no art (use glyph)
+
+/** A tier's gilded emblem. Keys out the near-black JPEG background to true transparency via canvas,
+ *  then renders the gold cutout. Falls back to the unicode glyph if the art isn't generated yet. */
 function EmblemIcon({ name, glyph, glow }: { name: string; glyph: string; glow: number }) {
-  const [failed, setFailed] = useState(false)
+  const [src, setSrc] = useState<string | null | undefined>(emblemCache.get(name))
+
+  useEffect(() => {
+    if (emblemCache.has(name)) { setSrc(emblemCache.get(name)); return }
+    let cancelled = false
+    const img = new Image()
+    img.src = `/emblems/${name}.jpg`
+    img.onload = () => {
+      try {
+        const c = document.createElement('canvas')
+        c.width = img.naturalWidth; c.height = img.naturalHeight
+        const ctx = c.getContext('2d')
+        if (!ctx) throw new Error('no ctx')
+        ctx.drawImage(img, 0, 0)
+        const im = ctx.getImageData(0, 0, c.width, c.height)
+        const d = im.data
+        for (let i = 0; i < d.length; i += 4) {
+          const lum = (d[i] + d[i + 1] + d[i + 2]) / 3
+          if (lum < 28) d[i + 3] = 0                          // near-black -> transparent
+          else if (lum < 85) d[i + 3] = Math.round(((lum - 28) / 57) * 255) // feather the edge
+        }
+        ctx.putImageData(im, 0, 0)
+        const url = c.toDataURL('image/png')
+        emblemCache.set(name, url)
+        if (!cancelled) setSrc(url)
+      } catch {
+        emblemCache.set(name, null)
+        if (!cancelled) setSrc(null)
+      }
+    }
+    img.onerror = () => { emblemCache.set(name, null); if (!cancelled) setSrc(null) }
+    return () => { cancelled = true }
+  }, [name])
+
   const filter = `drop-shadow(0 0 ${6 + glow * 18}px rgba(212,168,67,${0.3 + glow * 0.6}))`
   const opacity = 0.55 + glow * 0.45
-  if (failed) {
-    return <span className="text-4xl sm:text-5xl leading-none" style={{ filter, opacity }}>{glyph}</span>
+
+  if (src) {
+    return <img src={src} alt="" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" style={{ filter, opacity }} />
   }
-  return (
-    <img
-      src={`/emblems/${name}.jpg`}
-      alt=""
-      onError={() => setFailed(true)}
-      className="w-16 h-16 sm:w-20 sm:h-20 object-contain"
-      // screen blend drops the emblem's black JPEG background (black = transparent in screen)
-      style={{ filter, opacity, mixBlendMode: 'screen' }}
-    />
-  )
+  // no art yet (still generating) or load failed -> glyph
+  return <span className="text-4xl sm:text-5xl leading-none" style={{ filter, opacity }}>{glyph}</span>
 }
 
 /**
