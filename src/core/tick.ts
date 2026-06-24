@@ -76,6 +76,7 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
     crescendoLevel: nextCresc,
     recordsSold,
     platinum,
+    massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
   }))
 
   // Apply production divisor from challenge

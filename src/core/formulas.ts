@@ -203,9 +203,14 @@ export function getCoreProductionMultiplier(p: {
   crescendoLevel: number
   recordsSold: number
   platinum: boolean
+  massProduction?: boolean  // perk-bulk-unlock kicker: x2 per tier owned 1000+
 }): Decimal {
   const crescendoMult = getCrescendoMultiplier(p.crescendoLevel, p.opusUpgrades)
   const fameMult = p.platinum ? getFameMultiplier(p.recordsSold, p.opusUpgrades) : 1
+  // Mass Production perk: each tier you own 1,000+ of contributes a x2 (sim-tuned in formulas.test).
+  const massMult = p.massProduction
+    ? Decimal.pow(2, p.tiers.filter((t) => t.purchased >= 1000).length)
+    : new Decimal(1)
 
   return getEncoreMultiplier(p.lifetimeEncorePoints)
     .times(getFinaleMultiplier(p.finalePoints))
@@ -216,4 +221,5 @@ export function getCoreProductionMultiplier(p: {
     .times(PRODUCTION_SCALE)
     .times(getTempoProductionMultiplier(p.tempoLevel))
     .times(getMilestoneTickspeedMultiplier(p.tiers))
+    .times(massMult)
 }

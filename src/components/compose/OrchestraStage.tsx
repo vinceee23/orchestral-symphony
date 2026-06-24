@@ -6,6 +6,7 @@ import {
   getTierProductionPerSec, getTierBatchCost, getMaxBuyable, getCoreProductionMultiplier,
 } from '../../core/formulas'
 import { getAchievementGlobalMultiplier, getAchievementTierMultiplier } from '../../core/achievements'
+import { hasPerk } from '../../core/perks'
 import { formatNumber, formatCost } from '../../core/format'
 import { playBuySound } from '../../core/audio'
 import { SmoothNumber } from '../shared/SmoothNumber'
@@ -106,6 +107,7 @@ export function OrchestraStage() {
   const globalMult = getAchievementGlobalMultiplier(achievementSet).times(getCoreProductionMultiplier({
     lifetimeEncorePoints, finalePoints, encoreUpgrades, tempoLevel: tempo.level, tiers,
     opusUpgrades, crescendoLevel: crescendo, recordsSold, platinum,
+    massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
   }))
 
   return (

@@ -103,9 +103,10 @@ function playerBuy(s, P) {
 }
 
 // produce for dt seconds (snapshot integration; tempo as real multiplier)
-function produce(s, dt, P, encoreMult) {
+function produce(s, dt, P, encoreMult, massProduction = false) {
   const tMult = tempoProdMult(s.tempoLevel) * (1 + totalMilestones(s) * TS_BONUS) * P.prodScale
-  const global = encoreMult.times(tMult)
+  const massCount = massProduction ? s.purchased.filter((p) => p >= 1000).length : 0
+  const global = encoreMult.times(tMult).times(Math.pow(2, massCount))
   const snap = s.qty.map((q) => q)
   for (let i = 0; i < TIERS.length; i++) {
     if (snap[i].eq(0)) continue
@@ -117,25 +118,26 @@ function produce(s, dt, P, encoreMult) {
 }
 
 // simulate one run until gate met (purchased[gateTier] >= gateAmount) or time cap
-export function simRun({ maxTierIdx, gate, encoreMult = D(1), P, dt = 1, capHours = 24, startSW = null }) {
+export function simRun({ maxTierIdx, gate, encoreMult = D(1), P, dt = 1, capHours = 24, startSW = null, massProduction = false }) {
   const s = freshRun(maxTierIdx)
   if (startSW) s.sw = Decimal.max(s.sw, startSW)  // Sight-Reading head-start seeds the opening SW
   let t = 0
   const maxT = capHours * 3600
   const oom = []
-  let nextOom = 1, peak = D(0)
+  let nextOom = 1, peak = D(0), maxMassCount = 0
   let notes10 = null // opening-feel metric: seconds to own 10 Notes (tier 0)
   while (t < maxT) {
     playerBuy(s, P)
-    produce(s, dt, P, encoreMult)
+    produce(s, dt, P, encoreMult, massProduction)
+    maxMassCount = Math.max(maxMassCount, s.purchased.filter((p) => p >= 1000).length)
     t += dt
     if (notes10 === null && s.purchased[0] >= 10) notes10 = t
     if (s.sw.gt(peak)) peak = s.sw
     const l10 = peak.log10()
     if (l10 >= nextOom) { oom.push([t, Math.floor(l10)]); nextOom = Math.floor(l10) + 1 }
-    if (s.purchased[gate.tierIdx] >= gate.amount) return { reached: true, t, peak, s, oom, notes10 }
+    if (s.purchased[gate.tierIdx] >= gate.amount) return { reached: true, t, peak, s, oom, notes10, maxMassCount }
   }
-  return { reached: false, t: maxT, peak, s, oom, notes10 }
+  return { reached: false, t: maxT, peak, s, oom, notes10, maxMassCount }
 }
 
 // EP gained from a run's peak

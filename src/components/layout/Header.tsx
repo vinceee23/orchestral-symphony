@@ -7,6 +7,7 @@ import { TIER_CONFIGS } from '../../core/constants'
 import { formatNumber } from '../../core/format'
 import { getTierProductionPerSec, getCoreProductionMultiplier } from '../../core/formulas'
 import { getCrescendoMultiplier } from '../../core/crescendo'
+import { hasPerk } from '../../core/perks'
 import { SmoothNumber } from '../shared/SmoothNumber'
 import { Icon } from '../shared/Icon'
 
@@ -36,6 +37,7 @@ export function Header() {
   const globalMult = getAchievementGlobalMultiplier(achievementSet).times(getCoreProductionMultiplier({
     lifetimeEncorePoints, finalePoints, encoreUpgrades, tempoLevel: tempo.level, tiers,
     opusUpgrades, crescendoLevel: crescendo, recordsSold, platinum,
+    massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
   }))
   const tier1 = tiers[0]
   const fullMult = globalMult.times(getAchievementTierMultiplier(achievementSet, 1))
