@@ -149,8 +149,10 @@ export const OPUS_UPGRADES: OpusUpgradeConfig[] = [
     id: 'tempo-op-mult',
     track: 'TEMPO',
     name: 'Allegro Spirit',
+    // baseCost 2->1 (pacing P1): lets opPower buy in at MO#1-2 instead of ~#6, so the pre-Platinum loop
+    // accelerates every cycle instead of 5 flat wall re-climbs. Sim: Platinum ~22.4h -> ~17.7h.
     description: 'Each level multiplies global tempo/production (x1.5).',
-    baseCost: 2,
+    baseCost: 1,
     costGrowth: 1.7,
     maxLevel: 8,
   },
