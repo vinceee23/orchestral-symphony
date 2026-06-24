@@ -69,17 +69,20 @@ export const StageHall = memo(function StageHall({ era, liveliness }: Props) {
       {/* ── tiered risers receding behind the orchestra (one radial mask; stays visible at era 0) ── */}
       <div
         className="absolute left-1/2 bottom-[16%] -translate-x-1/2 transition-all duration-[1500ms] ease-out"
-        style={{
-          width: `${64 + grand * 26}%`, height: '34%',
-          opacity: 0.4 + grand * 0.5,
-          background:
-            `repeating-linear-gradient(0deg, ${color}26 0 16px, ${color}66 16px 18px, ${color}08 18px 20px)`,
-          maskImage: 'radial-gradient(95% 130% at 50% 100%, #000 50%, transparent 88%)',
-          WebkitMaskImage: 'radial-gradient(95% 130% at 50% 100%, #000 50%, transparent 88%)',
-          transform: 'translateX(-50%) perspective(700px) rotateX(42deg)',
-          transformOrigin: 'bottom',
-        }}
-      />
+        style={{ width: `${64 + grand * 26}%`, height: '34%', opacity: 0.4 + grand * 0.5 }}
+      >
+        <div
+          className="w-full h-full"
+          style={{
+            background:
+              `repeating-linear-gradient(0deg, ${color}26 0 16px, ${color}66 16px 18px, ${color}08 18px 20px)`,
+            maskImage: 'radial-gradient(95% 130% at 50% 100%, #000 50%, transparent 88%)',
+            WebkitMaskImage: 'radial-gradient(95% 130% at 50% 100%, #000 50%, transparent 88%)',
+            transform: 'perspective(700px) rotateX(42deg)',
+            transformOrigin: 'bottom center',
+          }}
+        />
+      </div>
       {/* ── audience: silhouetted rows filling the house (front foreground) ── */}
       <svg
         className="absolute inset-x-0 bottom-0 w-full h-[18%] transition-opacity duration-[1500ms]"
