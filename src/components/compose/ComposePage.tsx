@@ -136,6 +136,10 @@ export function ComposePage() {
           'linear-gradient(180deg, #050507 0%, #020203 100%)',
       }}
     >
+      {/* Stage content shifted left by HALF the sidebar so the orchestra centers on the SCREEN
+          (not the sidebar-offset play-area) — Melodies lands on the true screen center. Dialogs stay
+          OUTSIDE this wrapper (a transform would otherwise break their fixed/viewport positioning). */}
+      <div className="relative h-full w-full -translate-x-8 md:-translate-x-[104px]">
       {/* spotlight beam from above */}
       <div
         className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 z-0"
@@ -269,6 +273,7 @@ export function ComposePage() {
           </button>
         )}
       </div>
+      </div>{/* /stage-shift wrapper */}
 
       {pendingEncore && <PrestigeDialog type="encore" onConfirm={doEncore} onCancel={() => setPendingEncore(false)} />}
       {pendingMO && <PrestigeDialog type="mo" onConfirm={doMO} onCancel={() => setPendingMO(false)} />}
