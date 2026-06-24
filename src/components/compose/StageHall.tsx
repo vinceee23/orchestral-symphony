@@ -6,7 +6,10 @@
  */
 import { memo } from 'react'
 
-const ERA_COLORS = ['#d4a843', '#d4a843', '#7c3aed', '#f59e0b'] // gold · gold · violet · amber-blaze
+// One hall tier per prestige layer (0 intimate · 1 Encore · 2 Magnum Opus · 3 Repertoire ·
+// 4 Genre · 5 Virtuoso · 6 Canon). L1/L2 palettes are final; L3-L6 are placeholders to tune as each ships.
+const TOTAL_LAYERS = 6
+const ERA_COLORS = ['#d4a843', '#d4a843', '#7c3aed', '#2dd4bf', '#ec4899', '#ef4444', '#fbbf24']
 
 interface Props {
   era: number
@@ -15,11 +18,13 @@ interface Props {
 
 // Memoized: era/liveliness only change on prestige, so this renders ~once instead of every game-loop frame.
 export const StageHall = memo(function StageHall({ era, liveliness }: Props) {
-  const color = ERA_COLORS[Math.min(era, 3)]
-  // each layer grows as you rise — but keep a visible baseline so the stage always reads as a real hall.
-  const grand = Math.min(1, 0.25 + (era / 3) * 0.7 + liveliness * 0.1)
-  const archOn = Math.min(1, 0.2 + (era / 3) * 0.7)
-  const audienceOn = era >= 1 ? Math.min(1, era / 3) : 0 // no audience until you've earned an Encore
+  const e = Math.max(0, Math.min(TOTAL_LAYERS, era))
+  const color = ERA_COLORS[e]
+  // grandeur scales across ALL 6 layers (concave so early eras still read well, with headroom reserved up top).
+  const t = Math.pow(e / TOTAL_LAYERS, 0.65)
+  const grand = Math.min(1, 0.3 + t * 0.7 + liveliness * 0.05)
+  const archOn = Math.min(1, 0.2 + t * 0.7)
+  const audienceOn = e >= 1 ? Math.min(1, 0.15 + t * 0.85) : 0 // no audience until you've earned an Encore
 
   return (
     <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden" aria-hidden="true">

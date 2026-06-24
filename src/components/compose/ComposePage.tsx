@@ -40,9 +40,10 @@ export function ComposePage() {
   // Spotlight heartbeat (capped) + ambient liveliness (bland pre-Encore, warmer each layer).
   const pulseDur = Math.min(2, Math.max(0.5, 60 / (tempo.baseBPM || 60)))
   const liveliness = getLiveliness(lifetimeEncorePoints, opusPoints, finalePoints)
-  // Stage era drives the "grander hall" pull-back: 0 intimate · 1 Encore · 2 Magnum Opus · 3 Finale.
-  const era = finalePoints > 0 ? 3 : opusPoints > 0 ? 2 : lifetimeEncorePoints > 0 ? 1 : 0
-  const orchestraScale = [1, 0.93, 0.86, 0.8][era] // camera pulls back as the hall grows
+  // Stage era = one hall tier per prestige layer (0 intimate · 1 Encore · 2 Magnum Opus ·
+  // 3 Repertoire · 4 Genre · 5 Virtuoso · 6 Canon). Only 0-2 reachable today; finale jumps to the top tier.
+  const era = finalePoints > 0 ? 6 : opusPoints > 0 ? 2 : lifetimeEncorePoints > 0 ? 1 : 0
+  const orchestraScale = [1, 0.93, 0.86, 0.82, 0.78, 0.74, 0.7][era] ?? 0.7 // camera pulls back per layer
   const goldWash = (0.04 + liveliness * 0.12).toFixed(3)
   // Magnum Opus era brings violet richness into the hall — a clear mood shift, not just brighter gold.
   const purpleWash = (opusPoints > 0 ? 0.13 : liveliness * 0.03).toFixed(3)
