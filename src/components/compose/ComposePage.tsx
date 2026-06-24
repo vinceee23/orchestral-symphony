@@ -9,6 +9,9 @@ import { StageHall } from './StageHall'
 import { ConductorPodium } from './ConductorPodium'
 import { getEncoreCost } from '../../core/constants'
 import { getEncoreGain, getLiveliness, getEncoreMultiplier } from '../../core/formulas'
+import { getCrescendoMultiplier } from '../../core/crescendo'
+import { getTempoOpMultiplier } from '../../core/opusUpgrades'
+import { getFameMultiplier } from '../../core/records'
 import { getOvertureGainMultiplier } from '../../core/encoreUpgrades'
 import { playPrestigeSound } from '../../core/audio'
 import { getChallengeById, getActiveChallengeModifiers } from '../../core/challenges'
@@ -22,7 +25,10 @@ export function ComposePage() {
   const encoreUpgrades = useGameStore((s) => s.encoreUpgrades)
   const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const opusPoints = useGameStore((s) => s.opusPoints)
+  const opusUpgrades = useGameStore((s) => s.opusUpgrades)
   const crescendo = useGameStore((s) => s.crescendo)
+  const recordsSold = useGameStore((s) => s.recordsSold)
+  const platinum = useGameStore((s) => s.platinum)
   const finalePoints = useGameStore((s) => s.finalePoints)
   const tempo = useGameStore((s) => s.tempo)
   const performEncore = useGameStore((s) => s.performEncore)
@@ -80,6 +86,11 @@ export function ComposePage() {
   // 3 Repertoire · 4 Genre · 5 Virtuoso · 6 Canon). Only 0-2 reachable today; finale jumps to the top tier.
   const era = finalePoints > 0 ? 6 : opusPoints > 0 ? 2 : lifetimeEncorePoints > 0 ? 1 : 0
   const orchestraScale = [1, 0.93, 0.86, 0.82, 0.78, 0.74, 0.7][era] ?? 0.7 // camera pulls back per layer
+  const stageGlow = 0.5 + (era / 6) * 0.5 // dim + intimate at era 0, brighter each prestige layer
+  // Live "conduct stage" multipliers (crescendo updates as you hold Conduct).
+  const crescendoMult = getCrescendoMultiplier(crescendo, opusUpgrades)
+  const tempoOpMult = getTempoOpMultiplier(opusUpgrades)
+  const fameMult = platinum ? getFameMultiplier(recordsSold, opusUpgrades) : 1
   const goldWash = (0.04 + liveliness * 0.12).toFixed(3)
   // Magnum Opus era brings violet richness into the hall — a clear mood shift, not just brighter gold.
   const purpleWash = (opusPoints > 0 ? 0.13 : liveliness * 0.03).toFixed(3)
@@ -109,7 +120,7 @@ export function ComposePage() {
       <div
         className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 z-0"
         style={{
-          width: '72%', height: '80%',
+          width: '72%', height: '80%', opacity: stageGlow,
           background: 'linear-gradient(180deg, rgba(212,168,67,0.20), rgba(212,168,67,0.05) 50%, transparent 80%)',
           clipPath: 'polygon(46% 0%, 54% 0%, 100% 100%, 0% 100%)',
         }}
@@ -126,7 +137,7 @@ export function ComposePage() {
       {/* stage floor pool */}
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 h-48 z-0"
-        style={{ background: 'radial-gradient(55% 100% at 50% 100%, rgba(212,168,67,0.12), transparent 70%)' }}
+        style={{ opacity: stageGlow, background: 'radial-gradient(55% 100% at 50% 100%, rgba(212,168,67,0.12), transparent 70%)' }}
       />
       {/* the living hall — risers, audience, architecture, overhead light (grows per era) */}
       <StageHall era={era} liveliness={liveliness} />
@@ -153,7 +164,7 @@ export function ComposePage() {
         <div className="w-full max-w-5xl flex-1 flex items-center justify-center pb-28">
           <div
             className="w-full transition-transform duration-[1500ms] ease-out"
-            style={{ transform: `scale(${orchestraScale})` }}
+            style={{ transform: `scale(${orchestraScale})`, transformOrigin: 'center' }}
           >
             <OrchestraStage />
           </div>
@@ -163,24 +174,40 @@ export function ComposePage() {
       {/* conductor's podium — active after first Magnum Opus */}
       <ConductorPodium active={opusPoints > 0} swell={crescendo} />
 
+      {/* Conduct control + live "what's multiplying right now" readout (center-bottom, above the podium) */}
       {opusPoints > 0 && (
-        <button
-          type="button"
-          className="absolute left-1/2 bottom-24 -translate-x-1/2 z-20 px-5 py-2 rounded-full border border-accent-gold/50 bg-accent-gold/10 backdrop-blur text-accent-gold font-display text-sm font-semibold select-none touch-none hover:bg-accent-gold/20 active:bg-accent-gold/30 transition-colors"
-          onPointerDown={() => setConducting(true)}
-          onPointerUp={() => setConducting(false)}
-          onPointerLeave={() => setConducting(false)}
-          onPointerCancel={() => setConducting(false)}
-        >
-          Conduct
-        </button>
+        <div className="absolute left-1/2 bottom-20 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5">
+          <div className="px-3 py-1.5 rounded-lg border border-accent-purple/30 bg-bg-primary/75 backdrop-blur text-center pointer-events-none">
+            <div className="text-[9px] uppercase tracking-[0.2em] text-text-muted">Now playing</div>
+            <div className={`text-sm font-display font-semibold tabular-nums ${crescendo > 0.02 ? 'text-accent-gold' : 'text-text-secondary'}`}>
+              Crescendo ×{crescendoMult.toFixed(2)}
+            </div>
+            {(tempoOpMult > 1 || fameMult > 1) && (
+              <div className="text-[10px] text-text-secondary tabular-nums">
+                {tempoOpMult > 1 && <span>Tempo ×{tempoOpMult.toFixed(2)}</span>}
+                {tempoOpMult > 1 && fameMult > 1 && <span> · </span>}
+                {fameMult > 1 && <span>Fame ×{fameMult.toFixed(2)}</span>}
+              </div>
+            )}
+          </div>
+          <button
+            type="button"
+            className="px-6 py-2 rounded-full border border-accent-gold/50 bg-accent-gold/10 backdrop-blur text-accent-gold font-display text-sm font-semibold select-none touch-none hover:bg-accent-gold/20 active:bg-accent-gold/30 transition-colors"
+            onPointerDown={() => setConducting(true)}
+            onPointerUp={() => setConducting(false)}
+            onPointerLeave={() => setConducting(false)}
+            onPointerCancel={() => setConducting(false)}
+          >
+            Conduct <span className="opacity-60 text-[10px]">(hold / Space)</span>
+          </button>
+        </div>
       )}
 
-      {/* Prominent Encore call-to-action when ready (full detail lives in the Prestige tab) */}
+      {/* Encore call-to-action — bottom-RIGHT so it never collides with the centered Conduct control */}
       {canEncore && (
         <button
           onClick={onEncore}
-          className="absolute left-1/2 -translate-x-1/2 bottom-6 z-20 px-6 py-3 rounded-full border border-accent-gold/60 bg-accent-gold/15 backdrop-blur text-accent-gold font-display font-semibold shadow-2xl hover:bg-accent-gold/25 hover:brightness-110 transition-all animate-pulse-gold"
+          className="absolute right-6 bottom-6 z-20 px-6 py-3 rounded-full border border-accent-gold/60 bg-accent-gold/15 backdrop-blur text-accent-gold font-display font-semibold shadow-2xl hover:bg-accent-gold/25 hover:brightness-110 transition-all animate-pulse-gold"
         >
           ✦ Encore Ready{projectedGain > 0 ? ` · +${projectedGain} Applause` : ''} ✦
         </button>
