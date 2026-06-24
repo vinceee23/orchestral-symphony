@@ -250,27 +250,40 @@ active push. Because conducting a crescendo demands attention, the rote buying (
 **automatable at L2** — so the player's active focus shifts *from buying → to conducting.* (This revises
 the earlier "automation = L3" plan; see layer-map note below.)
 
-**The Crescendo (the new verb, on the Compose stage):** a meter you build by actively conducting
-(hold/click). At its peak it grants a big **temporary** production multiplier that decays when you stop.
-Idle players keep the baseline tempo; active players ride crescendos for surges. With buying automated,
-**conducting the crescendo IS the active gameplay.**
+**The Crescendo (the new verb — forgiving, a reward not a chore).** A meter that builds from your ACTIVE
+input (manual buying / a "Conduct" hold-button) and grants a temporary production surge scaling with the
+meter. Design rules so it's never punishing and never twitchy:
+- **Idle is fine.** The meter cools to 0 and you produce at full baseline (automators keep buying). Missing
+  crescendos costs only the BONUS, never your baseline — stepping away never craters you.
+- **Decays slowly.** A short break barely dents it; you drift back, not fall off a cliff.
+- **No rhythm/timing.** Just being active builds it; a single Conduct hold sustains it. Forgiving, not Guitar Hero.
+- **Only YOUR input builds it** (automator buys don't) — so active play stays meaningfully better without
+  idle being penalized. This is the "more rewarding to actively play" lever.
 
-**Opus Points are spent in the Magnum Opus section (Prestige tab) on three things:**
-1. **Tempo** — each OP raises baseline tempo (passive production speed; the existing ×BPM idea).
-2. **Automators** — OP buys autobuyers (per-tier auto-purchase + auto-tempo), earned and upgradable
-   (interval → bulk). This frees your hands for the crescendo.
-3. **Crescendo ceiling** — OP raises how high a crescendo can surge (and how slowly it decays).
+**Automators — unlocked FREE by your first Magnum Opus, upgraded by OP.** Performing MO unlocks the
+autobuyers (thematic: the recording lets session players cover your parts). They run at a **baseline rate**
+so idle keeps progressing — but **manual buying is faster AND builds the crescendo**, so players who press M
+are rewarded. Automation is idle convenience, not the optimal play.
 
-**Loop:** Magnum Opus → OP → buy automators (free your hands) + tempo + ceiling → conduct crescendos for
-production surges → accumulate OP toward Layer 3. Cadence: days → weeks.
+**Opus Points = the upgrade TREE** (OP does NOT unlock automators — it improves them). Spend OP on branches:
+- **Automators** — speed (interval ↓), bulk (buy 1→10→max), later smart/conditional buys.
+- **Tempo** — raise baseline tempo.
+- **Crescendo** — raise the surge ceiling and slow the decay.
+The tree gradually narrows the auto-vs-manual buying gap, leaving the **crescendo** as the enduring reason
+to play actively.
+
+**Loop:** Magnum Opus → unlock automators (hands freed) → spend OP in the tree (faster autos + tempo +
+crescendo) → conduct crescendos for surges while autos handle the floor → accumulate OP toward Layer 3.
+Cadence: days → weeks.
 
 **Layer-map implication:** basic automation now enters at **L2**. **L3 (Repertoire)** shifts from "the
 automation layer" to **automation MASTERY / permanence** — the AD-Eternity-Milestone idea: auto-prestige,
 keep-automation-forever ratchets, and eventually light scripting. (Re-designed when we reach it.)
 
-**Build order (when we build L2):** OP gain formula + Magnum Opus section UI (tempo / automators / ceiling)
-→ autobuyer system earned via OP (reuse the existing `autobuyers` store scaffold) → the Crescendo meter +
-active mechanic on the stage → sim-validate OP gain + crescendo balance → cliffhanger into L3.
+**Build order (when we build L2):** OP gain formula → first-MO unlocks the autobuyer system (reuse the
+existing `autobuyers` store scaffold, baseline rate) → OP upgrade TREE (automator speed/bulk, tempo,
+crescendo) in the Magnum Opus section → the Crescendo meter + Conduct mechanic on the stage (input-built,
+slow decay) → sim-validate OP gain + auto-vs-manual gap + crescendo balance → cliffhanger into L3.
 
-**Open for playtest/tuning:** crescendo build/decay rates, whether it's hold-to-build or click-to-pump,
-OP gain formula, and how aggressively automators should be priced in OP.
+**Open for playtest/tuning:** crescendo build/decay rates, hold-to-build vs click-to-pump, OP gain formula,
+the baseline automator rate vs manual (must keep manual meaningfully faster), and OP tree costs/branch depth.
