@@ -19,7 +19,8 @@ export const ENCORE_UPGRADES: EncoreUpgradeConfig[] = [
     id: 'perfectPitch',
     name: 'Perfect Pitch',
     description: '+20% to all production per level.',
-    baseCost: 2,
+    // baseCost 1 so the first Encore's 1 Applause always buys something (no dead-end entry point).
+    baseCost: 1,
     costGrowth: 3,
     maxLevel: 10,
   },

@@ -650,9 +650,11 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   {
     id: 'ach_perk_tempo_headstart',
     name: 'Speed of Sound',
-    description: 'Reach 1e15 Soundwaves within 5 minutes of a run',
+    description: 'Reach 1e40 Soundwaves within 5 minutes of a run (post-Magnum Opus)',
     icon: '\u{23F1}',
-    check: (s) => s.soundwaves.gte(1e15) && (Date.now() - s.currentRunStartTime) <= 300000,
+    // Gated on opusCount so it can't fire in the first minutes of a fresh game; 1e40-in-5min is a real
+    // post-MO speed challenge (the wall peaks ~1e108), fitting for a veteran perk reward.
+    check: (s) => s.opusCount >= 1 && s.soundwaves.gte('1e40') && (Date.now() - s.currentRunStartTime) <= 300000,
     reward: { perk: 'perk-tempo-headstart' },
     rewardDescription: 'PERK: start each run at Tempo level 8',
   },
