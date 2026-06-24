@@ -280,6 +280,21 @@ Cadence: days → weeks.
 automation layer" to **automation MASTERY / permanence** — the AD-Eternity-Milestone idea: auto-prestige,
 keep-automation-forever ratchets, and eventually light scripting. (Re-designed when we reach it.)
 
+### Locked specifics (Q&A 2026-06-24)
+- **Conduct** unlocks at your **first Magnum Opus** (it IS the L2 reveal). Hold a "Conduct" button / Spacebar.
+- **Crescendo:** ×3 production surge at base (OP raises the ceiling). **Slow build** (~10-15s to full) / **slow
+  decay** (~20-30s) — relaxed, lingers, a short break barely dents it. **Pure upside** (no penalty/cooldown).
+  Peak crescendo **boosts OP gain.** A deep OP upgrade adds **auto-conduct** (holds ~50% crescendo while AFK).
+- **OP gain arc (the original "Break"):**
+  1. **Flat +1 OP** per Magnum Opus to start (simple).
+  2. OP-tree upgrades raise OP gain and the crescendo→OP multiplier.
+  3. **Go Platinum** — a **Records Sold** meter (fueled by a BLEND of production + crescendo spikes — a hit
+     performance sells) climbs to **1,000,000** (real platinum cert). Hitting it = the breakthrough: OP gain
+     flips from flat to **SUBLINEAR** (root of peak Soundwaves × a crescendo bonus). This is our Break-Infinity
+     beat, but triggered by *reach* (a million listeners), not a number ceiling — distinctly ours.
+  4. **Post-Platinum:** Records Sold keeps climbing as a permanent **"fame" multiplier** (small permanent
+     production/OP bonus) — the meter never becomes vestigial.
+
 **Build order (when we build L2):** OP gain formula → first-MO unlocks the autobuyer system (reuse the
 existing `autobuyers` store scaffold, baseline rate) → OP upgrade TREE (automator speed/bulk, tempo,
 crescendo) in the Magnum Opus section → the Crescendo meter + Conduct mechanic on the stage (input-built,
