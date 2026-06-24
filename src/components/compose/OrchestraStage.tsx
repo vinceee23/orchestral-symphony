@@ -87,7 +87,7 @@ export function OrchestraStage() {
 
   return (
     <div className="w-full">
-      <div className="flex justify-center items-end gap-3 sm:gap-5 flex-wrap">
+      <div className="flex justify-center items-end gap-3 sm:gap-5 flex-wrap pb-16">
         {TIER_CONFIGS.map((config, i) => {
           const tier = tiers[i]
           const arc = Math.pow((i - 3) / 3, 2) * 50 // parabola: center sits highest (stage curve)
@@ -179,7 +179,7 @@ export function OrchestraStage() {
         })}
       </div>
 
-      <p className="relative mt-5 text-center text-[10px] text-text-muted/70 tracking-wide">
+      <p className="relative mt-2 text-center text-[10px] text-text-muted/70 tracking-wide">
         Tap a section to bring it in · brighter sections are richer · every 10th doubles its voice
       </p>
     </div>
