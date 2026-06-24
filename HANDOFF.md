@@ -2,7 +2,14 @@
 
 > This session hit 100% context. Everything important is in git + `DESIGN.md` +
 > the dashboard + memory; this file is the fast on-ramp. **Read this first, then
-> `DESIGN.md` (esp. §11), then `git log --oneline -15`.** Last commit: `f46d663`.
+> `DESIGN.md` (esp. §11), then `git log --oneline -15`.** Last commit: `9ee6c8a`.
+>
+> **SESSION 2 (2026-06-24/25) shipped 12 commits — see §7 at the bottom for the full rundown.**
+> TL;DR: global Space-conduct + header crescendo; MO re-masters the wall + Opus Mastery reprice;
+> an app-wide spacing root-cause fix (unlayered `*{}` reset was killing every Tailwind m-*/p-*
+> utility) + viewport tab-centering; Conduct UI declumped; a 10-perk functional-reward system;
+> Platinum is now a mystery until reached; achievements re-paced (73 total, dead zones filled,
+> fragile checks fixed); Sight-Reading reworked into a sim-tuned head-start + new "Rehearsal" upgrade.
 
 ---
 
@@ -141,4 +148,63 @@
 - flexbox `min-width:auto` lets a `flex-1 main` overflow — add `min-w-0`.
 - Combining `translateX(-50%)` with `perspective()/rotateX()` in ONE transform
   breaks horizontal centering (split into outer-2D + inner-3D divs).
+- **Tailwind v4 cascade layers > specificity.** An UNLAYERED rule (e.g. a raw
+  `*{margin:0;padding:0}` reset) silently overrides EVERY `@layer utilities`
+  class — it was zeroing all `m-*/p-*/mx-auto/space-y-*` app-wide (the real cause
+  of the "mx-auto left-aligns" gotcha above). Keep custom resets inside `@layer base`.
 - `npx tsc -b && npx vitest run` is the gate. Both must be clean before commit.
+
+---
+
+## 7. SESSION 2 rundown (2026-06-24/25) — 12 commits, `9c04ba9`→`9ee6c8a`
+
+**How we worked:** heavy delegation paid off — Cursor (composer-2.5) authored the
+declarative bulk (perk registries, achievement defs, re-pacing), Codex (gpt-5.5)
+reviewed diffs + brainstormed the achievement-pacing, Claude wrote specs, wired the
+sensitive game-logic, ran the sim/test gate, and committed. Vince's working style
+(see `memory/planning-style.md`): lock a comprehensive plan via Q&A to ~98% confidence
+BEFORE building; don't pivot mid-build.
+
+**Shipped:**
+1. `8b0ee8e` Global Space-conduct (lifted the listener to AppShell so it survives tab
+   switches) + subtle header crescendo `♪ ×N` pill. Conduct held-sources (Space/pointer)
+   split in uiStore so neither cancels the other.
+2. `49ffb58` **MO re-masters the wall**: every Magnum Opus resets `layer1WallReached`
+   (re-climb 8 Encores). **Opus Mastery** repriced (growth 1.8→1.4, max 5→8) so the +1
+   OP headline actually climbs to ~+5 by Platinum — fixes pre-Platinum staleness WITHOUT
+   pre-empting the Platinum catalog switch. Validated by `sim/l2mastery.mjs` (NEW).
+3. `7d6f483` **App-wide spacing root cause** (see new gotcha above) + viewport tab-centering
+   (`pr-16 md:pr-52` on non-compose `<main>` makes mx-auto content center on the true screen).
+4. `1ea60fe` Conduct UI declumped into one bottom-anchored podium column (slim readout →
+   button → podium, gap-spaced; swell-meter rises toward the button per §11).
+5. `523fe25` + `3acaa4f` **Perk system (10 functional perks)** — `src/core/perks.ts`
+   (`PERKS` registry + `hasPerk` + effect constants). Each perk is granted by an achievement
+   (always-on once earned), wired across gameStore/tick/records. Perks: skip-wall,
+   keep-encore-upgrades, warmup, fast-automators, tempo-headstart, crescendo-headstart,
+   encore-discount, bulk-unlock, second-wind, platinum-press. **Distinct head-start axes**
+   (tiers/SW/tempo/crescendo) kept separate by design.
+6. `7e9c652` **Platinum is a mystery** — Opus-tab stat reframed to "??? · N/1,000,000"
+   pre-reveal; `ach_going_platinum`/`ach_perk_muscle_memory` hidden until earned. Post-reveal
+   copy (Fame/Certified/Gone Platinum) unchanged.
+7. `a51b05c` **Achievement re-pace** (Codex-brainstormed): was ~37/67 unlocked before first MO.
+   Re-gated 9 front-loaders later, fixed fragile checks (nyan exact-999→`gte`, smooth_criminal,
+   sandstorm desc, crescendo achs gated on `opusCount>0`), added 6 dead-zone achs (MO-gate/
+   Platinum/L3). **73 achievements total.**
+8. `9ee6c8a` **Encore-shop rework** — Sight-Reading is now a 1-time UNLOCK of a Soundwave
+   head-start `(prior peak)^exp` (base 0.5 + 0.04×3 head-start achievements), **applied only
+   on Encore**. Sim-tuned: the escalating gate sits above each prior peak, so even a near-1.0
+   exponent barely shifts wall-time — 0.5 skips the tedious re-climb without trivializing.
+   New "Rehearsal" upgrade (−5% tier costs/level, max −25%).
+
+**Follow-ups / flags for next session:**
+- **"Mass Production" perk is weak** — manual bulk-buy (1/10/Max) was already ungated, so it only
+  lifts the *autobuyer* bulk cap. Consider a stronger effect.
+- **Re-gated achievements can "un-earn"** on an existing save (harder conditions flip them back to
+  locked). Fine in dev; note if it confuses playtest.
+- **opusCount-gated perks** (skip-wall, warmup) activate one prestige cycle AFTER their achievement
+  unlocks (the ~300ms achievement-check tick lags the opusCount increment). Documented in
+  `performMagnumOpus`. Accepted as a minor boundary delay.
+- **Cosmetic shop + Nyan theme** (old queue #3) and **backdrop art** (#6, blocked on API quota) are
+  still untouched.
+- New balance sims: `sim/l2mastery.mjs` (MO progression + Opus Mastery), `sim/engine.mjs` gained an
+  optional `startSW` for head-start modelling. Re-run before any further pacing tweaks.
