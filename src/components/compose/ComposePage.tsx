@@ -165,7 +165,7 @@ export function ComposePage() {
       <FloatingNotes />
 
       {/* content */}
-      <div className="relative z-10 h-full overflow-y-auto flex flex-col items-center px-4 py-5">
+      <div className="relative z-10 h-full overflow-y-auto flex flex-col items-center px-4 py-5 [scrollbar-gutter:stable_both-edges]">
         <SoundwaveDisplay />
         <div className="w-full max-w-3xl mt-1"><TempoBar /></div>
 
@@ -174,9 +174,9 @@ export function ComposePage() {
           <BuyAmountToggle />
         </div>
 
-        <div className="w-full flex justify-center mt-3 pb-24">
+        <div className="w-full mt-3 pb-24">
           <div
-            className="transition-transform duration-[1500ms] ease-out"
+            className="mx-auto w-fit transition-transform duration-[1500ms] ease-out"
             style={{ transform: `scale(${orchestraScale})`, transformOrigin: 'top center' }}
           >
             <OrchestraStage />
