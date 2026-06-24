@@ -20,7 +20,7 @@ function buyTier(id: number) {
 function act(key: string) {
   const s = useGameStore.getState()
   if (key >= '1' && key <= '7') buyTier(Number(key))
-  else if (key === 'm') for (let id = 1; id <= TIER_COUNT; id++) s.buyMaxTier(id)
+  else if (key === 'm') { for (let id = 1; id <= TIER_COUNT; id++) s.buyMaxTier(id); s.buyMaxTempo() } // max EVERYTHING (AD-style)
   else if (key === 't') s.buyMaxTempo()
 }
 
