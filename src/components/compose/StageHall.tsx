@@ -13,10 +13,10 @@ interface Props {
 
 export function StageHall({ era, liveliness }: Props) {
   const color = ERA_COLORS[Math.min(era, 3)]
-  // each layer fades in as the hall grows; 0 at pre-Encore, full by Finale
-  const grand = Math.min(1, era / 3 + liveliness * 0.15)
-  const archOn = era >= 1 ? Math.min(1, (era - 0) / 3 + 0.2) : 0.06
-  const audienceOn = era >= 1 ? Math.min(1, (era) / 3) : 0
+  // each layer grows as you rise — but keep a visible baseline so the stage always reads as a real hall.
+  const grand = Math.min(1, 0.25 + (era / 3) * 0.7 + liveliness * 0.1)
+  const archOn = Math.min(1, 0.2 + (era / 3) * 0.7)
+  const audienceOn = era >= 1 ? Math.min(1, era / 3) : 0 // no audience until you've earned an Encore
 
   return (
     <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden" aria-hidden="true">
@@ -34,17 +34,17 @@ export function StageHall({ era, liveliness }: Props) {
           borderTop: `1px solid ${color}33`,
         }}
       />
-      {/* ── tiered risers receding behind the orchestra ── */}
+      {/* ── tiered risers receding behind the orchestra (stacked steps: lit edge + filled tread) ── */}
       <div
-        className="absolute left-1/2 bottom-[20%] -translate-x-1/2 transition-all duration-[1500ms] ease-out"
+        className="absolute left-1/2 bottom-[16%] -translate-x-1/2 transition-all duration-[1500ms] ease-out"
         style={{
-          width: `${60 + grand * 30}%`, height: '34%',
-          opacity: 0.12 + grand * 0.3,
+          width: `${66 + grand * 24}%`, height: '34%',
+          opacity: 0.55 + grand * 0.35,
           background:
-            `repeating-linear-gradient(0deg, ${color}14 0 2px, transparent 2px 22px)`, // riser steps
-          maskImage: 'radial-gradient(80% 100% at 50% 100%, #000 30%, transparent 80%)',
-          WebkitMaskImage: 'radial-gradient(80% 100% at 50% 100%, #000 30%, transparent 80%)',
-          transform: 'translateX(-50%) perspective(600px) rotateX(38deg)',
+            `repeating-linear-gradient(0deg, ${color}26 0 16px, ${color}66 16px 18px, ${color}08 18px 20px)`,
+          maskImage: 'radial-gradient(95% 130% at 50% 100%, #000 50%, transparent 88%)',
+          WebkitMaskImage: 'radial-gradient(95% 130% at 50% 100%, #000 50%, transparent 88%)',
+          transform: 'translateX(-50%) perspective(700px) rotateX(42deg)',
           transformOrigin: 'bottom',
         }}
       />
