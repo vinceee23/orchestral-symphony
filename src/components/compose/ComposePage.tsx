@@ -141,8 +141,7 @@ export function ComposePage() {
         <SoundwaveDisplay />
         <div className="w-full max-w-3xl mt-1"><TempoBar /></div>
 
-        <div className="w-full max-w-5xl flex items-center justify-between mt-5 mb-1">
-          <h2 className="text-lg font-display font-semibold text-accent-gold tracking-wide">Your Orchestra</h2>
+        <div className="w-full max-w-5xl flex items-center justify-end mt-5 mb-1">
           <BuyAmountToggle />
         </div>
 
