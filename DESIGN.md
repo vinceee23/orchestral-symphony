@@ -393,6 +393,16 @@ the baseline automator rate vs manual (must keep manual meaningfully faster), an
 ## §11 — The Living Hall (Compose stage redesign, 2026-06-24, Vince-locked)
 The Compose stage becomes a hall that grows grander as you rise, and conducting makes the whole room swell.
 The grand view is the *canvas*; Crescendo *animates* it. Decisions:
+
+> **STAGE-GROWTH VISION (Vince-locked 2026-06-24): the stage is a growing production.** Each prestige LAYER
+> adds a visible performer section to the stage — orchestra (L1) → +recording console (L2) → +touring
+> ensemble / second orchestra (L3 Repertoire) → +soloists/choir (later). The stage fills downward/around as
+> you ascend; by the endgame it's a packed production. "Grows grander" made FUNCTIONAL, not just lighting.
+> Three vertical zones: **Orchestra (buy)** · **Podium (conduct)** · **Reach (records→Platinum now; future
+> ensembles later)**. NEAR-TERM: surface the L2 **Records→Platinum** meter as a "now selling…" ticker + a
+> platinum progress bar along the BOTTOM of the stage (currently buried in the Opus tab) so the L2 breakthrough
+> is felt live on-stage.
+
 - **Growth = punctuated PULL-BACK reveals at era-firsts.** The "camera" pulls back (orchestra scales down into
   a larger revealed hall) at the milestones that matter: **1st Encore** (intimate → warm gold hall), **1st
   Magnum Opus** (→ grand violet hall), **Grand Finale** (→ packed house). Each *later* Encore adds a small
