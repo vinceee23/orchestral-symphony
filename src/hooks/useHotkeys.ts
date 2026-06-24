@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useGameStore } from '../store/gameStore'
+import { useUiStore } from '../store/uiStore'
 import { TIER_COUNT } from '../core/constants'
 
 /**
@@ -36,6 +37,8 @@ export function useHotkeys() {
       const t = e.target as HTMLElement | null
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
       const k = e.key.toLowerCase()
+      if (k === 'h') { if (!e.repeat) { e.preventDefault(); useUiStore.getState().toggleHelp() } return }
+      if (k === 'escape') { useUiStore.getState().setHelp(false); return }
       if (!isHotkey(k) || e.ctrlKey || e.metaKey || e.altKey) return
       e.preventDefault()
       if (!held.has(k)) { held.add(k); act(k) } // fire immediately on first press
