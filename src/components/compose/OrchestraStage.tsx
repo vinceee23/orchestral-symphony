@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Decimal from 'break_infinity.js'
 import { useGameStore } from '../../store/gameStore'
 import { TIER_CONFIGS } from '../../core/constants'
@@ -34,8 +34,9 @@ function EmblemIcon({ name, glyph, glow }: { name: string; glyph: string; glow: 
         const d = im.data
         for (let i = 0; i < d.length; i += 4) {
           const lum = (d[i] + d[i + 1] + d[i + 2]) / 3
-          if (lum < 28) d[i + 3] = 0                          // near-black -> transparent
-          else if (lum < 85) d[i + 3] = Math.round(((lum - 28) / 57) * 255) // feather the edge
+          if (lum < 28 || lum > 240) d[i + 3] = 0                              // black bg OR white frame -> transparent
+          else if (lum < 85) d[i + 3] = Math.round(((lum - 28) / 57) * 255)    // feather dark edge
+          else if (lum > 205) d[i + 3] = Math.round(((240 - lum) / 35) * 255)  // feather light edge
         }
         ctx.putImageData(im, 0, 0)
         const url = c.toDataURL('image/png')
@@ -79,6 +80,22 @@ export function OrchestraStage() {
   const buyMaxTier = useGameStore((s) => s.buyMaxTier)
 
   const [burst, setBurst] = useState<number | null>(null)
+
+  // Resonate: when a section first unlocks, fire an expanding ring of light.
+  const [resonating, setResonating] = useState<Set<number>>(() => new Set())
+  const prevUnlocked = useRef<boolean[]>([])
+  const unlockKey = tiers.map((t) => (t.unlocked ? 1 : 0)).join('')
+  useEffect(() => {
+    const newly = tiers.filter((t, i) => t.unlocked && prevUnlocked.current[i] === false).map((t) => t.id)
+    prevUnlocked.current = tiers.map((t) => t.unlocked)
+    if (newly.length === 0) return
+    setResonating((prev) => new Set([...prev, ...newly]))
+    const t = setTimeout(() => setResonating((prev) => {
+      const n = new Set(prev); newly.forEach((id) => n.delete(id)); return n
+    }), 1200)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unlockKey])
 
   const achievementSet = new Set(achievements)
   const globalMult = getAchievementGlobalMultiplier(achievementSet).times(getCoreProductionMultiplier({
@@ -157,6 +174,9 @@ export function OrchestraStage() {
                   : 'none',
               }}
             >
+              {resonating.has(config.id) && (
+                <span className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-accent-gold animate-resonate-ring" />
+              )}
               <EmblemIcon name={config.name.toLowerCase()} glyph={config.icon} glow={glow} />
               <span className="mt-1.5 text-[11px] font-display font-semibold text-accent-gold tracking-wide">
                 {config.name}

@@ -11,7 +11,7 @@ import {
   GRAND_FINALE_SW_THRESHOLD,
   ENCORE_WALL_COUNT,
 } from '../../core/constants'
-import { getEncoreMultiplier, getFinaleMultiplier, getOpusBPMMultiplier, getEncoreGain } from '../../core/formulas'
+import { getEncoreMultiplier, getFinaleMultiplier, getOpusBPMMultiplier, getEncoreGain, getLiveliness } from '../../core/formulas'
 import { ENCORE_UPGRADES, getEncoreUpgradeCost, getOvertureGainMultiplier } from '../../core/encoreUpgrades'
 import Decimal from 'break_infinity.js'
 import { playPrestigeSound, playBuySound } from '../../core/audio'
@@ -166,6 +166,11 @@ export function ComposePage() {
   // Tempo heartbeat for the spotlight — CAPPED so a high BPM never strobes (epilepsy-safe).
   const pulseDur = Math.min(2, Math.max(0.5, 60 / (tempo.baseBPM || 60)))
 
+  // Stage liveliness: bland pre-Encore, warmer/livelier each prestige layer.
+  const liveliness = getLiveliness(lifetimeEncorePoints, opusPoints, finalePoints)
+  const goldWash = (0.04 + liveliness * 0.12).toFixed(3)
+  const purpleWash = (liveliness * 0.1).toFixed(3)
+
   // Production multiplier from TOTAL Applause (lifetime); projected gain from this run's peak.
   const overtureMult = getOvertureGainMultiplier(encoreUpgrades)
   const projectedGain = Math.floor(getEncoreGain(peakSoundwaves) * overtureMult)
@@ -181,8 +186,8 @@ export function ComposePage() {
       className="relative h-full overflow-hidden"
       style={{
         background:
-          'radial-gradient(110% 65% at 50% -5%, rgba(212,168,67,0.06), transparent 50%),' +
-          'radial-gradient(90% 55% at 50% 118%, rgba(124,58,237,0.05), transparent 60%),' +
+          `radial-gradient(110% 65% at 50% -5%, rgba(212,168,67,${goldWash}), transparent 50%),` +
+          `radial-gradient(90% 55% at 50% 118%, rgba(124,58,237,${purpleWash}), transparent 60%),` +
           'linear-gradient(180deg, #050507 0%, #020203 100%)',
       }}
     >

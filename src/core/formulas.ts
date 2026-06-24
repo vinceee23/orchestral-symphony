@@ -170,6 +170,17 @@ export function getFinaleMultiplier(fp: number): Decimal {
 }
 
 /**
+ * Stage "liveliness" 0..1 — how alive the hall feels. Pre-Encore is 0 (bland, stark spotlight);
+ * it rises with total Applause and jumps with each deeper prestige layer. Drives ambient glow,
+ * floating-note density, and color warmth so the world visibly comes alive as you progress.
+ */
+export function getLiveliness(lifetimeEncorePoints: number, opusPoints: number, finalePoints: number): number {
+  if (lifetimeEncorePoints <= 0 && opusPoints <= 0 && finalePoints <= 0) return 0
+  const fromEncore = 0.3 + Math.min(0.3, Math.log10(lifetimeEncorePoints + 1) * 0.12)
+  return Math.min(1, fromEncore + opusPoints * 0.15 + finalePoints * 0.1)
+}
+
+/**
  * THE global production multiplier — the single source of truth shared by the tick and the UI
  * rate displays (so the displayed rate can't drift from real production). Excludes only
  * achievement/tier-achievement mults and challenge-only modifiers (handled by their callers).
