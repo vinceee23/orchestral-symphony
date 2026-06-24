@@ -56,15 +56,17 @@ Each row = a progression zone with a target unlock-window. `[N]` = approx count.
 
 Detailed enough to implement directly against the v1 schema. (Existing kept entries omitted for brevity — full diff produced at build time.)
 
+> **Ladder alignment (2026-06-25):** the ladder is now 6 layers — L3 Repertoire · L4 Genre · L5 Virtuoso · L6 **Grand Finale (end)**. So the "late rows" generalize to **one row per new layer**, detailed alongside each layer as it ships: **R9 = L3 Repertoire** (below), then future R-Genre / R-Virtuoso / **R-Grand-Finale** (the multi-Finale + endgame achievements — `finaleCount`-gated — belong to that LAST row, NOT R9). R9 gates on **L3** state only.
+
 ### R9 — Layer 3 "Repertoire" (NEW, depends on LAYER3-SPEC.md decisions)
-*(IDs provisional; gate on the L3 state fields once they exist — `finalePoints`, `acclaim`, `venues`, `tourProgress`.)*
-- `ach_on_the_road` — **On the Road Again** — "Unlock the Touring Ensemble" — `finaleCount>=1` (or first venue) — `globalPercent 0.10`.
+*(IDs provisional; gate on the **L3** state fields once they exist — `tourPoints`/`acclaim`, `venues`, `tourProgress`, `tourCount`. NOT `finalePoints`/`finaleCount` — those are L6.)*
+- `ach_on_the_road` — **On the Road Again** — "Unlock the Touring Ensemble" — first venue booked / `tourCount>=1` — `globalPercent 0.10`.
 - `ach_first_venue` — **Opening Night** — "Book your first venue" — flat % small.
 - `ach_full_house` — **Full House** — "Fill a venue to capacity (Acclaim milestone)" — `tierPercent` or tempo.
 - `ach_world_tour` — **Around the World (Reprise)** — "Complete the World Tour (all venues)" — **perk: Encore Bus** (§5).
 - `ach_acclaim_1` / `_2` / `_3` — **Standing Ovation / Critical Darling / Household Name** — Acclaim thresholds — escalating global %.
 - `ach_two_orchestras` — **Double Bill** — "Run the touring ensemble + home orchestra simultaneously at full tilt" — **perk: Split the Bill**.
-- `ach_legacy` — **Legacy** — "Complete a Finale carrying Fame forward" — **perk: Legacy** (carry a Fame fraction across Finales; mirrors keep-encore-upgrades).
+- `ach_legacy` — **Legacy** — "Complete an L3 tour reset" — **perk: Legacy** (carry a fraction of your L2 snowball — Fame/Records — across the L3 tour reset; mirrors keep-encore-upgrades). *(The Fame-across-Grand-Finale version belongs to the L6 row.)*
 - `ach_catalogue_deep` — **The Back Catalogue** — "Reach catalogue-scaling finalePoint gain (the L3 break)" — big global %.
 - 2× collectibles + 1 hidden L3 easter egg.
 
