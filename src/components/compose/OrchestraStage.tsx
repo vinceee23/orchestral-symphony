@@ -180,7 +180,7 @@ export function OrchestraStage() {
       </div>
 
       <p className="relative mt-2 text-center text-[10px] text-text-muted/70 tracking-wide">
-        Tap a section to bring it in · brighter sections are richer · every 10th doubles its voice
+        Tap a section to bring it in · every 10th doubles its voice · keys 1-7 buy, M maxes all, T tempo (hold to repeat)
       </p>
     </div>
   )
