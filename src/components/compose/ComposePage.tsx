@@ -131,6 +131,7 @@ export function ComposePage() {
   const activeChallenge = useGameStore((s) => s.activeChallenge)
 
   const [pendingPrestige, setPendingPrestige] = useState<'encore' | 'mo' | 'gf' | null>(null)
+  const [shopOpen, setShopOpen] = useState(false)
 
   const activeCh = activeChallenge ? getChallengeById(activeChallenge.challengeId) ?? null : null
   const mods = getActiveChallengeModifiers(activeCh)
@@ -226,7 +227,7 @@ export function ComposePage() {
 
       {/* Prestige — docked bottom-right */}
       {(canEncore || encoreCount > 0) && !prestigeBlocked && (
-        <aside className="absolute bottom-3 right-3 z-20 w-[300px] max-h-[78%] overflow-y-auto rounded-xl border border-border/60 bg-bg-secondary/85 backdrop-blur-sm p-3 space-y-3 shadow-2xl">
+        <aside className="absolute bottom-3 right-3 z-20 w-[290px] max-w-[calc(100vw-1.5rem)] rounded-xl border border-accent-gold/25 bg-bg-secondary/90 backdrop-blur-sm p-3 space-y-2.5 shadow-2xl">
           <h2 className="text-xs font-display font-semibold text-accent-gold uppercase tracking-wider">
             Prestige
           </h2>
@@ -265,46 +266,15 @@ export function ComposePage() {
             {canEncore && <div className="text-xs text-success mt-1">+{projectedGain} Applause</div>}
           </button>
 
-          {/* Encore Upgrade shop (Applause sink) — after the first Encore */}
+          {/* Encore upgrades open in a modal (keeps the dock clean) */}
           {encoreCount > 0 && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Encore Upgrades</h3>
-                <span className="text-[10px] text-accent-gold">{encorePoints} Applause to spend</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                {ENCORE_UPGRADES.map((u) => {
-                  const level = encoreUpgrades[u.id] ?? 0
-                  const maxed = level >= u.maxLevel
-                  const cost = getEncoreUpgradeCost(u, level)
-                  const affordable = encorePoints >= cost
-                  const buy = () => { if (!maxed && affordable) { buyEncoreUpgrade(u.id); playBuySound(7) } }
-                  return (
-                    <button
-                      key={u.id}
-                      onClick={buy}
-                      disabled={maxed || !affordable}
-                      className={`p-2 rounded-lg border text-left transition-all ${
-                        maxed
-                          ? 'bg-bg-secondary/40 border-border/40 opacity-60 cursor-default'
-                          : affordable
-                            ? 'bg-accent-gold/10 border-accent-gold/30 hover:bg-accent-gold/20 cursor-pointer'
-                            : 'bg-bg-secondary/50 border-border/50 opacity-50 cursor-not-allowed'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-text-primary">{u.name}</span>
-                        <span className="text-[10px] text-text-muted">Lv {level}/{u.maxLevel}</span>
-                      </div>
-                      <div className="text-[10px] text-text-muted mt-0.5 leading-snug">{u.description}</div>
-                      <div className={`text-[10px] mt-1 font-medium ${maxed ? 'text-text-muted' : affordable ? 'text-accent-gold' : 'text-text-muted'}`}>
-                        {maxed ? 'MAX' : `${cost} Applause`}
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
+            <button
+              onClick={() => setShopOpen(true)}
+              className="w-full flex items-center justify-between p-2 rounded-lg border border-accent-gold/30 bg-accent-gold/5 hover:bg-accent-gold/15 transition-all"
+            >
+              <span className="text-xs font-semibold text-accent-gold">{'⚙'} Encore Upgrades</span>
+              <span className="text-[10px] text-text-muted">{encorePoints} Applause</span>
+            </button>
           )}
 
           {/* Layer 2+ gate: locked until the Layer-1 wall (cliffhanger) */}
@@ -400,6 +370,56 @@ export function ComposePage() {
           onConfirm={() => doPrestige(pendingPrestige)}
           onCancel={() => setPendingPrestige(null)}
         />
+      )}
+
+      {/* Encore Upgrades modal */}
+      {shopOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setShopOpen(false)}>
+          <div className="max-w-lg w-full rounded-xl border border-accent-gold/40 bg-bg-primary p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-display font-semibold text-accent-gold">Encore Upgrades</h3>
+              <span className="text-xs text-text-muted">{encorePoints} Applause to spend</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {ENCORE_UPGRADES.map((u) => {
+                const level = encoreUpgrades[u.id] ?? 0
+                const maxed = level >= u.maxLevel
+                const cost = getEncoreUpgradeCost(u, level)
+                const affordable = encorePoints >= cost
+                const buy = () => { if (!maxed && affordable) { buyEncoreUpgrade(u.id); playBuySound(7) } }
+                return (
+                  <button
+                    key={u.id}
+                    onClick={buy}
+                    disabled={maxed || !affordable}
+                    className={`p-3 rounded-lg border text-left transition-all ${
+                      maxed
+                        ? 'bg-bg-secondary/40 border-border/40 opacity-60 cursor-default'
+                        : affordable
+                          ? 'bg-accent-gold/10 border-accent-gold/30 hover:bg-accent-gold/20 cursor-pointer'
+                          : 'bg-bg-secondary/50 border-border/50 opacity-50 cursor-not-allowed'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-text-primary">{u.name}</span>
+                      <span className="text-[10px] text-text-muted">Lv {level}/{u.maxLevel}</span>
+                    </div>
+                    <div className="text-[10px] text-text-muted mt-0.5 leading-snug">{u.description}</div>
+                    <div className={`text-[10px] mt-1 font-medium ${maxed || !affordable ? 'text-text-muted' : 'text-accent-gold'}`}>
+                      {maxed ? 'MAX' : `${cost} Applause`}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+            <button
+              onClick={() => setShopOpen(false)}
+              className="mt-4 w-full py-2 text-sm rounded border border-border text-text-secondary hover:bg-bg-secondary transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )
