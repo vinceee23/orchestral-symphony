@@ -7,11 +7,12 @@ import { OrchestraStage } from './OrchestraStage'
 import { FloatingNotes } from '../shared/FloatingNotes'
 import { StageHall } from './StageHall'
 import { ConductorPodium } from './ConductorPodium'
-import { getEncoreCost } from '../../core/constants'
+import { getEncoreCost, getMagnumOpusCost } from '../../core/constants'
+import { formatNumber } from '../../core/format'
 import { getEncoreGain, getLiveliness, getEncoreMultiplier } from '../../core/formulas'
 import { getCrescendoMultiplier } from '../../core/crescendo'
 import { getTempoOpMultiplier } from '../../core/opusUpgrades'
-import { getFameMultiplier } from '../../core/records'
+import { getFameMultiplier, getOpusGain } from '../../core/records'
 import { getOvertureGainMultiplier } from '../../core/encoreUpgrades'
 import { playPrestigeSound } from '../../core/audio'
 import { getChallengeById, getActiveChallengeModifiers } from '../../core/challenges'
@@ -31,12 +32,17 @@ export function ComposePage() {
   const platinum = useGameStore((s) => s.platinum)
   const finalePoints = useGameStore((s) => s.finalePoints)
   const tempo = useGameStore((s) => s.tempo)
+  const layer1WallReached = useGameStore((s) => s.layer1WallReached)
+  const opusCount = useGameStore((s) => s.opusCount)
+  const peakCrescendoMult = useGameStore((s) => s.peakCrescendoMult)
   const performEncore = useGameStore((s) => s.performEncore)
+  const performMagnumOpus = useGameStore((s) => s.performMagnumOpus)
   const activeChallenge = useGameStore((s) => s.activeChallenge)
   const celebrateEncore = useUiStore((s) => s.celebrateEncore)
   const setConducting = useUiStore((s) => s.setConducting)
 
   const [pendingEncore, setPendingEncore] = useState(false)
+  const [pendingMO, setPendingMO] = useState(false)
 
   const releaseConducting = useCallback(() => setConducting(false), [setConducting])
 
@@ -78,6 +84,15 @@ export function ComposePage() {
   const encorePurchased = tiers[encoreCost.tierIndex]?.purchased ?? 0
   const canEncore = !prestigeBlocked && encorePurchased >= encoreCost.amount
   const projectedGain = Math.floor(getEncoreGain(peakSoundwaves) * getOvertureGainMultiplier(encoreUpgrades))
+  const encoreProgress = Math.min(100, (encorePurchased / encoreCost.amount) * 100)
+  const currentEncoreMult = getEncoreMultiplier(lifetimeEncorePoints)
+  const nextEncoreMult = getEncoreMultiplier(lifetimeEncorePoints + projectedGain)
+  // Magnum Opus prestige — surfaced on-stage once the Layer-1 wall is reached.
+  const moCost = getMagnumOpusCost(opusCount)
+  const moPurchased = tiers[moCost.tierIndex]?.purchased ?? 0
+  const canMO = !prestigeBlocked && layer1WallReached && moPurchased >= moCost.amount
+  const moProgress = Math.min(100, (moPurchased / moCost.amount) * 100)
+  const projectedOpGain = getOpusGain({ platinum, opGainFlatLevel: opusUpgrades['op-gain-flat'] ?? 0, opusCount, peakCrescendoMult, levels: opusUpgrades })
 
   // Spotlight heartbeat (capped) + ambient liveliness (bland pre-Encore, warmer each layer).
   const pulseDur = Math.min(2, Math.max(0.5, 60 / (tempo.baseBPM || 60)))
@@ -104,6 +119,11 @@ export function ComposePage() {
   const onEncore = () => {
     if (localStorage.getItem('prestige_skip_encore')) doEncore()
     else setPendingEncore(true)
+  }
+  const doMO = () => { performMagnumOpus(); playPrestigeSound(); setPendingMO(false) }
+  const onMO = () => {
+    if (localStorage.getItem('prestige_skip_mo')) doMO()
+    else setPendingMO(true)
   }
 
   return (
@@ -150,14 +170,7 @@ export function ComposePage() {
         <div className="w-full max-w-3xl mt-1"><TempoBar /></div>
 
         <div className="w-full max-w-5xl flex items-center justify-between mt-5 mb-1">
-          <div>
-            <h2 className="text-lg font-display font-semibold text-accent-gold tracking-wide">Your Orchestra</h2>
-            {!canEncore && (
-              <p className="text-[11px] text-text-muted mt-0.5">
-                Next goal: <span className="text-text-secondary tabular-nums">{encorePurchased}/{encoreCost.amount}</span> {encoreCost.tierName} {'→'} Encore
-              </p>
-            )}
-          </div>
+          <h2 className="text-lg font-display font-semibold text-accent-gold tracking-wide">Your Orchestra</h2>
           <BuyAmountToggle />
         </div>
 
@@ -203,17 +216,62 @@ export function ComposePage() {
         </div>
       )}
 
-      {/* Encore call-to-action — bottom-RIGHT so it never collides with the centered Conduct control */}
-      {canEncore && (
+      {/* Prestige actions — top-right of the stage. Trigger here to watch the animations on-stage;
+          the Prestige tab holds the full stats + the same actions. Always visible with live progress. */}
+      <div className="absolute top-3 right-3 z-20 flex flex-col items-end gap-2 w-44">
         <button
           onClick={onEncore}
-          className="absolute right-6 bottom-6 z-20 px-6 py-3 rounded-full border border-accent-gold/60 bg-accent-gold/15 backdrop-blur text-accent-gold font-display font-semibold shadow-2xl hover:bg-accent-gold/25 hover:brightness-110 transition-all animate-pulse-gold"
+          disabled={!canEncore}
+          className={`w-full text-left px-3 py-2 rounded-xl border backdrop-blur transition-all ${
+            canEncore
+              ? 'border-accent-gold/60 bg-accent-gold/15 text-accent-gold hover:bg-accent-gold/25 animate-pulse-gold cursor-pointer'
+              : 'border-border/50 bg-bg-primary/55 text-text-secondary cursor-default'
+          }`}
         >
-          ✦ Encore Ready{projectedGain > 0 ? ` · +${projectedGain} Applause` : ''} ✦
+          <div className="flex items-center justify-between">
+            <span className="font-display font-semibold text-sm">Encore</span>
+            <span className="text-[10px] tabular-nums">
+              {canEncore ? `×${formatNumber(currentEncoreMult, 2)}→×${formatNumber(nextEncoreMult, 2)}` : `${encorePurchased}/${encoreCost.amount}`}
+            </span>
+          </div>
+          {canEncore ? (
+            <div className="text-[10px] text-text-secondary">Ready · +{projectedGain} Applause</div>
+          ) : (
+            <div className="mt-1 h-1 rounded-full bg-bg-primary/70 overflow-hidden">
+              <div className="h-full rounded-full bg-accent-gold/50 transition-all" style={{ width: `${encoreProgress}%` }} />
+            </div>
+          )}
         </button>
-      )}
+
+        {layer1WallReached && (
+          <button
+            onClick={onMO}
+            disabled={!canMO}
+            className={`w-full text-left px-3 py-2 rounded-xl border backdrop-blur transition-all ${
+              canMO
+                ? 'border-accent-purple/60 bg-accent-purple/15 text-accent-purple hover:bg-accent-purple/25 animate-pulse-gold cursor-pointer'
+                : 'border-border/50 bg-bg-primary/55 text-text-secondary cursor-default'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-display font-semibold text-sm">Magnum Opus</span>
+              <span className="text-[10px] tabular-nums">
+                {canMO ? `+${projectedOpGain} OP` : `${moPurchased}/${moCost.amount}`}
+              </span>
+            </div>
+            {canMO ? (
+              <div className="text-[10px] text-text-secondary">Ready · record the album</div>
+            ) : (
+              <div className="mt-1 h-1 rounded-full bg-bg-primary/70 overflow-hidden">
+                <div className="h-full rounded-full bg-accent-purple/50 transition-all" style={{ width: `${moProgress}%` }} />
+              </div>
+            )}
+          </button>
+        )}
+      </div>
 
       {pendingEncore && <PrestigeDialog type="encore" onConfirm={doEncore} onCancel={() => setPendingEncore(false)} />}
+      {pendingMO && <PrestigeDialog type="mo" onConfirm={doMO} onCancel={() => setPendingMO(false)} />}
     </div>
   )
 }
