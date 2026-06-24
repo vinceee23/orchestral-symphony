@@ -14,6 +14,7 @@ import {
   ENCORE_UPGRADE_MAP, getEncoreUpgradeCost,
   getSightReadingStartNotes, getOvertureGainMultiplier,
 } from '../core/encoreUpgrades'
+import { OPUS_UPGRADES, getOpusUpgradeCost } from '../core/opusUpgrades'
 import { calculateTick } from '../core/tick'
 import {
   getTierCost,
@@ -68,6 +69,11 @@ function createInitialState(): GameState {
     layer1WallReached: false,
     opusPoints: 0,
     opusCount: 0,
+    opusUpgrades: {},
+    crescendo: 0,
+    peakCrescendoMult: 1,
+    recordsSold: 0,
+    platinum: false,
     finalePoints: 0,
     finaleCount: 0,
     peakSoundwaves: new Decimal(0),
@@ -292,6 +298,21 @@ export const useGameStore = create<GameState & GameActions>()(
           return {
             encorePoints: state.encorePoints - cost,
             encoreUpgrades: { ...state.encoreUpgrades, [id]: level + 1 },
+          }
+        })
+      },
+
+      buyOpusUpgrade: (id: string) => {
+        set((state) => {
+          const config = OPUS_UPGRADES.find((u) => u.id === id)
+          if (!config) return state
+          const level = state.opusUpgrades[id] ?? 0
+          if (level >= config.maxLevel) return state
+          const cost = getOpusUpgradeCost(config, level)
+          if (state.opusPoints < cost) return state
+          return {
+            opusPoints: state.opusPoints - cost,
+            opusUpgrades: { ...state.opusUpgrades, [id]: level + 1 },
           }
         })
       },
@@ -540,7 +561,7 @@ export const useGameStore = create<GameState & GameActions>()(
       partialize: (state): GameState => {
         const {
           tick, buyTier, buyMaxTier, buyTempo, buyMaxTempo, setBuyAmount,
-          toggleAutobuyer, buyEncoreUpgrade, checkAchievements, checkChallengeCompletion,
+          toggleAutobuyer, buyEncoreUpgrade, buyOpusUpgrade, checkAchievements, checkChallengeCompletion,
           startChallenge, abandonChallenge,
           performEncore, performMagnumOpus, performGrandFinale,
           hardReset,
@@ -566,6 +587,11 @@ export const useGameStore = create<GameState & GameActions>()(
           if (state.encoreCount === undefined) state.encoreCount = 0
           if (state.opusPoints === undefined) state.opusPoints = 0
           if (state.opusCount === undefined) state.opusCount = 0
+          if (!state.opusUpgrades) state.opusUpgrades = {}
+          if (state.crescendo === undefined) state.crescendo = 0
+          if (state.peakCrescendoMult === undefined) state.peakCrescendoMult = 1
+          if (state.recordsSold === undefined) state.recordsSold = 0
+          if (state.platinum === undefined) state.platinum = false
           if (state.finalePoints === undefined) state.finalePoints = 0
           if (state.finaleCount === undefined) state.finaleCount = 0
           state.peakSoundwaves = state.peakSoundwaves instanceof Decimal
@@ -595,6 +621,11 @@ export const useGameStore = create<GameState & GameActions>()(
               layer1WallReached: state.layer1WallReached,
               opusPoints: state.opusPoints,
               opusCount: state.opusCount,
+              opusUpgrades: state.opusUpgrades,
+              crescendo: state.crescendo,
+              peakCrescendoMult: state.peakCrescendoMult,
+              recordsSold: state.recordsSold,
+              platinum: state.platinum,
               finalePoints: state.finalePoints,
               finaleCount: state.finaleCount,
               peakSoundwaves: state.peakSoundwaves,

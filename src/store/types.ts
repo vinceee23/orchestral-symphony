@@ -62,9 +62,14 @@ export interface GameState {
   // Cliffhanger gate: layers 2-6 stay locked until the Layer-1 wall is reached.
   layer1WallReached: boolean
 
-  // Prestige Layer 2: Magnum Opus (+1 per reset, x2 BPM each)
-  opusPoints: number
-  opusCount: number
+  // Prestige Layer 2: Magnum Opus
+  opusPoints: number      // spendable OP (spent on the opusUpgrades tree)
+  opusCount: number       // lifetime Magnum Opuses (monotonic; drives record sales)
+  opusUpgrades: Record<string, number>  // OP tree — id -> level
+  crescendo: number       // current crescendo intensity, 0..1 fraction of ceiling (ephemeral feel, but persisted for offline)
+  peakCrescendoMult: number  // highest crescendo multiplier reached this run — feeds OP gain
+  recordsSold: number     // cumulative records sold; 1,000,000 => Go Platinum
+  platinum: boolean       // has Gone Platinum (flips OP gain to the post-break formula)
 
   // Prestige Layer 3: Grand Finale (the "infinity" reset at 1.79e308 SW)
   finalePoints: number
@@ -87,6 +92,7 @@ export interface GameActions {
   setBuyAmount: (amount: BuyAmount) => void
   toggleAutobuyer: (key: string) => void
   buyEncoreUpgrade: (id: string) => void
+  buyOpusUpgrade: (id: string) => void
   checkAchievements: () => void
   checkChallengeCompletion: () => void
   startChallenge: (id: string) => void
