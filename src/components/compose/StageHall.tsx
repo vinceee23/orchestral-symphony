@@ -16,8 +16,8 @@ const ERA_COLORS = ['#d4a843', '#d4a843', '#7c3aed', '#2dd4bf', '#ec4899', '#ef4
 // warms the hall toward blazing gold. BASE_URL keeps the path correct under the GH Pages subpath.
 const HALL_MASTER = `${import.meta.env.BASE_URL}backdrops/hall-master.jpg`
 const ERA_ZOOM = [2.4, 1.7, 1.3, 1.15, 1.08, 1.03, 1.0]      // camera pull-back per era
-const ERA_SAT = [0.35, 0.65, 0.85, 0.95, 1.0, 1.08, 1.15]    // gloomy → vivid
-const ERA_BRIGHT = [0.5, 0.72, 0.88, 0.94, 1.0, 1.03, 1.06]  // dim → blazing
+const ERA_SAT = [0.18, 0.45, 0.75, 0.9, 1.0, 1.1, 1.2]       // near-grey & cold early → vivid gold late
+const ERA_BRIGHT = [0.34, 0.55, 0.8, 0.92, 1.0, 1.05, 1.1]   // murky/dim early → blazing late
 
 interface Props {
   era: number
@@ -124,11 +124,21 @@ export const StageHall = memo(function StageHall({ era, liveliness }: Props) {
         }}
         onError={(ev) => { ev.currentTarget.style.display = 'none' }}
       />
-      {/* ── edge vignette: darker/more enclosed when intimate, opens up as the hall grows ── */}
-      <div
-        className="absolute inset-0 transition-all duration-[1500ms]"
-        style={{ opacity: 0.5 + (1 - grand) * 0.15, background: 'radial-gradient(120% 90% at 50% 42%, transparent 52%, #000 100%)' }}
-      />
+      {/* ── blacking gloom vignette: heavy black creeps in from the edges when intimate, then recedes as
+            the hall opens up. gloom = 1-grand (era0 ~0.88 → era6 ~0). ── */}
+      {(() => {
+        const gloom = 1 - grand
+        const inner = (50 - gloom * 22).toFixed(0) // black creeps inward when gloomy (era0 ~31% → era6 ~50%)
+        return (
+          <div
+            className="absolute inset-0 transition-all duration-[1500ms]"
+            style={{
+              opacity: 0.45 + gloom * 0.5, // era0 ~0.89 (near-black edges) → era6 ~0.45
+              background: `radial-gradient(125% 95% at 50% 42%, transparent ${inner}%, #000 100%)`,
+            }}
+          />
+        )
+      })()}
     </div>
   )
 })

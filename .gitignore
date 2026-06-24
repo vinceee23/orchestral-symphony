@@ -28,3 +28,6 @@ release
 *.njsproj
 *.sln
 *.sw?
+
+# Image/work drafts for review (not committed; final assets go in public/)
+drafts/
