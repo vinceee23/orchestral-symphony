@@ -43,6 +43,15 @@ export function HelpModal() {
             </p>
           </div>
           <div>
+            <h3 className="font-display text-accent-gold mb-1">Costs Climb</h3>
+            <p>
+              Prices rise as you buy: every purchase of a section costs a little more, and the cost takes a{' '}
+              <span className="text-text-primary">bigger jump every 10th buy</span>. So each ×2 you chase is
+              also each section's steepest price — that tension (cheaper output now vs. a doubling later) is the
+              core decision, and what eventually pushes you toward an Encore.
+            </p>
+          </div>
+          <div>
             <h3 className="font-display text-accent-gold mb-1">Encore (Prestige)</h3>
             <p>
               When growth slows, perform an <span className="text-accent-gold">Encore</span>: reset your
@@ -61,13 +70,7 @@ export function HelpModal() {
             <li><Key>M</Key> &nbsp;max <span className="text-text-primary">everything</span> — all sections + tempo</li>
             <li><Key>H</Key> &nbsp;toggle this help &nbsp;·&nbsp; <Key>Esc</Key> close</li>
           </ul>
-          <div className="mt-3 p-3 rounded-lg border border-accent-gold/30 bg-accent-gold/5">
-            <p className="text-sm text-text-secondary leading-relaxed">
-              <span className="text-accent-gold font-semibold">The M + H trick</span> — <em>Max + Hold</em>. Just
-              <Key>hold M</Key> and your whole orchestra keeps buying max, continuously. The classic
-              Antimatter Dimensions move: hold it and watch everything fill out hands-free.
-            </p>
-          </div>
+          <p className="mt-2 text-xs text-text-muted">Hold any buy key to repeat it continuously.</p>
         </section>
       </div>
     </div>

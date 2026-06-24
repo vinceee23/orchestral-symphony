@@ -342,6 +342,16 @@ modules: `src/core/{opusUpgrades,crescendo,records}.ts` + appended `constants.ts
 - **Fame:** post-Platinum permanent `prod/OP ×= 1 + log10(recordsSold/1e6)·0.1` (slow permanent climb).
 - **L2→L3 plateau:** not in foundations; tuned later once OP curve is observed.
 
+**Math self-check (`sim/l2check.mjs`, 2026-06-24 — all PASS):** OP-gain post-Platinum is finite/bounded
+& monotonic across peakSW 1e31..1e300 (+1 at 1e31, +47 at 1e60); crescendo build/decay/auto-conduct hit
+their marks; fame climbs slowly (×1.6 at 1e12 records). Two calibration findings:
+  - **Plateau target:** OP/MO trivializes by peakSW ~1e120+ (tens-of-thousands of OP). Put the L2→L3 plateau
+    wall around **peakSW ~1e60–1e80** (OP/MO still tens-to-thousands) so OP stays meaningful into the cliffhanger.
+  - **Platinum timing is NOT yet calibrated:** records accrue *cumulatively* across MOs, so when 1M lands
+    relative to total L2 length depends on the swPerSec-over-time curve — which needs the MO-progression sim
+    or playtest. Formula is sound (reachable in ~1-2h active, never instant/never); tune `RECORDS_PROD_K` so
+    Platinum lands ~40-60% through L2 active time once that curve exists.
+
 **Build order (when we build L2):** OP gain formula → first-MO unlocks the autobuyer system (reuse the
 existing `autobuyers` store scaffold, baseline rate) → OP upgrade TREE (automator speed/bulk, tempo,
 crescendo) in the Magnum Opus section → the Crescendo meter + Conduct mechanic on the stage (input-built,

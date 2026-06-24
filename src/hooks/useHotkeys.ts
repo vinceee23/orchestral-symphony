@@ -33,12 +33,21 @@ export function useHotkeys() {
     let timer: ReturnType<typeof setInterval> | null = null
 
     const stop = () => { if (timer) { clearInterval(timer); timer = null } }
+    // Release every held key + halt repeat. Guards against AD's infamous stuck-key bug:
+    // hold M, press H to open help, release M behind the modal — the keyup can be missed and M
+    // "sticks". We never let that happen: opening help / losing focus always fully releases.
+    const release = () => { held.clear(); stop() }
     const onDown = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
       const k = e.key.toLowerCase()
-      if (k === 'h') { if (!e.repeat) { e.preventDefault(); useUiStore.getState().toggleHelp() } return }
+      const helpOpen = useUiStore.getState().helpOpen
+      if (k === 'h') {
+        if (!e.repeat) { e.preventDefault(); if (!helpOpen) release(); useUiStore.getState().toggleHelp() }
+        return
+      }
       if (k === 'escape') { useUiStore.getState().setHelp(false); return }
+      if (helpOpen) return // modal open: swallow buy hotkeys so nothing fires behind it
       if (!isHotkey(k) || e.ctrlKey || e.metaKey || e.altKey) return
       e.preventDefault()
       if (!held.has(k)) { held.add(k); act(k) } // fire immediately on first press
@@ -50,15 +59,17 @@ export function useHotkeys() {
       }
     }
     const onUp = (e: KeyboardEvent) => { held.delete(e.key.toLowerCase()); if (held.size === 0) stop() }
-    const onBlur = () => { held.clear(); stop() }
+    const onVisibility = () => { if (document.hidden) release() }
 
     window.addEventListener('keydown', onDown)
     window.addEventListener('keyup', onUp)
-    window.addEventListener('blur', onBlur)
+    window.addEventListener('blur', release)
+    document.addEventListener('visibilitychange', onVisibility)
     return () => {
       window.removeEventListener('keydown', onDown)
       window.removeEventListener('keyup', onUp)
-      window.removeEventListener('blur', onBlur)
+      window.removeEventListener('blur', release)
+      document.removeEventListener('visibilitychange', onVisibility)
       stop()
     }
   }, [])
