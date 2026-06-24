@@ -14,6 +14,7 @@ import {
 import { advanceCrescendo, getCrescendoMultiplier } from './crescendo'
 import { accrueRecords, isPlatinum } from './records'
 import { getAutomatorInterval, getAutomatorBulk, clampAutobuyerBulk } from './opusUpgrades'
+import { hasPerk, FAST_AUTOMATOR_SPEED_TIERS } from './perks'
 import {
   getAchievementGlobalMultiplier,
   getAchievementTierMultiplier,
@@ -161,13 +162,15 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
 
   // === Autobuyer tick ===
   const now = Date.now()
+  // perk-fast-automators: one extra speed tier on every automator
+  const autoSpeedBonus = hasPerk(new Set(state.achievements), 'perk-fast-automators') ? FAST_AUTOMATOR_SPEED_TIERS : 0
   for (let i = 0; i < newTiers.length; i++) {
     const key = `tier_${i + 1}`
     const ab = newAutobuyers[key]
     if (!ab || !ab.unlocked || !ab.enabled) continue
 
     const interval = (state.opusCount > 0 && ab.unlocked)
-      ? getAutomatorInterval(state.opusUpgrades)
+      ? getAutomatorInterval(state.opusUpgrades, autoSpeedBonus)
       : (ab.interval || AUTOBUYER_DEFAULT_INTERVAL)
     if (now - ab.lastTick < interval) continue
 

@@ -15,6 +15,7 @@ import {
   getSightReadingStartNotes, getOvertureGainMultiplier,
 } from '../core/encoreUpgrades'
 import { OPUS_UPGRADES, OPUS_UPGRADE_MAP, getOpusUpgradeCost } from '../core/opusUpgrades'
+import { hasPerk, WARMUP_TIERS, WARMUP_BONUS_SW } from '../core/perks'
 import { getOpusGain } from '../core/records'
 import { calculateTick } from '../core/tick'
 import {
@@ -88,17 +89,24 @@ function createInitialState(): GameState {
 
 /** Reset tiers, soundwaves, and tempo to initial state, with achievement starting SW bonus */
 function resetTiersAndSW(achievementIds: string[]): Partial<GameState> {
-  const bonusSW = getAchievementStartingSW(new Set(achievementIds))
+  const achSet = new Set(achievementIds)
+  const bonusSW = getAchievementStartingSW(achSet)
+  // perk-warmup: start each run with the first WARMUP_TIERS tiers pre-bought (a milestone bracket each)
+  // + bonus SW, so a veteran's early ramp is skipped. Pre-buying tier i unlocks i+1, like a real buy.
+  const warmup = hasPerk(achSet, 'perk-warmup')
   return {
-    soundwaves: STARTING_SOUNDWAVES.plus(bonusSW),
-    tiers: TIER_CONFIGS.map((config) => ({
-      id: config.id,
-      name: config.name,
-      quantity: new Decimal(0),
-      purchased: 0,
-      multiplier: new Decimal(1),
-      unlocked: config.id === 1,
-    })),
+    soundwaves: STARTING_SOUNDWAVES.plus(bonusSW).plus(warmup ? WARMUP_BONUS_SW : 0),
+    tiers: TIER_CONFIGS.map((config, idx) => {
+      const preBought = warmup && idx < WARMUP_TIERS
+      return {
+        id: config.id,
+        name: config.name,
+        quantity: new Decimal(preBought ? 10 : 0),
+        purchased: preBought ? 10 : 0,
+        multiplier: preBought ? getMilestoneMultiplier(10) : new Decimal(1),
+        unlocked: config.id === 1 || (warmup && idx <= WARMUP_TIERS),
+      }
+    }),
     tempo: {
       level: 0,
       tickInterval: 1000,
@@ -566,15 +574,24 @@ export const useGameStore = create<GameState & GameActions>()(
         }
 
         // Magnum Opus fully resets the Encore layer (production mult comes from lifetimeEncorePoints).
-        // Re-master the wall: every MO must re-reach the 8-Encore wall, so even +1 OP stays earned.
+        // Re-master the wall: every MO must re-reach the 8-Encore wall, so even +1 OP stays earned —
+        // UNLESS perk-skip-wall is earned (keep the wall reached, no re-climb). perk-keep-encore-upgrades
+        // preserves the Encore shop through the reset.
+        // NOTE: perks read the PRE-MO achievement set, so an opusCount-gated perk (skip-wall, warmup)
+        // takes effect from the next prestige cycle after its achievement unlocks (the unlock fires on the
+        // ~300ms achievement tick AFTER opusCount increments). For warmup that's invisible (it re-applies on
+        // the next Encore reset); for skip-wall it costs one final wall-climb at the unlock boundary. Accepted.
+        const achSet = new Set(state.achievements)
+        const skipWall = hasPerk(achSet, 'perk-skip-wall')
+        const keepEncoreUpgrades = hasPerk(achSet, 'perk-keep-encore-upgrades')
         set({
           ...resetTiersAndSW(state.achievements),
           peakSoundwaves: new Decimal(0),
           encorePoints: 0,
           lifetimeEncorePoints: 0,
           encoreCount: 0,
-          encoreUpgrades: {},
-          layer1WallReached: false,
+          encoreUpgrades: keepEncoreUpgrades ? state.encoreUpgrades : {},
+          layer1WallReached: skipWall,
           opusPoints: state.opusPoints + gain,
           opusCount: newOpusCount,
           crescendo: 0,

@@ -9,6 +9,7 @@ import {
   type OpusUpgradeTrack,
 } from './opusUpgrades'
 import type { GameState } from '../store/types'
+import type { PerkId } from './perks'
 
 export interface AchievementReward {
   globalPercent?: number
@@ -17,6 +18,7 @@ export interface AchievementReward {
   costReduction?: number
   tierCostReduction?: { tierId: number; value: number }
   startingSW?: number
+  perk?: PerkId
   none?: true
 }
 
@@ -603,6 +605,44 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     check: (s) => s.tiers.every((t) => t.purchased >= 1000),
     reward: { globalPercent: 0.45 },
     rewardDescription: '+45% all production',
+  },
+
+  // === Perk achievements ===
+  {
+    id: 'ach_perk_skip_wall',
+    name: 'No Encore Required',
+    description: 'Complete 5 Magnum Opuses',
+    icon: '\u{1F6A9}',
+    check: (s) => s.opusCount >= 5,
+    reward: { perk: 'perk-skip-wall' },
+    rewardDescription: 'PERK: Magnum Opus no longer requires re-reaching the 8-Encore wall',
+  },
+  {
+    id: 'ach_perk_muscle_memory',
+    name: 'Muscle Memory',
+    description: 'Go Platinum',
+    icon: '\u{1F4FA}',
+    check: (s) => s.platinum === true,
+    reward: { perk: 'perk-keep-encore-upgrades' },
+    rewardDescription: 'PERK: keep your Encore upgrades through a Magnum Opus',
+  },
+  {
+    id: 'ach_perk_warmup',
+    name: 'Sound Check',
+    description: 'Complete 3 Magnum Opuses',
+    icon: '\u{1F3A4}',
+    check: (s) => s.opusCount >= 3,
+    reward: { perk: 'perk-warmup' },
+    rewardDescription: 'PERK: start each run with 2 tiers pre-bought + bonus Soundwaves',
+  },
+  {
+    id: 'ach_perk_session_musicians',
+    name: 'Session Musicians',
+    description: 'Unlock automators for every tier',
+    icon: '\u{1F916}',
+    check: (s) => [2, 3, 4, 5, 6, 7].every((t) => isAutomatorUnlocked(s.opusUpgrades, t)),
+    reward: { perk: 'perk-fast-automators' },
+    rewardDescription: 'PERK: automators run one speed tier faster',
   },
 ]
 

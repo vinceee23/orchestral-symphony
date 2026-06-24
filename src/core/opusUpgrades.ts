@@ -263,9 +263,9 @@ export function isAutomatorUnlocked(levels: Record<string, number>, tierId: numb
   return lvl(levels, `automator-unlock-${tierId}`) > 0
 }
 
-export function getAutomatorInterval(levels: Record<string, number>): number {
-  const step = lvl(levels, 'automator-speed')
-  const idx = Math.min(step, AUTOBUYER_SPEED_TIERS.length - 1)
+export function getAutomatorInterval(levels: Record<string, number>, speedBonus = 0): number {
+  const step = lvl(levels, 'automator-speed') + speedBonus
+  const idx = Math.min(Math.max(0, step), AUTOBUYER_SPEED_TIERS.length - 1)
   return AUTOBUYER_SPEED_TIERS[idx]
 }
 

@@ -132,7 +132,7 @@ export function AchievementsPage() {
                       onMouseLeave={() => setHoveredId(null)}
                       onClick={() => setSelectedId(isSelected ? null : ach.id)}
                       className={`
-                        aspect-square rounded-xl border overflow-hidden text-2xl transition-all duration-200
+                        relative aspect-square rounded-xl border overflow-hidden text-2xl transition-all duration-200
                         ${unlocked
                           ? 'bg-accent-gold/10 border-accent-gold/40 shadow-[0_0_8px_rgba(255,215,0,0.15)]'
                           : 'bg-bg-secondary/50 border-border grayscale opacity-40'
@@ -142,6 +142,11 @@ export function AchievementsPage() {
                       `}
                       title={!unlocked && !info.masked ? info.description : undefined}
                     >
+                      {ach.reward.perk && (
+                        <span className="absolute top-0.5 right-0.5 z-10 text-[9px] leading-none bg-accent-purple/25 text-accent-purple px-1 py-0.5 rounded font-medium">
+                          PERK
+                        </span>
+                      )}
                       <AchievementImage
                         id={ach.id}
                         icon={ach.icon}
@@ -178,12 +183,15 @@ export function AchievementsPage() {
                   masked={displayedInfo.masked}
                 />
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 {isDisplayedUnlocked && (
                   <span className="text-xs bg-success/20 text-success px-2 py-0.5 rounded-lg font-medium">UNLOCKED</span>
                 )}
                 {!isDisplayedUnlocked && !displayedInfo.masked && (
                   <span className="text-xs bg-bg-secondary text-text-muted px-2 py-0.5 rounded-lg font-medium">LOCKED</span>
+                )}
+                {displayed.reward.perk && (
+                  <span className="text-xs bg-accent-purple/20 text-accent-purple px-2 py-0.5 rounded-lg font-medium">PERK</span>
                 )}
               </div>
               <div className={`text-base font-display font-semibold ${isDisplayedUnlocked ? 'text-accent-gold' : 'text-text-secondary'}`}>
@@ -192,7 +200,13 @@ export function AchievementsPage() {
               <div className="text-sm text-text-secondary leading-relaxed">{displayedInfo.description}</div>
               <div className="border-t border-border/50 pt-3 space-y-1">
                 <div className="text-xs text-text-muted uppercase tracking-wider">Reward</div>
-                <div className={`text-sm ${displayed.reward.none ? 'text-text-muted italic' : 'text-success'}`}>
+                <div className={`text-sm ${
+                  displayed.reward.none
+                    ? 'text-text-muted italic'
+                    : displayed.reward.perk
+                      ? 'text-accent-purple'
+                      : 'text-success'
+                }`}>
                   {displayedInfo.rewardDescription}
                 </div>
               </div>

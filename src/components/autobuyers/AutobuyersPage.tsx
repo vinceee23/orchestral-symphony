@@ -5,6 +5,7 @@ import {
   getAutomatorBulk,
   clampAutobuyerBulk,
 } from '../../core/opusUpgrades'
+import { hasPerk, FAST_AUTOMATOR_SPEED_TIERS } from '../../core/perks'
 import { Button } from '../shared/Button'
 
 function formatBulkLabel(bulk: number | 'max'): string {
@@ -35,13 +36,15 @@ function getAutobuyerLabel(key: string): string {
 export function AutobuyersPage() {
   const autobuyers = useGameStore((s) => s.autobuyers)
   const opusUpgrades = useGameStore((s) => s.opusUpgrades)
+  const achievements = useGameStore((s) => s.achievements)
   const toggleAutobuyer = useGameStore((s) => s.toggleAutobuyer)
   const setAutobuyerBulk = useGameStore((s) => s.setAutobuyerBulk)
 
   const bulkCap = getAutomatorBulk(opusUpgrades)
   const capIdx = AUTOBUYER_BULK_TIERS.indexOf(bulkCap)
   const availableBulkTiers = AUTOBUYER_BULK_TIERS.slice(0, capIdx + 1)
-  const opInterval = getAutomatorInterval(opusUpgrades)
+  const autoSpeedBonus = hasPerk(new Set(achievements), 'perk-fast-automators') ? FAST_AUTOMATOR_SPEED_TIERS : 0
+  const opInterval = getAutomatorInterval(opusUpgrades, autoSpeedBonus)
 
   const unlocked = ALL_KEYS.filter((key) => autobuyers[key]?.unlocked)
 
