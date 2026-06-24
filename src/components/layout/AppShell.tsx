@@ -55,7 +55,10 @@ export function AppShell() {
       <Header />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        <main className="flex-1 min-w-0 overflow-y-auto">
+        {/* main starts after the sidebar, so centered content lands right-of-screen. Padding-right ==
+            sidebar width (w-16/w-52) makes the centering box symmetric about the TRUE viewport. Compose
+            is full-bleed (its stage centers itself), so skip it. */}
+        <main className={`flex-1 min-w-0 overflow-y-auto ${activeTab === 'compose' ? '' : 'pr-16 md:pr-52'}`}>
           {activeTab === 'compose' && <ComposePage />}
           {activeTab === 'prestige' && <PrestigePage />}
           {activeTab === 'opus' && <OpusPage />}

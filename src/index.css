@@ -21,10 +21,15 @@
   --color-danger: #ef4444;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* Keep the reset in @layer base. Unlayered, it beat every layered Tailwind utility (cascade layers
+   win over specificity), silently zeroing ALL m-*/p-*/mx-auto/space-y-* app-wide. In @layer base it
+   still resets unstyled elements but @layer utilities (ordered after base) now overrides it correctly. */
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 }
 
 html, body, #root {
