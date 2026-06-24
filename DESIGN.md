@@ -188,8 +188,9 @@ automation** (that's the L3 reveal). "Done" = the checklist in §8 is all green.
 6. After enough Encores, Applause gains plateau → **Layer-1 wall + teaser** → Magnum Opus unlocks.
 
 **SHIPPED Layer 1 constants** (sim-validated in `sim/`, asserted by `src/core/layer1.test.ts`):
-- `PRODUCTION_SCALE = 0.1` — global production knob → first Encore ≈ 30–36 min (sim, optimal play).
-- Cost growth: original per-bracket factors (1e2…1e5), **milestone uncapped** (`MILESTONE_PROD_CAP = Infinity`) so every 10th buy keeps doubling — the buy-10 chase stays alive.
+- `PRODUCTION_SCALE = 1` — full early production → **snappy opening** (10 Notes in ~30s), first Encore ~5 min (punchy).
+- Cost growth: per-bracket factors **raised to ^1.2** (≈ 251, 940, 3981, 14894, 63096, 235879, 1e6) — the first bracket stays cheap (fast opening) while later brackets steepen into the wall. **Milestone uncapped** (`MILESTONE_PROD_CAP = Infinity`) so every 10th buy keeps doubling — the buy-10 chase stays alive.
+- Cadence (sim, optimal play): Encores at ~5m, 3m, 2.7m, 2.7m, 3.8m, 10.8m, 33m, 1.6h — a smooth ramp that slows into the wall at Encore 8 (~2.6h total). Tuned from playtest feedback that the old 0.1 scale made the opening a trickle.
 - Encore reward is **ADDITIVE**: production ×`(1 + ENCORE_REWARD_PER · totalEP)`, `ENCORE_REWARD_PER = 1`. (×2^EP explodes — proven; see the test's regression guard.)
 - `EP_gain = floor((runPeak / 1e15)^0.03)`, accumulated into `lifetimeEncorePoints` (drives the multiplier) and `encorePoints` (spendable in the shop). The 0.03 exponent — much smaller than a √ — is what keeps EP bounded under uncapped production; it yields a healthy ×2–2.8 per-Encore cadence.
 - Encore unlock gate: 30 Harmonies (escalates per Encore: 30 Movements → 30/50/70… Symphonies).

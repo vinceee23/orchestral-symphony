@@ -39,8 +39,8 @@ export function encoreGate(count) {
 // Defaults reflect the SHIPPED Layer 1 config (mirrors src/core/constants.ts).
 export const DEFAULTS = {
   costScale: 1,      // x all tier base costs
-  growthExp: 1,      // per-bracket growth raised to this power (>1 = steeper walls)
-  prodScale: 0.1,    // x all production (PRODUCTION_SCALE)
+  growthExp: 1.2,    // per-bracket growth ^1.2 — snappy opening, smooth ramp, ~8 Encores to the wall
+  prodScale: 1,      // x all production (PRODUCTION_SCALE) — full early production = snappy first 10 Notes
   milestoneCap: Infinity, // prod milestone uncapped — keeps the buy-10 chase alive (DESIGN.md)
   epThreshold: 1e15, // EP = floor((peak/epThreshold)^epRoot)
   epRoot: 0.03,
@@ -123,16 +123,18 @@ export function simRun({ maxTierIdx, gate, encoreMult = D(1), P, dt = 1, capHour
   const maxT = capHours * 3600
   const oom = []
   let nextOom = 1, peak = D(0)
+  let notes10 = null // opening-feel metric: seconds to own 10 Notes (tier 0)
   while (t < maxT) {
     playerBuy(s, P)
     produce(s, dt, P, encoreMult)
     t += dt
+    if (notes10 === null && s.purchased[0] >= 10) notes10 = t
     if (s.sw.gt(peak)) peak = s.sw
     const l10 = peak.log10()
     if (l10 >= nextOom) { oom.push([t, Math.floor(l10)]); nextOom = Math.floor(l10) + 1 }
-    if (s.purchased[gate.tierIdx] >= gate.amount) return { reached: true, t, peak, s, oom }
+    if (s.purchased[gate.tierIdx] >= gate.amount) return { reached: true, t, peak, s, oom, notes10 }
   }
-  return { reached: false, t: maxT, peak, s, oom }
+  return { reached: false, t: maxT, peak, s, oom, notes10 }
 }
 
 // EP gained from a run's peak

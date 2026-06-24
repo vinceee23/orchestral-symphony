@@ -20,7 +20,7 @@ export const TIER_CONFIGS: TierConfig[] = [
     icon: '\u{266A}',
     produces: 'Soundwaves',
     baseCost: new Decimal(10),
-    costGrowth: 1e2,
+    costGrowth: 251.19,
     baseProduction: new Decimal(1),
   },
   {
@@ -29,7 +29,7 @@ export const TIER_CONFIGS: TierConfig[] = [
     icon: '\u{266C}',
     produces: 'Notes',
     baseCost: new Decimal(200),
-    costGrowth: 3e2,
+    costGrowth: 939.5,
     baseProduction: new Decimal(1),
   },
   {
@@ -38,7 +38,7 @@ export const TIER_CONFIGS: TierConfig[] = [
     icon: '\u{1D11E}',
     produces: 'Motifs',
     baseCost: new Decimal(5000),
-    costGrowth: 1e3,
+    costGrowth: 3981,
     baseProduction: new Decimal(1),
   },
   {
@@ -47,7 +47,7 @@ export const TIER_CONFIGS: TierConfig[] = [
     icon: '\u{1D122}',
     produces: 'Phrases',
     baseCost: new Decimal(2e5),
-    costGrowth: 3e3,
+    costGrowth: 14894,
     baseProduction: new Decimal(1),
   },
   {
@@ -56,7 +56,7 @@ export const TIER_CONFIGS: TierConfig[] = [
     icon: '\u{1D121}',
     produces: 'Melodies',
     baseCost: new Decimal(5e7),
-    costGrowth: 1e4,
+    costGrowth: 63096,
     baseProduction: new Decimal(1),
   },
   {
@@ -65,7 +65,7 @@ export const TIER_CONFIGS: TierConfig[] = [
     icon: '\u{1D106}',
     produces: 'Harmonies',
     baseCost: new Decimal(1e12),
-    costGrowth: 3e4,
+    costGrowth: 235879,
     baseProduction: new Decimal(1),
   },
   {
@@ -74,7 +74,7 @@ export const TIER_CONFIGS: TierConfig[] = [
     icon: '\u{1D107}',
     produces: 'Movements',
     baseCost: new Decimal(1e18),
-    costGrowth: 1e5,
+    costGrowth: 1e6,
     baseProduction: new Decimal(1),
   },
 ]
@@ -84,7 +84,7 @@ export type BuyAmount = 1 | 10 | 'max'
 export const STARTING_SOUNDWAVES = new Decimal(10)
 
 // Layer 1 balance — sim-validated with UNCAPPED milestones (see sim/ + DESIGN.md). Punchy ~2-3h to the wall.
-export const PRODUCTION_SCALE = 0.1                 // global production tuning knob (first Encore ~30-36m)
+export const PRODUCTION_SCALE = 1                   // full early production = snappy opening (10 Notes ~30s)
 export const ENCORE_EP_THRESHOLD = new Decimal('1e15') // EP = floor((peak/threshold)^root)
 export const ENCORE_EP_ROOT = 0.03                  // small exponent keeps EP bounded under uncapped production
 export const ENCORE_REWARD_PER = 1                  // additive: each EP = +100% production (stable; x2/pt explodes)

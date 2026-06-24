@@ -97,12 +97,12 @@ describe('Layer 1 reward shape (regression guards)', () => {
 })
 
 describe('Layer 1 pacing (real tick + store logic)', () => {
-  it('reaches the first Encore in a sane window (~sim said ~22m)', () => {
+  it('snappy opening: ~10 Notes within the first minute, first Encore in a punchy window', () => {
     const s = freshState()
     const r = runToEncore(s)
     expect(r.reached).toBe(true)
-    expect(r.minutes).toBeGreaterThan(8)   // not trivially instant
-    expect(r.minutes).toBeLessThan(60)     // not a brick wall
+    expect(r.minutes).toBeGreaterThan(2)   // not trivially instant
+    expect(r.minutes).toBeLessThan(30)     // punchy first Encore (~5m sim), not a slog
   })
 
   it('does not run away across Encores: EP accumulates but stays bounded', () => {
