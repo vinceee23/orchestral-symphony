@@ -356,6 +356,22 @@ Coarse model (1h-cycle, active ×3 crescendo, abstractions stated in-file); huma
    **post-Platinum OP gain scales with opusCount (your catalog)** so the back half accelerates toward L3.
    DECISION PENDING: what does the Platinum break actually boost?
 
+**VALIDATED L2 TUNING (sim/l2progression.mjs, 2026-06-24 — Vince's decisions + sim-tuned):**
+- **MO gate:** `100 + floor(opusCount/3)` Symphonies. ("Gentle" flavor without whole-bracket jumps — `100+10n`
+  was secretly brutal since 10 Symphonies = ×4e7 SW. This increment gives mild early lengthening.)
+- **OP gain:** pre-Platinum flat `+1` (+ op-gain-flat levels). Post-Platinum **catalog-scaled**:
+  `floor((1 + opusCount·0.5) · crescBonus)`, `crescBonus = 1 + (peakCrescendoMult−1)·0.25`. NOT peakSW-based
+  (that ran away). Gives +10→+21 OP across the back half; powers the post-Platinum acceleration.
+- **Records / Platinum:** `recordsPerSec = 1 · opusCount · crescendoMult` (album-style). 1M ≈ MO#13 / ~16h = mid-L2. ✓
+- **Pacing result:** ~30.7h to MO#30; steady ~1.2h/MO early, accelerating to ~0.7h/MO late (catalog OP→power).
+  Platinum mid-layer; no runaway; OP gain human-readable throughout. L2 ≈ 30h active (a week casual). ✓
+- **OP tree depth:** needs ~14 power-node-levels of sink so catalog OP keeps buying production into the back half.
+- **⚠ DEVIATION TO CONFIRM:** records driver changed from the locked "production+crescendo blend" to
+  **catalog(opusCount)+crescendo** — pure production was a flat ~13-min timer (log-flatness). Production still
+  gates MOs (matters indirectly). Awaiting Vince's nod before refactoring records.ts to this.
+- **NOT yet baked into TS** — these validated numbers get implemented (getMagnumOpusCost, getOpusGain,
+  getRecordsPerSec signature change) together with the tick/MO-reward wiring, as one coherent gated pass.
+
 **Math self-check (`sim/l2check.mjs`, 2026-06-24 — all PASS):** OP-gain post-Platinum is finite/bounded
 & monotonic across peakSW 1e31..1e300 (+1 at 1e31, +47 at 1e60); crescendo build/decay/auto-conduct hit
 their marks; fame climbs slowly (×1.6 at 1e12 records). Two calibration findings:

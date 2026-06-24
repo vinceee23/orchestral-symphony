@@ -14,6 +14,7 @@ import Decimal from 'break_infinity.js'
 const P = DEFAULTS
 const CYCLE_H = 1
 const CRESC = 3
+const CATALOG_K = 0.5  // post-Platinum OP gain = (1 + opusCount*CATALOG_K) * crescBonus
 const PLATINUM = 1_000_000
 const TEMPO_OP_MULT = 1.5
 const FAME_PER = 0.1
@@ -45,16 +46,17 @@ function run(mode, K, BASE, gateFn, label) {
     if (r.reached) {
       // perform Magnum Opus
       let opGain
+      const crescBonus = 1 + (CRESC - 1) * 0.25
       if (records >= PLATINUM) {
-        // FIXED: log-based (sublinear) not root-of-peak. Normalized to L2 entry (~1e70) so gain
-        // stays human-readable (+1..~+120 across the layer) and the OP<->opPower feedback is gentle.
-        opGain = Math.max(1, Math.floor(0.5 * (Math.max(0, r.peak.log10()) - 70) * (1 + (CRESC - 1) * 0.25)))
+        // DECIDED: catalog-scaled (opusCount), NOT peakSW — kills the runaway AND gives the fixed/gentle
+        // gate a real acceleration. Crescendo still boosts it (rewards active conducting).
+        opGain = Math.max(1, Math.floor((1 + opusCount * CATALOG_K) * crescBonus))
       } else opGain = 1
       opSpendable += opGain
       opusCount++
       moMarks.push({ mo: opusCount, hours: +(t / 3600).toFixed(2), records: Math.floor(records), opGain, opPower: +opPower.toNumber().toPrecision(3) })
-      // spend OP greedily on power nodes — but the real tree has finite maxLevels; cap opPower (x1.5^8 ~ x25).
-      const OP_POWER_CAP = Math.pow(TEMPO_OP_MULT, 8)
+      // spend OP greedily on power nodes — real tree has finite maxLevels; deeper cap so catalog OP has a sink.
+      const OP_POWER_CAP = Math.pow(TEMPO_OP_MULT, 14)
       while (opSpendable >= nodeCost && opPower.toNumber() < OP_POWER_CAP) { opSpendable -= nodeCost; opPower = opPower.times(TEMPO_OP_MULT); nodeCost = Math.ceil(nodeCost * 1.7) }
       if (plateauAt === null && opGain > 100) plateauAt = { mo: opusCount, hours: t / 3600 }
       EP = 0 // MO resets the Encore layer
@@ -70,8 +72,8 @@ function run(mode, K, BASE, gateFn, label) {
   return { platinumAt, opusCount, hours: t / 3600 }
 }
 
-console.log('Goal: steady/decreasing era cadence; Platinum mid-L2; OP gain sane; no runaway.')
-console.log('(OP gain log-based + tree power capped. Testing MO-gate escalation schemes.)\n')
-run('album', 0, 1, (n) => 100, 'FIXED gate 100 Symphonies, records BASE=1')
-run('album', 0, 1, (n) => 100 + 10 * n, 'GENTLE gate 100+10n, records BASE=1')
-run('album', 0, 1, (n) => 100 + 80 * n, 'SHIPPED gate 100+80n (for contrast), records BASE=1')
+console.log('Goal: ~30h to ~MO#30, mild lengthening (gentle flavor), Platinum mid-L2, catalog OP, no runaway.\n')
+run('album', 0, 1, (n) => 100, 'FIXED 100 (baseline)')
+run('album', 0, 1, (n) => 100 + Math.floor(n / 3), 'GENTLE +1 every 3 MOs')
+run('album', 0, 1, (n) => 100 + n, 'GENTLE +1 per MO')
+run('album', 0, 1, (n) => 100 + 3 * n, 'STEEPER +3 per MO')
