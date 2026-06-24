@@ -124,6 +124,12 @@ export const StageHall = memo(function StageHall({ era, liveliness }: Props) {
         }}
         onError={(ev) => { ev.currentTarget.style.display = 'none' }}
       />
+      {/* ── §11 per-era recolor: tint the master toward the era palette (gold → violet → blaze). soft-light
+            keeps the art's detail while shifting hue; barely there early, richer as the hall grows. ── */}
+      <div
+        className="absolute inset-0 transition-all duration-[1800ms]"
+        style={{ opacity: 0.1 + grand * 0.35, background: color, mixBlendMode: 'soft-light' }}
+      />
       {/* ── blacking gloom vignette: heavy black creeps in from the edges when intimate, then recedes as
             the hall opens up. gloom = 1-grand (era0 ~0.88 → era6 ~0). ── */}
       {(() => {
