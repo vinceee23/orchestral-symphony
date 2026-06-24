@@ -10,6 +10,25 @@ import { formatNumber, formatCost } from '../../core/format'
 import { playBuySound } from '../../core/audio'
 import { SmoothNumber } from '../shared/SmoothNumber'
 
+/** A tier's gilded emblem, with a graceful fallback to the unicode glyph if its art isn't generated yet. */
+function EmblemIcon({ name, glyph, glow }: { name: string; glyph: string; glow: number }) {
+  const [failed, setFailed] = useState(false)
+  const filter = `drop-shadow(0 0 ${6 + glow * 18}px rgba(212,168,67,${0.3 + glow * 0.6}))`
+  const opacity = 0.55 + glow * 0.45
+  if (failed) {
+    return <span className="text-4xl sm:text-5xl leading-none" style={{ filter, opacity }}>{glyph}</span>
+  }
+  return (
+    <img
+      src={`/emblems/${name}.jpg`}
+      alt=""
+      onError={() => setFailed(true)}
+      className="w-16 h-16 sm:w-20 sm:h-20 object-contain"
+      style={{ filter, opacity }}
+    />
+  )
+}
+
 /**
  * The Stage — the 7 tiers as glowing orchestra sections arranged on a spotlit arc.
  * Each section brightens as you own more of it; click to buy at the current buy-amount.
@@ -107,15 +126,7 @@ export function OrchestraStage() {
                   : 'none',
               }}
             >
-              <span
-                className="text-4xl sm:text-5xl leading-none"
-                style={{
-                  filter: `drop-shadow(0 0 ${4 + glow * 14}px rgba(212,168,67,${0.3 + glow * 0.6}))`,
-                  opacity: 0.55 + glow * 0.45,
-                }}
-              >
-                {config.icon}
-              </span>
+              <EmblemIcon name={config.name.toLowerCase()} glyph={config.icon} glow={glow} />
               <span className="mt-1.5 text-[11px] font-display font-semibold text-accent-gold tracking-wide">
                 {config.name}
               </span>
