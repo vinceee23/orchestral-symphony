@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Decimal from 'break_infinity.js'
 import { useGameStore } from '../../store/gameStore'
 import { TIER_CONFIGS } from '../../core/constants'
 import {
@@ -7,6 +8,7 @@ import {
 import { getAchievementGlobalMultiplier, getAchievementTierMultiplier } from '../../core/achievements'
 import { formatNumber, formatCost } from '../../core/format'
 import { playBuySound } from '../../core/audio'
+import { SmoothNumber } from '../shared/SmoothNumber'
 
 /**
  * The Stage — the 7 tiers as glowing orchestra sections arranged on a spotlit arc.
@@ -67,6 +69,11 @@ export function OrchestraStage() {
           const canAfford = soundwaves.gte(cost) && amount > 0
           const tierAch = getAchievementTierMultiplier(achievementSet, config.id)
           const rate = getTierProductionPerSec(tier, config, globalMult.times(tierAch))
+          // This section's count grows from the tier ABOVE it — that's its live fill rate.
+          const producer = tiers[i + 1]
+          const fillRate = producer?.unlocked
+            ? getTierProductionPerSec(producer, TIER_CONFIGS[i + 1], globalMult.times(getAchievementTierMultiplier(achievementSet, config.id + 1)))
+            : new Decimal(0)
           const glow = Math.min(1, tier.purchased / 40) // 0..1 — brighter the more you own
           const milestone = tier.purchased % 10 // progress toward next x2
 
@@ -112,9 +119,12 @@ export function OrchestraStage() {
               <span className="mt-1.5 text-[11px] font-display font-semibold text-accent-gold tracking-wide">
                 {config.name}
               </span>
-              <span className="text-[13px] font-bold text-text-primary tabular-nums">
-                {formatNumber(tier.quantity, 0)}
-              </span>
+              <SmoothNumber
+                value={tier.quantity}
+                rate={fillRate}
+                precision={0}
+                className="text-[15px] font-bold text-text-primary tabular-nums"
+              />
               {/* milestone-to-next-x2 micro bar */}
               <div className="mt-1 h-[3px] w-full rounded-full bg-bg-primary/70 overflow-hidden">
                 <div className="h-full rounded-full bg-accent-gold/60" style={{ width: `${milestone * 10}%` }} />
