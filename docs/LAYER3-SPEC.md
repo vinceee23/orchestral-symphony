@@ -16,18 +16,18 @@ Status: **proposal for Vince's sign-off.** Self-iterated for loopholes (see §7)
 ### DECISION A — **LOCKED (Vince, 2026-06-25): full 6-layer ladder, Grand Finale = Layer 6 (the end).**
 
 ```
-L1 Encore  →  L2 Magnum Opus  →  L3 Repertoire  →  L4 Genre  →  L5 Virtuoso  →  L6 Grand Finale (END)
-era 1          era 2              era 3             era 4        era 5            era 6 (Canon palette)
+L1 Encore  →  L2 Magnum Opus  →  L3 World Tour  →  L4 Signature  →  L5 Virtuoso  →  L6 Grand Finale (END)
+era 1          era 2              era 3            era 4           era 5            era 6 (Canon palette)
 ```
 - **Grand Finale is the END (Layer 6)** — "more fitting to an end." (Vince has future ideas for a **Layer 7** beyond it; out of scope here.)
-- The **era system was already right** — eras 3/4/5/6 = Repertoire/Genre/Virtuoso/Canon. They just need their layers built and the era formula to stop skipping 3→6.
-- **Consequence — the existing code is mis-placed:** today's `finalePoints` / `finaleCount` / `performGrandFinale` (the ~1.79e308 reset) is *labelled* L3 but is conceptually **L6**. So **the next layer to build is NOT Grand Finale** — it's **L3 Repertoire**, a brand-new prestige inserted *between* Magnum Opus and the eventual Grand Finale. The 1.79e308 Grand-Finale reset gets re-gated far higher and becomes L6; L3/L4/L5 each need their own gate + currency below it.
+- The **era system was already right** — eras 3/4/5/6 map to L3/L4/L5/L6. They just need their layers built and the era formula to stop skipping 3→6. *(The era code labels — currently `Repertoire/Genre/Virtuoso/Canon` in `StageHall` — get renamed to **World Tour / Signature / Virtuoso / Grand Finale**.)*
+- **Consequence — the existing code is mis-placed:** today's `finalePoints` / `finaleCount` / `performGrandFinale` (the ~1.79e308 reset) is *labelled* L3 but is conceptually **L6**. So **the next layer to build is NOT Grand Finale** — it's **L3 World Tour**, a brand-new prestige inserted *between* Magnum Opus and the eventual Grand Finale. The 1.79e308 Grand-Finale reset gets re-gated far higher and becomes L6; L3/L4/L5 each need their own gate + currency below it.
 
-**This spec designs L3 = Repertoire** (the touring ensemble). L4 Genre / L5 Virtuoso / L6 Grand Finale are sketched at the end (§6.5) but not fully specced — build them in order.
+**This spec designs L3 = World Tour** (the touring ensemble). L4 Signature / L5 Virtuoso / L6 Grand Finale are sketched at the end (§6.5) but not fully specced — build them in order.
 
 ---
 
-## 2. Layer 3 design — "Repertoire" (the touring ensemble / second orchestra)
+## 2. Layer 3 design — "World Tour" (the touring ensemble / second orchestra)
 
 **Fantasy:** you've mastered the concert hall (L1) and the studio/records (L2); now you **take the show on the road** — a *touring ensemble* that performs your back-catalogue across venues, a second production running alongside the home orchestra.
 
@@ -47,7 +47,7 @@ era 1          era 2              era 3             era 4        era 5          
 - **Acclaim is capacity-bounded, NOT infinite/sec (anti-AFK).** A tour fills toward a **per-venue capacity**; once a venue is "sold out" it stops accruing until you book the next. So idle income is naturally bounded by how many venues you've unlocked — you can't park after Platinum and farm unbounded Acclaim. (Live offline replay runs up to **24h** in `gameStore.ts` — without this cap, that's a free 24h of Acclaim every login.)
 - **Catalogue snapshot, not live feed.** Acclaim rate is fixed from a snapshot at tour start, so re-climbing L1/L2 *after* starting a tour does NOT keep pumping the tour. This kills the "tour funds the climb that funds the tour" loop.
 - **Stage section (§11):** the touring ensemble appears as a **new performer section** on the Compose stage (a second cluster beside the orchestra), lit at era ≥3.
-- **The L3 break (mirrors Platinum):** completing the World Tour (all venues) switches Acclaim gain to **catalogue-scaling** — the "earned break" beat, parallel to Platinum.
+- **The L3 break (mirrors Platinum):** booking **every venue** (the full circuit) switches Acclaim gain to **catalogue-scaling** — the "earned break" beat, parallel to Platinum. (The *layer* is "World Tour"; the all-venues milestone is "the full circuit" to avoid name collision.)
 
 **Locked-constraint parity (do NOT violate):**
 - Acclaim gain stays **modest/flat pre-break**, switches to scaling at the World-Tour break (the Platinum-style "aha").
@@ -64,14 +64,14 @@ era 1          era 2              era 3             era 4        era 5          
 
 ## 3. The stage / visual (ties to the §11 work already shipped)
 
-- **era 3 = Repertoire:** the touring-ensemble section lights up on the Compose stage (a second performer cluster). The backdrop palette for era 3 is already `#2dd4bf` (teal) in `ERA_COLORS` — re-tune to fit (or pick a "road/amber" tone).
+- **era 3 = World Tour (L3):** the touring-ensemble section lights up on the Compose stage (a second performer cluster). The backdrop palette for era 3 is already `#2dd4bf` (teal) in `ERA_COLORS` — re-tune to fit (or pick a "road/amber" tone).
 - **The era formula must become a true layer→era ladder** (it currently skips 3→6). One tier per prestige layer:
   ```ts
   // getEra() in src/core/eraTheme.ts — replace the finale>0?6:opus>0?2:ep>0?1:0 short-circuit
   finalePoints > 0 ? 6   // L6 Grand Finale (Canon palette)
     : virtuosoUnlocked ? 5 // L5 Virtuoso
-    : genreUnlocked    ? 4 // L4 Genre
-    : tourPoints > 0   ? 3 // L3 Repertoire
+    : signatureUnlocked ? 4 // L4 Signature
+    : tourPoints > 0   ? 3 // L3 World Tour
     : opusCount > 0    ? 2 // L2 Magnum Opus
     : lifetimeEP > 0   ? 1 // L1 Encore
     : 0                    // intimate
@@ -85,7 +85,7 @@ era 1          era 2              era 3             era 4        era 5          
 
 **New `GameState` fields (additive — `types.ts` today has only L1/L2 + `finalePoints`/`finaleCount`):**
 ```ts
-// Layer 3 — Repertoire / touring ensemble
+// Layer 3 — World Tour / touring ensemble
 acclaim: Decimal            // SPENDABLE — drained by venue purchases
 lifetimeAcclaim: Decimal    // PERMANENT — drives the production multiplier (mirrors encorePoints vs lifetimeEncorePoints)
 tourCount: number           // # of L3 tour resets done
@@ -122,7 +122,7 @@ The split (`acclaim` spendable vs `lifetimeAcclaim` permanent) is mandatory — 
 - `src/core/constants.ts` / a new `src/core/repertoire.ts` — L3 formulas, venue configs, the new L3 gate (NOT `GRAND_FINALE_SW_THRESHOLD` — that's L6).
 - `src/core/tick.ts` — Acclaim accrual (parallel track).
 - `src/core/formulas.ts` — fold the **Acclaim** (`lifetimeAcclaim`) production mult into `getCoreProductionMultiplier`.
-- `src/components/` — a Repertoire/Tour tab (venues) + the stage section in `StageHall`/`OrchestraStage`.
+- `src/components/` — a World Tour tab (venues) + the stage section in `StageHall`/`OrchestraStage`.
 - `sim/` — an L3 pacing sim (new) BEFORE tuning any numbers.
 
 ## 5. Decisions — status
@@ -133,7 +133,7 @@ The split (`acclaim` spendable vs `lifetimeAcclaim` permanent) is mandatory — 
 - Spec depth = **detail L3 now, sketch L4–L6**.
 
 **Still open (defaults proposed; decide on review):**
-1. L3 currency name — "Acclaim" vs "Tour Points" vs "Repertoire". *Default: Acclaim (the earned resource) + a meta-mult.*
+1. L3 currency name — "Acclaim" vs "Tour Points". *Default: Acclaim (the earned resource) + a meta-mult.*
 2. L3 currency gain shape (additive `1+n·k` vs capped-exponential) — *decide after a sim.*
 3. Does an Encore/MO reset wipe the touring ensemble's Acclaim, or does the tour persist across lower-layer resets? *Default: tour persists across L1/L2 resets, only an L3 reset banks it.*
 4. L3 SW gate value — *sim-tune; must sit above Platinum's curve, well below L6's 1.79e308.*
@@ -141,10 +141,10 @@ The split (`acclaim` spendable vs `lifetimeAcclaim` permanent) is mandatory — 
 ## 6. Build order (once signed off)
 1. Sync `sim/` to live `constants.ts` (see ACHIEVEMENTS-V2 §7) + sim the L3 gate + Acclaim curve. 2. Add L3 state (§3.5) + migration. 3. Wire `performTour()` reset + the Acclaim multiplier (minimal) → playable L3. 4. Add the tour/venues tree (capacity-bounded). 5. Add the stage section + era-3 visuals + era-formula ladder. 6. Re-sim full L1→L3 pacing.
 
-## 6.5 Sketches — L4 Genre, L5 Virtuoso, L6 Grand Finale (each a DISTINCT new mechanic)
+## 6.5 Sketches — L4 Signature, L5 Virtuoso, L6 Grand Finale (each a DISTINCT new mechanic)
 *Not full specs — design intent + the novel mechanic, to be detailed in order. Each adds a stage section (§11) and an era tier (4/5/6).*
 
-- **L4 — Genre (era 4, `#ec4899` pink).** *Mechanic: branching specialization / loadout.* You pick a **Genre** (e.g. Classical · Jazz · Film Score · Electronic), each granting a distinct global modifier + its own small skill-tree. Switching genre = a sub-reset of the genre tree (not your layers). This is a *build-diversity* mechanic — fundamentally different from L3's parallel-income track. Currency: **Genre Mastery**. Open Q: can you eventually run multiple genres at once (fusion), or one at a time?
+- **L4 — Signature (era 4, `#ec4899` pink).** *Mechanic: branching specialization / loadout.* You commit to a **signature style** (e.g. Classical · Jazz · Film Score · Electronic), each granting a distinct global modifier + its own small skill-tree. Switching style = a sub-reset of that tree (not your layers). A *build-diversity* mechanic — fundamentally different from L3's parallel-income track. Currency: **Signature Mastery**. Open Q: can you eventually run multiple styles at once (fusion), or one at a time?
 
 - **L5 — Virtuoso (era 5, `#ef4444` red).** *Mechanic: voluntary-difficulty challenges.* **This layer already has its hook in code** — `Sidebar.tsx` hides the Challenges tab with the comment *"Challenges hidden until Layer 5 (Virtuoso)."* So L5 = the Challenges system goes live: constrained runs that grant permanent **Virtuoso** bonuses on completion. Reuse `challenges.ts` + `completedChallenges`.
   - **⚠ Gating blocker (Codex MUST-FIX #9):** challenges are currently gated on **finaleCount** — `ChallengeConfig.unlockAt` ("Grand Finale count needed") in `challenges.ts` and `ChallengesPage.tsx` filters `finaleCount >= unlockAt`. Since finaleCount is now **L6**, challenges would unlock *after the game ends*. When L5 is built, **re-gate challenges to a new Virtuoso unlock** (a `virtuosoUnlocked`/`virtuosoCount` field), NOT `finaleCount`. Until then the tab correctly stays hidden.
@@ -152,7 +152,7 @@ The split (`acclaim` spendable vs `lifetimeAcclaim` permanent) is mandatory — 
 - **L6 — Grand Finale (era 6, `#fbbf24` gold/Canon — the END).** *Mechanic: total ascension / new universe.* The existing `finalePoints`/`performGrandFinale` reset, **re-gated to ~1.79e308** and moved here. Resets EVERYTHING (L1–L5 currencies included) for a permanent meta-multiplier (`finalePoints`). The "new universe" framing already exists (`ach_second_universe` = "Record a Magnum Opus in a new universe (post-Grand Finale)"). This is the climactic full-wipe-for-meta-power layer. L7 (future) would sit beyond it.
 
 ## 7. Self-iteration — loopholes / risks found (and mitigations)
-- **L:** ~~"Grand Finale" being mid-ladder is confusing.~~ **RESOLVED:** Grand Finale = L6 (the end); L3 is the new "Repertoire" layer. But the *existing code* still labels the finale reset as L3 — **building L3 must NOT touch `finalePoints`/`performGrandFinale`**; introduce parallel L3 state, or the two will collide. (Called out in §4.)
+- **L:** ~~"Grand Finale" being mid-ladder is confusing.~~ **RESOLVED:** Grand Finale = L6 (the end); L3 is the new "World Tour" layer. But the *existing code* still labels the finale reset as L3 — **building L3 must NOT touch `finalePoints`/`performGrandFinale`**; introduce parallel L3 state, or the two will collide. (Called out in §4.)
 - **L (NEW, from the 6-layer + every-layer-novel decision):** four distinct from-scratch mechanics (L3 tour, L4 genre, L5 challenges, L6 ascension) is a **large, long-horizon scope** — risk of an unfinished ladder. **M:** strictly build in order, each layer fully playable+balanced before the next; L5 is partly free (Challenges already stubbed); ship L3 end-to-end first and re-evaluate.
 - **L (Codex MUST-FIX #2/#3):** a parallel Acclaim track running while you climb L1/L2 could **trivialize** the climb or be **AFK-farmed** (24h offline replay in `gameStore.ts`). **M (folded into §2):** Acclaim is **capacity-bounded** (per-venue caps, not infinite/sec) and rate is fixed from a **catalogue snapshot at tour start** (live re-climbing doesn't keep pumping it); plus the `acclaim`/`lifetimeAcclaim` spendable-vs-permanent split (§3.5).
 - **L (Codex MUST-FIX #4):** the Acclaim multiplier or any production→Acclaim cross-feed could **runaway** (compounding). **M:** additive/capped `lifetimeAcclaim` mult; **one-way, capped, delayed** cross-feed only (§2 "no two-way loops"); sim across many tours.

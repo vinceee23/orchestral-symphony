@@ -23,7 +23,7 @@ Depth: detailed + implementable. The reward *engine* stays; the **list, pacing, 
 - **Even drip across the WHOLE game**, not a wall at MO. Target cadence: roughly **one unlock every 3–8 min of active play early**, stretching to **one per run/milestone late**. Sim-verified (the `sim/` engine can timestamp first-unlock per achievement — see §7).
 - **Functional > flat.** Keep flat % as the *connective tissue* (small, frequent dopamine) but make the **milestone** achievements grant perks or distinctive effects. Roughly: 55% flat-%, 25% tier/tempo/cost texture, 12% perks, 8% collectibles (`none`).
 - **Per-row global-mult budget (Codex NTH#1).** Set an explicit cap on total `globalPercent` each row may contribute, so ~90–100 achievements don't quietly *become* the progression system. Starting budget: the **whole achievement set's `globalPercent` sum stays ≤ ~+150–200%** end-to-end, allocated per row (early rows tiny, late rows larger). The pacing sim (§7) prints the running total per layer; tune to the budget. This is the guard against "achievement mult is the real game."
-- **Every layer gets a full row.** L1 (Compose) · L1.5 (Encore) · L2a (Conducting/Records) · L2b (Opus-tree/Platinum) · **L3 Repertoire (NEW, fleshed out)** · L4/L5/L6 rows built with each layer · cross-cutting (time/hidden/mastery).
+- **Every layer gets a full row.** L1 (Compose) · L1.5 (Encore) · L2a (Conducting/Records) · L2b (Opus-tree/Platinum) · **L3 World Tour (NEW, fleshed out)** · L4/L5/L6 rows built with each layer · cross-cutting (time/hidden/mastery).
 - **More + better perks** (§5): go from 10 → ~14, covering L2 and L3 quality-of-life, so perks remain the "build-defining" reward tier.
 - **Keep the voice** (song titles + orchestral wit) and the hidden-easter-egg sprinkle.
 
@@ -45,9 +45,9 @@ Each row = a progression zone with a target unlock-window. `[N]` = approx count.
 | R6 | Records → Gold → **Platinum (mystery)** | 4–8 h | [10] | small %, **perk: Muscle Memory (hidden)**, Platinum reveal |
 | R7 | Opus-tree mastery + automators | 6–12 h | [10] | tempo, cost, **perks: Session Musicians, Pick-Up-Tempo, Sustained Note** |
 | R8 | MO repetition (3/5/10) + deep SW | 10–20 h | [9] | global %, headStart, 1 hidden |
-| **R9** | **L3 Repertoire — touring, venues, Acclaim (NEW)** | 20–40 h | **[12]** | **L3 perks (§5), Acclaim milestones, stage-section unlocks** |
+| **R9** | **L3 World Tour — touring, venues, Acclaim (NEW)** | 20–40 h | **[12]** | **L3 perks (§5), Acclaim milestones, stage-section unlocks** |
 | **R10** | **L3 tour mastery (tourCount / all venues / Acclaim thresholds)** | 40 h+ | **[10]** | big global %, **perk: Legacy**, tour collectibles |
-| *(future)* | *R-Genre (L4) · R-Virtuoso (L5) · **R-Grand-Finale (L6)*** — built with each layer; **all `finaleCount`/multi-Finale + endgame-completionist achievements live in the L6 row, NOT R10** | — | — | per-layer perks |
+| *(future)* | *R-Signature (L4) · R-Virtuoso (L5) · **R-Grand-Finale (L6)*** — built with each layer; **all `finaleCount`/multi-Finale + endgame-completionist achievements live in the L6 row, NOT R10** | — | — | per-layer perks |
 | RX | Cross-cutting (time-played, no-tempo runs, hidden eggs) | any | [8] | startingSW, hidden, collectibles |
 
 **The fix for "43-at-MO":** R1–R5 sum to ~40 and are *spread* over the first 2–4 h; R6–R10 (the new mass) only start unlocking once you're *in* L2/L3. The MO moment unlocks ~3–5 (its own row), not 43.
@@ -58,14 +58,14 @@ Each row = a progression zone with a target unlock-window. `[N]` = approx count.
 
 Detailed enough to implement directly against the v1 schema. (Existing kept entries omitted for brevity — full diff produced at build time.)
 
-> **Ladder alignment (2026-06-25):** the ladder is now 6 layers — L3 Repertoire · L4 Genre · L5 Virtuoso · L6 **Grand Finale (end)**. So the "late rows" generalize to **one row per new layer**, detailed alongside each layer as it ships: **R9 = L3 Repertoire** (below), then future R-Genre / R-Virtuoso / **R-Grand-Finale** (the multi-Finale + endgame achievements — `finaleCount`-gated — belong to that LAST row, NOT R9). R9 gates on **L3** state only.
+> **Ladder alignment (2026-06-25):** the ladder is now 6 layers — L3 World Tour · L4 Signature · L5 Virtuoso · L6 **Grand Finale (end)**. So the "late rows" generalize to **one row per new layer**, detailed alongside each layer as it ships: **R9 = L3 World Tour** (below), then future R-Signature / R-Virtuoso / **R-Grand-Finale** (the multi-Finale + endgame achievements — `finaleCount`-gated — belong to that LAST row, NOT R9). R9 gates on **L3** state only.
 
-### R9 — Layer 3 "Repertoire" (NEW, depends on LAYER3-SPEC.md decisions)
+### R9 — Layer 3 "World Tour" (NEW, depends on LAYER3-SPEC.md decisions)
 *(IDs provisional; gate on the **L3** state fields once they exist — `tourPoints`/`acclaim`, `venues`, `tourProgress`, `tourCount`. NOT `finalePoints`/`finaleCount` — those are L6.)*
 - `ach_on_the_road` — **On the Road Again** — "Unlock the Touring Ensemble" — first venue booked / `tourCount>=1` — `globalPercent 0.10`.
 - `ach_first_venue` — **Opening Night** — "Book your first venue" — flat % small.
 - `ach_full_house` — **Full House** — "Fill a venue to capacity (Acclaim milestone)" — `tierPercent` or tempo.
-- `ach_world_tour` — **Around the World (Reprise)** — "Complete the World Tour (all venues)" — **perk: Encore Bus** (§5).
+- `ach_full_circuit` — **Around the World** — "Book every venue (the full circuit)" — **perk: Encore Bus** (§5).
 - `ach_acclaim_1` / `_2` / `_3` — **Standing Ovation / Critical Darling / Household Name** — Acclaim thresholds — escalating global %.
 - `ach_two_orchestras` — **Double Bill** — "Run the touring ensemble + home orchestra simultaneously at full tilt" — **perk: Split the Bill**.
 - `ach_legacy` — **Legacy** — "Complete an L3 tour reset" — **perk: Legacy** (carry a fraction of `recordsSold` across the L3 tour reset; mirrors keep-encore-upgrades). *(The carry-across-Grand-Finale version is a separate L6 perk.)*
