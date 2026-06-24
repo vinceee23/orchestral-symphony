@@ -12,7 +12,7 @@ import {
 } from '../core/constants'
 import {
   ENCORE_UPGRADE_MAP, getEncoreUpgradeCost,
-  getSightReadingStartNotes, getOvertureGainMultiplier,
+  getHeadStartExponent, getRehearsalCostReduction, getOvertureGainMultiplier,
 } from '../core/encoreUpgrades'
 import { OPUS_UPGRADES, OPUS_UPGRADE_MAP, getOpusUpgradeCost } from '../core/opusUpgrades'
 import { hasPerk, WARMUP_TIERS, WARMUP_BONUS_SW, TEMPO_HEADSTART_LEVEL, CRESCENDO_HEADSTART, ENCORE_UPGRADE_DISCOUNT } from '../core/perks'
@@ -28,7 +28,7 @@ import {
   getMaxTempoLevels,
   getEncoreGain,
 } from '../core/formulas'
-import { ACHIEVEMENTS, getAchievementStartingSW, getAchievementCostReduction, getAchievementTierCostReduction } from '../core/achievements'
+import { ACHIEVEMENTS, getAchievementStartingSW, getAchievementCostReduction, getAchievementTierCostReduction, getAchievementHeadStartBoost } from '../core/achievements'
 import { getChallengeById, getActiveChallengeModifiers } from '../core/challenges'
 import { createDecimalStorage } from '../core/save'
 import { useUiStore } from './uiStore'
@@ -127,6 +127,8 @@ function getEffectiveCostMultiplier(state: GameState, tierId: number): number {
   const achSet = new Set(state.achievements)
   const globalCostRed = getAchievementCostReduction(achSet)
   const tierCostRed = getAchievementTierCostReduction(achSet, tierId)
+  // Rehearsal (Encore shop): -5%/level all tier costs
+  const rehearsal = 1 - getRehearsalCostReduction(state.encoreUpgrades)
 
   // Challenge cost multiplier
   const challenge = state.activeChallenge
@@ -141,7 +143,7 @@ function getEffectiveCostMultiplier(state: GameState, tierId: number): number {
     risingFactor = Math.pow(mods.risingCostRate, elapsedSec)
   }
 
-  return mods.costMultiplier * globalCostRed * tierCostRed * risingFactor
+  return mods.costMultiplier * globalCostRed * tierCostRed * rehearsal * risingFactor
 }
 
 export const useGameStore = create<GameState & GameActions>()(
@@ -520,15 +522,12 @@ export const useGameStore = create<GameState & GameActions>()(
         const gain = Math.floor(getEncoreGain(state.peakSoundwaves) * overtureMult)
 
         const reset = resetTiersAndSW(state.achievements)
-        // Sight-Reading: begin the new run with free Notes (tier 1).
-        const startNotes = getSightReadingStartNotes(state.encoreUpgrades)
-        if (startNotes > 0 && reset.tiers) {
-          reset.tiers[0] = {
-            ...reset.tiers[0],
-            quantity: new Decimal(startNotes),
-            purchased: startNotes,
-            multiplier: getMilestoneMultiplier(startNotes),
-          }
+        // Sight-Reading head-start: begin the new run with SW = (this run's peak)^exp, so you skip the
+        // tedious redundant re-climb (only on Encore — MO/Finale reset the multiplier, so a pre-reset
+        // peak seed would be wildly out of regime). exp grows with the unlock + head-start achievements.
+        const headExp = getHeadStartExponent(state.encoreUpgrades, getAchievementHeadStartBoost(new Set(state.achievements)))
+        if (headExp > 0 && state.peakSoundwaves.gt(1)) {
+          reset.soundwaves = Decimal.max(reset.soundwaves ?? STARTING_SOUNDWAVES, state.peakSoundwaves.pow(headExp))
         }
 
         const newEncoreCount = state.encoreCount + 1

@@ -117,8 +117,9 @@ function produce(s, dt, P, encoreMult) {
 }
 
 // simulate one run until gate met (purchased[gateTier] >= gateAmount) or time cap
-export function simRun({ maxTierIdx, gate, encoreMult = D(1), P, dt = 1, capHours = 24 }) {
+export function simRun({ maxTierIdx, gate, encoreMult = D(1), P, dt = 1, capHours = 24, startSW = null }) {
   const s = freshRun(maxTierIdx)
+  if (startSW) s.sw = Decimal.max(s.sw, startSW)  // Sight-Reading head-start seeds the opening SW
   let t = 0
   const maxT = capHours * 3600
   const oom = []

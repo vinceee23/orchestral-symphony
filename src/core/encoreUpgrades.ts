@@ -26,10 +26,10 @@ export const ENCORE_UPGRADES: EncoreUpgradeConfig[] = [
   {
     id: 'sightReading',
     name: 'Sight-Reading',
-    description: 'Begin each Encore with free Notes (a running head start).',
-    baseCost: 1,
+    description: 'Unlock a Soundwave head-start each run (grows as you earn achievements).',
+    baseCost: 3,
     costGrowth: 2.5,
-    maxLevel: 10,
+    maxLevel: 1,
   },
   {
     id: 'overture',
@@ -39,7 +39,20 @@ export const ENCORE_UPGRADES: EncoreUpgradeConfig[] = [
     costGrowth: 4,
     maxLevel: 8,
   },
+  {
+    id: 'rehearsal',
+    name: 'Rehearsal',
+    description: '-5% all tier costs per level.',
+    baseCost: 3,
+    costGrowth: 3,
+    maxLevel: 5,
+  },
 ]
+
+// Head-start exponent: new-run start SW = (prior run peak)^exp. Sim-tuned (sim/_headstart): the wall
+// gate escalates ABOVE each prior peak, so even a large exponent barely shifts wall-time (<~5%) — 0.5
+// skips most of the tedious redundant re-climb (QoL) without trivializing the push to the next gate.
+export const SIGHT_READING_BASE = 0.5
 
 export const ENCORE_UPGRADE_MAP: Record<string, EncoreUpgradeConfig> = Object.fromEntries(
   ENCORE_UPGRADES.map((u) => [u.id, u]),
@@ -59,12 +72,17 @@ export function getPerfectPitchMultiplier(upgrades: Record<string, number>): Dec
   return new Decimal(1).plus(0.2 * lvl(upgrades, 'perfectPitch'))
 }
 
-/** Sight-Reading: free Notes (tier 1) to start each run with. 10 per level. */
-export function getSightReadingStartNotes(upgrades: Record<string, number>): number {
-  return 10 * lvl(upgrades, 'sightReading')
+/** Sight-Reading unlock + achievement boosts: exponent for peak-SW head-start seeding. */
+export function getHeadStartExponent(upgrades: Record<string, number>, achievementBoost: number): number {
+  return lvl(upgrades, 'sightReading') >= 1 ? SIGHT_READING_BASE + achievementBoost : 0
 }
 
 /** Overture: multiplier on EP gained per Encore. +15% per level. */
 export function getOvertureGainMultiplier(upgrades: Record<string, number>): number {
   return 1 + 0.15 * lvl(upgrades, 'overture')
+}
+
+/** Rehearsal: global tier cost reduction. -5% per level (0..25%). */
+export function getRehearsalCostReduction(upgrades: Record<string, number>): number {
+  return 0.05 * lvl(upgrades, 'rehearsal')
 }

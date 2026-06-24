@@ -18,6 +18,7 @@ export interface AchievementReward {
   costReduction?: number
   tierCostReduction?: { tierId: number; value: number }
   startingSW?: number
+  headStartBoost?: number
   perk?: PerkId
   none?: true
 }
@@ -232,8 +233,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Complete 16 Encores',
     icon: '\u{1F504}',
     check: (s) => s.encoreCount >= 16,
-    reward: { globalPercent: 0.18 },
-    rewardDescription: '+18% all production',
+    reward: { globalPercent: 0.18, headStartBoost: 0.04 },
+    rewardDescription: '+18% all production · +head-start',
   },
   {
     id: 'ach_feeling',
@@ -699,8 +700,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Re-reach the 8-Encore wall after a Magnum Opus',
     icon: '\u{1F9F1}',
     check: (s) => s.opusCount >= 1 && s.encoreCount >= 8,
-    reward: { none: true },
-    rewardDescription: 'Collectible — no bonus',
+    reward: { headStartBoost: 0.04 },
+    rewardDescription: '+head-start',
   },
   {
     id: 'ach_tree_climber',
@@ -717,8 +718,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Complete 24 Encores',
     icon: '\u{1F501}',
     check: (s) => s.encoreCount >= 24,
-    reward: { globalPercent: 0.05 },
-    rewardDescription: '+5% all production',
+    reward: { globalPercent: 0.05, headStartBoost: 0.04 },
+    rewardDescription: '+5% all production · +head-start',
   },
   {
     id: 'ach_royalty_check',
@@ -834,6 +835,18 @@ export function getAchievementStartingSW(unlockedIds: Set<string>): number {
     if (ach.reward.startingSW) {
       total += ach.reward.startingSW
     }
+  }
+  return total
+}
+
+/**
+ * Sum head-start exponent boosts from unlocked achievements.
+ */
+export function getAchievementHeadStartBoost(unlocked: Set<string>): number {
+  let total = 0
+  for (const ach of ACHIEVEMENTS) {
+    if (!unlocked.has(ach.id)) continue
+    total += ach.reward.headStartBoost ?? 0
   }
   return total
 }
