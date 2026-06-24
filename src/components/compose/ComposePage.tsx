@@ -31,7 +31,6 @@ export function ComposePage() {
   const recordsSold = useGameStore((s) => s.recordsSold)
   const platinum = useGameStore((s) => s.platinum)
   const finalePoints = useGameStore((s) => s.finalePoints)
-  const tempo = useGameStore((s) => s.tempo)
   const layer1WallReached = useGameStore((s) => s.layer1WallReached)
   const opusCount = useGameStore((s) => s.opusCount)
   const peakCrescendoMult = useGameStore((s) => s.peakCrescendoMult)
@@ -65,8 +64,7 @@ export function ComposePage() {
   const moProgress = Math.min(100, (moPurchased / moCost.amount) * 100)
   const projectedOpGain = getOpusGain({ platinum, opGainFlatLevel: opusUpgrades['op-gain-flat'] ?? 0, opusCount, peakCrescendoMult, levels: opusUpgrades })
 
-  // Spotlight heartbeat (capped) + ambient liveliness (bland pre-Encore, warmer each layer).
-  const pulseDur = Math.min(2, Math.max(0.5, 60 / (tempo.baseBPM || 60)))
+  // Ambient liveliness (bland pre-Encore, warmer each layer) — feeds the backdrop grandeur ramp.
   const liveliness = getLiveliness(lifetimeEncorePoints, opusCount, finalePoints)
   // Stage era = one hall tier per prestige layer (0 intimate · 1 Encore · 2 Magnum Opus ·
   // 3 Repertoire · 4 Genre · 5 Virtuoso · 6 Canon). Only 0-2 reachable today; finale jumps to the top tier.
@@ -74,8 +72,7 @@ export function ComposePage() {
   const orchestraScale = [1, 0.93, 0.86, 0.82, 0.78, 0.74, 0.7][era] ?? 0.7 // camera pulls back per layer
   // §11 "lights up as you climb": the hall brightens with your Soundwave climb and BLAZES as you conduct.
   const climb = peakSoundwaves.gt(1) ? Math.min(1, Math.max(0, peakSoundwaves.log10()) / 100) : 0 // 0..1 across the climb
-  const blaze = Math.max(0, Math.min(1, crescendo)) // crescendo fraction — rises while holding Conduct
-  const stageGlow = Math.min(1, 0.45 + (era / 6) * 0.25 + climb * 0.15 + blaze * 0.4)
+  const blaze = Math.max(0, Math.min(1, crescendo)) // crescendo fraction — rises while holding Conduct (→ StageHall)
   // Live "conduct stage" multipliers (crescendo updates as you hold Conduct).
   const crescendoMult = getCrescendoMultiplier(crescendo, opusUpgrades)
   const tempoOpMult = getTempoOpMultiplier(opusUpgrades)
@@ -122,30 +119,8 @@ export function ComposePage() {
           'linear-gradient(180deg, #050507 0%, #020203 100%)',
       }}
     >
-      {/* spotlight beam from above */}
-      <div
-        className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 z-0"
-        style={{
-          width: '72%', height: '80%', opacity: stageGlow,
-          background: 'linear-gradient(180deg, rgba(212,168,67,0.20), rgba(212,168,67,0.05) 50%, transparent 80%)',
-          clipPath: 'polygon(46% 0%, 54% 0%, 100% 100%, 0% 100%)',
-        }}
-      />
-      {/* lamp source + capped tempo heartbeat */}
-      <div
-        className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 z-0"
-        style={{
-          width: 170, height: 130,
-          background: 'radial-gradient(50% 70% at 50% 0%, rgba(255,236,180,0.55), rgba(212,168,67,0.18) 45%, transparent 75%)',
-          animation: `tempo-pulse ${pulseDur}s ease-in-out infinite`,
-        }}
-      />
-      {/* stage floor pool */}
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-48 z-0"
-        style={{ opacity: stageGlow, background: 'radial-gradient(55% 100% at 50% 100%, rgba(212,168,67,0.12), transparent 70%)' }}
-      />
-      {/* the living hall — risers, audience, architecture, overhead light (grows per era) */}
+      {/* spotlight beam / lamp / floor pool removed (per Vince) — the near-abstract blurred backdrop
+          carries all the stage lighting now, so nothing overwhelms the orchestra buttons. */}
       <StageHall era={era} liveliness={liveliness} blaze={blaze} />
       {/* ambient drifting notes — scoped to the Compose stage (scales with liveliness) */}
       <FloatingNotes />
