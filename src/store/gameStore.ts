@@ -566,6 +566,7 @@ export const useGameStore = create<GameState & GameActions>()(
         }
 
         // Magnum Opus fully resets the Encore layer (production mult comes from lifetimeEncorePoints).
+        // Re-master the wall: every MO must re-reach the 8-Encore wall, so even +1 OP stays earned.
         set({
           ...resetTiersAndSW(state.achievements),
           peakSoundwaves: new Decimal(0),
@@ -573,6 +574,7 @@ export const useGameStore = create<GameState & GameActions>()(
           lifetimeEncorePoints: 0,
           encoreCount: 0,
           encoreUpgrades: {},
+          layer1WallReached: false,
           opusPoints: state.opusPoints + gain,
           opusCount: newOpusCount,
           crescendo: 0,

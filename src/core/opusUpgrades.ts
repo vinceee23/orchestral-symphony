@@ -169,9 +169,11 @@ export const OPUS_UPGRADES: OpusUpgradeConfig[] = [
     track: 'OP_GAIN',
     name: 'Opus Mastery',
     description: '+1 flat Opus Point per Magnum Opus (pre-Platinum).',
+    // Flatter curve + more levels (sim/l2mastery.mjs): a focused player climbs +1->~+5 OP by Platinum
+    // so pre-Platinum MOs stop feeling stale, without pre-empting the Platinum catalog switch.
     baseCost: 2,
-    costGrowth: 1.8,
-    maxLevel: 5,
+    costGrowth: 1.4,
+    maxLevel: 8,
   },
   {
     id: 'records-sell-rate',

@@ -33,6 +33,17 @@ describe('opusUpgrades', () => {
     }
   })
 
+  it('Opus Mastery is tuned for +1->~+5 OP by Platinum (sim/l2mastery.mjs)', () => {
+    const mastery = OPUS_UPGRADES.find((u) => u.id === 'op-gain-flat')!
+    // Flatter curve + more levels so pre-Platinum MOs aren't stale. Guard the tuned values.
+    expect(mastery.costGrowth).toBeCloseTo(1.4, 5)
+    expect(mastery.maxLevel).toBe(8)
+    // ~L4 (the by-Platinum target) must stay affordable for a focused player: cumulative cost is modest.
+    let cum = 0
+    for (let l = 0; l < 4; l++) cum += getOpusUpgradeCost(mastery, l)
+    expect(cum).toBeLessThanOrEqual(15)
+  })
+
   it('automator unlocks gate tiers 2..7 only', () => {
     const levels: Record<string, number> = {}
     expect(isAutomatorUnlocked(levels, 1)).toBe(true)
