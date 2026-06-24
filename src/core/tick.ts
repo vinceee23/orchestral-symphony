@@ -163,7 +163,9 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
   // === Autobuyer tick ===
   const now = Date.now()
   // perk-fast-automators: one extra speed tier on every automator
-  const autoSpeedBonus = hasPerk(new Set(state.achievements), 'perk-fast-automators') ? FAST_AUTOMATOR_SPEED_TIERS : 0
+  const autoSpeedBonus = hasPerk(achievementSet, 'perk-fast-automators') ? FAST_AUTOMATOR_SPEED_TIERS : 0
+  // perk-bulk-unlock: lift the autobuyer bulk cap to max (manual buy is already ungated)
+  const bulkPerk = hasPerk(achievementSet, 'perk-bulk-unlock')
   for (let i = 0; i < newTiers.length; i++) {
     const key = `tier_${i + 1}`
     const ab = newAutobuyers[key]
@@ -187,7 +189,7 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
 
     let buyCount = 0
     const bulk = (state.opusCount > 0 && ab.unlocked)
-      ? clampAutobuyerBulk(ab.bulk, getAutomatorBulk(state.opusUpgrades))
+      ? clampAutobuyerBulk(ab.bulk, bulkPerk ? 'max' : getAutomatorBulk(state.opusUpgrades))
       : ab.bulk
     if (bulk === 'max') {
       buyCount = getMaxBuyable(config, tier.purchased, newSoundwaves, abCostMult)

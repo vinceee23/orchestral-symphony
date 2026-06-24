@@ -5,6 +5,7 @@ import { getEncoreCost, getMagnumOpusCost, ENCORE_WALL_COUNT } from '../../core/
 import { getEncoreMultiplier, getEncoreGain } from '../../core/formulas'
 import { getOpusGain } from '../../core/records'
 import { ENCORE_UPGRADES, getEncoreUpgradeCost, getOvertureGainMultiplier } from '../../core/encoreUpgrades'
+import { hasPerk, ENCORE_UPGRADE_DISCOUNT } from '../../core/perks'
 import { playPrestigeSound, playBuySound } from '../../core/audio'
 import { getChallengeById, getActiveChallengeModifiers } from '../../core/challenges'
 import { PrestigeDialog, type PrestigeKind } from './PrestigeDialog'
@@ -27,6 +28,7 @@ export function PrestigePage() {
   const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const encoreCount = useGameStore((s) => s.encoreCount)
   const encoreUpgrades = useGameStore((s) => s.encoreUpgrades)
+  const achievements = useGameStore((s) => s.achievements)
   const layer1WallReached = useGameStore((s) => s.layer1WallReached)
   const opusPoints = useGameStore((s) => s.opusPoints)
   const opusCount = useGameStore((s) => s.opusCount)
@@ -168,7 +170,8 @@ export function PrestigePage() {
             {ENCORE_UPGRADES.map((u) => {
               const level = encoreUpgrades[u.id] ?? 0
               const maxed = level >= u.maxLevel
-              const cost = getEncoreUpgradeCost(u, level)
+              const encDiscount = hasPerk(new Set(achievements), 'perk-encore-discount') ? ENCORE_UPGRADE_DISCOUNT : 0
+              const cost = getEncoreUpgradeCost(u, level, encDiscount)
               const affordable = encorePoints >= cost
               const buy = () => { if (!maxed && affordable) { buyEncoreUpgrade(u.id); playBuySound(7) } }
               return (

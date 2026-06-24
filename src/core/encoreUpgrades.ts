@@ -45,9 +45,9 @@ export const ENCORE_UPGRADE_MAP: Record<string, EncoreUpgradeConfig> = Object.fr
   ENCORE_UPGRADES.map((u) => [u.id, u]),
 )
 
-/** EP cost to buy the NEXT level (current level -> level+1). */
-export function getEncoreUpgradeCost(config: EncoreUpgradeConfig, currentLevel: number): number {
-  return Math.ceil(config.baseCost * Math.pow(config.costGrowth, currentLevel))
+/** EP cost to buy the NEXT level (current level -> level+1). `discount` (0..1) is the perk-encore-discount. */
+export function getEncoreUpgradeCost(config: EncoreUpgradeConfig, currentLevel: number, discount = 0): number {
+  return Math.ceil(config.baseCost * Math.pow(config.costGrowth, currentLevel) * (1 - discount))
 }
 
 const lvl = (upgrades: Record<string, number>, id: string) => upgrades[id] ?? 0

@@ -47,7 +47,7 @@ function isAtCrescendoCeiling(state: GameState): boolean {
   return getCrescendoMultiplier(state.crescendo, state.opusUpgrades) >= ceiling - 0.02
 }
 
-// 58 achievements — steady drip pacing, hybrid song-title + orchestral wit naming
+// 63 achievements — steady drip pacing, hybrid song-title + orchestral wit naming
 export const ACHIEVEMENTS: AchievementConfig[] = [
   // === Row 1: Early Game ===
   {
@@ -645,6 +645,51 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     check: (s) => [2, 3, 4, 5, 6, 7].every((t) => isAutomatorUnlocked(s.opusUpgrades, t)),
     reward: { perk: 'perk-fast-automators' },
     rewardDescription: 'PERK: automators run one speed tier faster',
+  },
+  {
+    id: 'ach_perk_tempo_headstart',
+    name: 'Speed of Sound',
+    description: 'Reach 1e15 Soundwaves within 5 minutes of a run',
+    icon: '\u{23F1}',
+    check: (s) => s.soundwaves.gte(1e15) && (Date.now() - s.currentRunStartTime) <= 300000,
+    reward: { perk: 'perk-tempo-headstart' },
+    rewardDescription: 'PERK: start each run at Tempo level 8',
+  },
+  {
+    id: 'ach_perk_sustained_note',
+    name: 'Legato to the Limit',
+    description: 'Sustain Crescendo at its ceiling',
+    icon: '\u{1F3BB}',
+    check: (s) => isAtCrescendoCeiling(s),
+    reward: { perk: 'perk-crescendo-headstart' },
+    rewardDescription: 'PERK: start each run with Crescendo at 40%',
+  },
+  {
+    id: 'ach_perk_patron',
+    name: 'The Sound of Silence',
+    description: 'Reach 1e12 Soundwaves without ever raising Tempo',
+    icon: '\u{1F507}',
+    check: (s) => s.soundwaves.gte(1e12) && s.tempo.level === 0,
+    reward: { perk: 'perk-encore-discount' },
+    rewardDescription: 'PERK: Encore-shop upgrades cost 25% less Applause',
+  },
+  {
+    id: 'ach_perk_mass_production',
+    name: 'Another Brick in the Wall',
+    description: 'Own 1,000 of a single tier',
+    icon: '\u{1F3ED}',
+    check: (s) => s.tiers.some((t) => t.purchased >= 1000),
+    reward: { perk: 'perk-bulk-unlock' },
+    rewardDescription: 'PERK: bulk-buy (10/100/Max) unlocked from the start',
+  },
+  {
+    id: 'ach_perk_second_wind',
+    name: 'Curtain Up!',
+    description: 'Reach the first Encore gate within 2 minutes of a run',
+    icon: '\u{1F3AD}',
+    check: (s) => (s.tiers[4]?.purchased ?? 0) >= 30 && (Date.now() - s.currentRunStartTime) <= 120000,
+    reward: { perk: 'perk-second-wind' },
+    rewardDescription: 'PERK: one free Encore per Magnum Opus cycle',
   },
 ]
 

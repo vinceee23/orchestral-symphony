@@ -15,7 +15,7 @@ import {
   getSightReadingStartNotes, getOvertureGainMultiplier,
 } from '../core/encoreUpgrades'
 import { OPUS_UPGRADES, OPUS_UPGRADE_MAP, getOpusUpgradeCost } from '../core/opusUpgrades'
-import { hasPerk, WARMUP_TIERS, WARMUP_BONUS_SW } from '../core/perks'
+import { hasPerk, WARMUP_TIERS, WARMUP_BONUS_SW, TEMPO_HEADSTART_LEVEL, CRESCENDO_HEADSTART, ENCORE_UPGRADE_DISCOUNT } from '../core/perks'
 import { getOpusGain } from '../core/records'
 import { calculateTick } from '../core/tick'
 import {
@@ -91,9 +91,14 @@ function createInitialState(): GameState {
 function resetTiersAndSW(achievementIds: string[]): Partial<GameState> {
   const achSet = new Set(achievementIds)
   const bonusSW = getAchievementStartingSW(achSet)
-  // perk-warmup: start each run with the first WARMUP_TIERS tiers pre-bought (a milestone bracket each)
-  // + bonus SW, so a veteran's early ramp is skipped. Pre-buying tier i unlocks i+1, like a real buy.
+  // Distinct head-start perks (all gated behind their achievements):
+  // - warmup: first WARMUP_TIERS tiers pre-bought (a milestone bracket each) + bonus SW
+  // - tempo-headstart: begin each run at Tempo level TEMPO_HEADSTART_LEVEL
+  // - crescendo-headstart: begin each run with Crescendo seeded (only added when the perk is owned, so
+  //   non-perk Encore behaviour — crescendo persisting across the reset — is unchanged)
   const warmup = hasPerk(achSet, 'perk-warmup')
+  const tempoLevel = hasPerk(achSet, 'perk-tempo-headstart') ? TEMPO_HEADSTART_LEVEL : 0
+  const crescHeadstart = hasPerk(achSet, 'perk-crescendo-headstart')
   return {
     soundwaves: STARTING_SOUNDWAVES.plus(bonusSW).plus(warmup ? WARMUP_BONUS_SW : 0),
     tiers: TIER_CONFIGS.map((config, idx) => {
@@ -108,10 +113,11 @@ function resetTiersAndSW(achievementIds: string[]): Partial<GameState> {
       }
     }),
     tempo: {
-      level: 0,
-      tickInterval: 1000,
-      baseBPM: 60,
+      level: tempoLevel,
+      tickInterval: getTempoTickInterval(tempoLevel),
+      baseBPM: getTempoBPM(tempoLevel),
     },
+    ...(crescHeadstart ? { crescendo: CRESCENDO_HEADSTART } : {}),
     currentRunStartTime: Date.now(),
   }
 }
@@ -317,7 +323,8 @@ export const useGameStore = create<GameState & GameActions>()(
           if (!config) return state
           const level = state.encoreUpgrades[id] ?? 0
           if (level >= config.maxLevel) return state
-          const cost = getEncoreUpgradeCost(config, level)
+          const discount = hasPerk(new Set(state.achievements), 'perk-encore-discount') ? ENCORE_UPGRADE_DISCOUNT : 0
+          const cost = getEncoreUpgradeCost(config, level, discount)
           if (state.encorePoints < cost) return state
           return {
             encorePoints: state.encorePoints - cost,
@@ -501,9 +508,12 @@ export const useGameStore = create<GameState & GameActions>()(
           }
         }
 
+        // perk-second-wind: the FIRST Encore of each Magnum Opus cycle (encoreCount resets to 0 on MO)
+        // skips the tier-gate — one free Encore per cycle.
+        const freeEncore = hasPerk(new Set(state.achievements), 'perk-second-wind') && state.encoreCount === 0
         const cost = getEncoreCost(state.encoreCount)
         const purchased = state.tiers[cost.tierIndex]?.purchased ?? 0
-        if (purchased < cost.amount) return
+        if (!freeEncore && purchased < cost.amount) return
 
         // EP gained from this run's peak (additive), boosted by the Overture upgrade.
         const overtureMult = getOvertureGainMultiplier(state.encoreUpgrades)
@@ -594,7 +604,8 @@ export const useGameStore = create<GameState & GameActions>()(
           layer1WallReached: skipWall,
           opusPoints: state.opusPoints + gain,
           opusCount: newOpusCount,
-          crescendo: 0,
+          // honor perk-crescendo-headstart (resetTiersAndSW's value is overridden by this explicit key)
+          crescendo: hasPerk(achSet, 'perk-crescendo-headstart') ? CRESCENDO_HEADSTART : 0,
           peakCrescendoMult: 1,
           autobuyers,
         })

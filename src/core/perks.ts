@@ -3,6 +3,11 @@ export type PerkId =
   | 'perk-keep-encore-upgrades'
   | 'perk-warmup'
   | 'perk-fast-automators'
+  | 'perk-tempo-headstart'
+  | 'perk-crescendo-headstart'
+  | 'perk-encore-discount'
+  | 'perk-bulk-unlock'
+  | 'perk-second-wind'
 
 export interface PerkConfig {
   id: PerkId
@@ -36,6 +41,36 @@ export const PERKS: PerkConfig[] = [
     name: 'Session Musicians',
     blurb: 'Automators run one speed tier faster',
   },
+  {
+    id: 'perk-tempo-headstart',
+    achievementId: 'ach_perk_tempo_headstart',
+    name: 'Pick Up the Tempo',
+    blurb: 'Start each run at Tempo level 8',
+  },
+  {
+    id: 'perk-crescendo-headstart',
+    achievementId: 'ach_perk_sustained_note',
+    name: 'Sustained Note',
+    blurb: 'Start each run with Crescendo at 40%',
+  },
+  {
+    id: 'perk-encore-discount',
+    achievementId: 'ach_perk_patron',
+    name: 'Patron of the Arts',
+    blurb: 'Encore-shop upgrades cost 25% less Applause',
+  },
+  {
+    id: 'perk-bulk-unlock',
+    achievementId: 'ach_perk_mass_production',
+    name: 'Mass Production',
+    blurb: 'Bulk-buy (10/100/Max) unlocked from the start',
+  },
+  {
+    id: 'perk-second-wind',
+    achievementId: 'ach_perk_second_wind',
+    name: 'Second Wind',
+    blurb: 'One free Encore per Magnum Opus cycle',
+  },
 ]
 
 export function hasPerk(unlocked: Set<string>, perkId: PerkId): boolean {
@@ -47,3 +82,6 @@ export function hasPerk(unlocked: Set<string>, perkId: PerkId): boolean {
 export const WARMUP_TIERS = 2
 export const WARMUP_BONUS_SW = 500
 export const FAST_AUTOMATOR_SPEED_TIERS = 1
+export const TEMPO_HEADSTART_LEVEL = 8
+export const CRESCENDO_HEADSTART = 0.4
+export const ENCORE_UPGRADE_DISCOUNT = 0.25

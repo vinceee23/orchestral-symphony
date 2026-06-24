@@ -40,7 +40,7 @@ export function AutobuyersPage() {
   const toggleAutobuyer = useGameStore((s) => s.toggleAutobuyer)
   const setAutobuyerBulk = useGameStore((s) => s.setAutobuyerBulk)
 
-  const bulkCap = getAutomatorBulk(opusUpgrades)
+  const bulkCap = hasPerk(new Set(achievements), 'perk-bulk-unlock') ? 'max' : getAutomatorBulk(opusUpgrades)
   const capIdx = AUTOBUYER_BULK_TIERS.indexOf(bulkCap)
   const availableBulkTiers = AUTOBUYER_BULK_TIERS.slice(0, capIdx + 1)
   const autoSpeedBonus = hasPerk(new Set(achievements), 'perk-fast-automators') ? FAST_AUTOMATOR_SPEED_TIERS : 0
