@@ -125,3 +125,18 @@ export const GRAND_FINALE_SW_THRESHOLD = new Decimal('1.79e308')
 export const AUTOBUYER_DEFAULT_INTERVAL = 500
 export const AUTOBUYER_SPEED_TIERS = [500, 250, 100, 50, 10, 1]
 export const AUTOBUYER_BULK_TIERS: (number | 'max')[] = [1, 10, 100, 512, 'max']
+
+// === Layer 2: Magnum Opus ===
+export const OPUS_BASE_GAIN = 1                         // flat OP per Magnum Opus pre-Platinum
+export const OPUS_PLAT_THRESHOLD = new Decimal('1e30')  // post-Platinum sublinear: (peakSW/this)^root
+export const OPUS_PLAT_ROOT = 0.05
+export const OPUS_CRESCENDO_BONUS_PER = 0.25            // crescendoBonus = 1 + peakCrescendo*this
+export const CRESCENDO_BASE_MAX = 3                     // base ceiling multiplier (x3)
+export const CRESCENDO_MAX_CEILING = 6                  // hard cap after upgrades
+export const CRESCENDO_BUILD_SEC = 12                   // seconds of holding Conduct to reach ceiling
+export const CRESCENDO_DECAY_SEC = 25                   // seconds to decay ceiling -> x1 when released
+export const AUTO_CONDUCT_FRACTION = 0.5                // auto-conduct sustains this fraction of ceiling AFK
+export const TEMPO_OP_MULT_PER_LEVEL = 1.5              // each Tempo OP-node = x1.5 global tempo/production
+export const RECORDS_PROD_K = 5                         // recordsPerSec = K * log10(swPerSec+10) * crescendoMult
+export const PLATINUM_THRESHOLD = 1_000_000             // records sold to Go Platinum
+export const FAME_PER = 0.1                             // post-Platinum: prod/OP *= 1 + log10(recordsSold/1e6)*FAME_PER
