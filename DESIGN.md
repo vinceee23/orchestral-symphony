@@ -389,3 +389,24 @@ slow decay) → sim-validate OP gain + auto-vs-manual gap + crescendo balance �
 
 **Open for playtest/tuning:** crescendo build/decay rates, hold-to-build vs click-to-pump, OP gain formula,
 the baseline automator rate vs manual (must keep manual meaningfully faster), and OP tree costs/branch depth.
+
+## §11 — The Living Hall (Compose stage redesign, 2026-06-24, Vince-locked)
+The Compose stage becomes a hall that grows grander as you rise, and conducting makes the whole room swell.
+The grand view is the *canvas*; Crescendo *animates* it. Decisions:
+- **Growth = punctuated PULL-BACK reveals at era-firsts.** The "camera" pulls back (orchestra scales down into
+  a larger revealed hall) at the milestones that matter: **1st Encore** (intimate → warm gold hall), **1st
+  Magnum Opus** (→ grand violet hall), **Grand Finale** (→ packed house). Each *later* Encore adds a small
+  accent (a riser fills, a touch more audience). Pairs with the Encore gold-bloom moment. Driven by the existing
+  stepped `getLiveliness` eras.
+- **Hall populates with (all four):** tiered **risers/seating** (quartet → full ensemble), a filling **audience**
+  (packed by Finale), **grand architecture** (organ pipes / proscenium / back wall), and **overhead light +
+  atmospheric depth** (chandeliers, haze, god-rays). Recolors per era (gold → violet → blaze).
+- **Conductor's podium, front-center.** Hold **Conduct** (button on the podium, or **Space**) → a vertical
+  **swell-meter fills like a column of light** to the ceiling; the whole hall swells (spotlight blazes, notes
+  rush, a gold wave rolls across the sections), slow decay on release. Tapping sections to buy stays free
+  (separate control — no conflict). **Dormant/teased pre-L2** ("the baton awaits"); activates at first MO.
+- **Assets:** a FEW generated backdrop images (one per era), recolored/overlaid; pods stay procedural on top.
+  Camera pull-back = cross-fade + scale between era backdrops. (Cost-gated — see below.)
+- **Build order:** L1-visible stage NOW (grander growing hall + era reveals + dormant podium); the live
+  Crescendo swell animation is wired with the L2 tick-pass (Conduct is L2-locked). Structure built procedurally
+  first, generated backdrops dropped in after cost sign-off.
