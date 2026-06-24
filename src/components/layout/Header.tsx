@@ -7,6 +7,7 @@ import { TIER_CONFIGS } from '../../core/constants'
 import { formatNumber } from '../../core/format'
 import { getTierProductionPerSec, getCoreProductionMultiplier } from '../../core/formulas'
 import { SmoothNumber } from '../shared/SmoothNumber'
+import { Icon } from '../shared/Icon'
 
 export function Header() {
   const soundwaves = useGameStore((s) => s.soundwaves)
@@ -37,7 +38,7 @@ export function Header() {
   return (
     <header className="flex items-center justify-between px-6 py-3 border-b border-border bg-bg-secondary/80 backdrop-blur-sm">
       <div className="flex items-center gap-3">
-        <div className="text-xl">{'\u{1F3BC}'}</div>
+        <Icon name="brand" size={22} className="text-accent-gold" />
         <h1 className="text-base font-display font-semibold text-accent-gold tracking-wide">
           Orchestral Symphony
         </h1>

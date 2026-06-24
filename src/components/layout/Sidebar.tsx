@@ -1,13 +1,15 @@
+import { Icon, type IconName } from '../shared/Icon'
+
 interface SidebarProps {
   activeTab: string
   onTabChange: (tab: string) => void
 }
 
-const TABS = [
-  { id: 'compose', label: 'Compose', icon: '\u{1F3B5}' },
-  { id: 'prestige', label: 'Prestige', icon: '\u{2728}' },
-  { id: 'achievements', label: 'Achievements', icon: '\u{1F3C6}' },
-  { id: 'stats', label: 'Stats', icon: '\u{1F4CA}' },
+const TABS: { id: string; label: string; icon: IconName }[] = [
+  { id: 'compose', label: 'Compose', icon: 'note' },
+  { id: 'prestige', label: 'Prestige', icon: 'sparkle' },
+  { id: 'achievements', label: 'Achievements', icon: 'medal' },
+  { id: 'stats', label: 'Stats', icon: 'bars' },
   // Challenges hidden until Layer 5 (Virtuoso) — they ARE that layer's voluntary-difficulty content.
 ]
 
@@ -26,7 +28,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             }
           `}
         >
-          <span className="text-base">{tab.icon}</span>
+          <Icon name={tab.icon} size={20} />
           <span className="hidden md:inline text-sm font-medium">{tab.label}</span>
         </button>
       ))}

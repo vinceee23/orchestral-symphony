@@ -80,6 +80,8 @@ export function OrchestraStage() {
   const buyMaxTier = useGameStore((s) => s.buyMaxTier)
 
   const [burst, setBurst] = useState<number | null>(null)
+  const [pop, setPop] = useState<{ id: number; n: number; seq: number } | null>(null)
+  const popSeq = useRef(0)
 
   // Resonate: when a section first unlocks, fire an expanding ring of light.
   const [resonating, setResonating] = useState<Set<number>>(() => new Set())
@@ -150,6 +152,7 @@ export function OrchestraStage() {
             else buyTier(config.id, amount)
             playBuySound(config.id)
             setBurst(config.id)
+            setPop({ id: config.id, n: amount, seq: ++popSeq.current })
             setTimeout(() => setBurst((b) => (b === config.id ? null : b)), 380)
           }
 
@@ -176,6 +179,14 @@ export function OrchestraStage() {
             >
               {resonating.has(config.id) && (
                 <span className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-accent-gold animate-resonate-ring" />
+              )}
+              {pop?.id === config.id && (
+                <span
+                  key={pop.seq}
+                  className="buy-pop pointer-events-none absolute -top-1 left-1/2 -translate-x-1/2 text-sm font-bold text-accent-gold tabular-nums drop-shadow-[0_0_6px_rgba(212,168,67,0.7)]"
+                >
+                  +{formatNumber(pop.n)}
+                </span>
               )}
               <EmblemIcon name={config.name.toLowerCase()} glyph={config.icon} glow={glow} />
               <span className="mt-1.5 text-[11px] font-display font-semibold text-accent-gold tracking-wide">

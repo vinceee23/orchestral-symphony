@@ -3,6 +3,7 @@ import { getTempoCost, getTempoBPM, getTempoTickInterval, getOpusBPMMultiplier, 
 import { formatCost } from '../../core/format'
 import { playTempoSound } from '../../core/audio'
 import { getChallengeById, getActiveChallengeModifiers } from '../../core/challenges'
+import { Icon } from '../shared/Icon'
 
 export function TempoBar() {
   const tempo = useGameStore((s) => s.tempo)
@@ -48,7 +49,7 @@ export function TempoBar() {
   return (
     <div className="flex items-center gap-3 px-4 py-3 bg-bg-secondary rounded-lg border border-border">
       <div className="flex items-center gap-2 min-w-0">
-        <span className="text-lg shrink-0">{'\u{1F3B6}'}</span>
+        <Icon name="metronome" size={22} className="text-accent-purple shrink-0" />
         <div className="min-w-0">
           <div className="text-sm font-semibold text-accent-purple">
             {tempo.baseBPM} BPM

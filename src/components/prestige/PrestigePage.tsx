@@ -7,6 +7,7 @@ import { ENCORE_UPGRADES, getEncoreUpgradeCost, getOvertureGainMultiplier } from
 import { playPrestigeSound, playBuySound } from '../../core/audio'
 import { getChallengeById, getActiveChallengeModifiers } from '../../core/challenges'
 import { PrestigeDialog, type PrestigeKind } from './PrestigeDialog'
+import { useUiStore } from '../../store/uiStore'
 
 const LADDER = [
   { name: 'Encore', icon: '\u{266A}' },
@@ -31,6 +32,7 @@ export function PrestigePage() {
   const performMagnumOpus = useGameStore((s) => s.performMagnumOpus)
   const buyEncoreUpgrade = useGameStore((s) => s.buyEncoreUpgrade)
   const activeChallenge = useGameStore((s) => s.activeChallenge)
+  const celebrateEncore = useUiStore((s) => s.celebrateEncore)
 
   const [pending, setPending] = useState<PrestigeKind | null>(null)
 
@@ -54,7 +56,10 @@ export function PrestigePage() {
   const currentOpusMult = getOpusBPMMultiplier(opusPoints)
 
   const run = (kind: PrestigeKind) => {
-    if (kind === 'encore') performEncore()
+    if (kind === 'encore') {
+      celebrateEncore(currentEncoreMult.toNumber(), nextEncoreMult.toNumber())
+      performEncore()
+    }
     else if (kind === 'mo') performMagnumOpus()
     playPrestigeSound()
     setPending(null)

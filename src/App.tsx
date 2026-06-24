@@ -4,6 +4,7 @@ import { useHotkeys } from './hooks/useHotkeys'
 import { AppShell } from './components/layout/AppShell'
 import { AchievementToast } from './components/shared/AchievementToast'
 import { HelpModal } from './components/shared/HelpModal'
+import { EncoreCelebration } from './components/compose/EncoreCelebration'
 
 function App() {
   useGameLoop()
@@ -15,6 +16,7 @@ function App() {
       <AchievementToast />
       <AppShell />
       <HelpModal />
+      <EncoreCelebration />
     </>
   )
 }

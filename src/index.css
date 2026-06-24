@@ -130,3 +130,43 @@ body {
   0%, 100% { opacity: 0.35; }
   50% { opacity: 1; }
 }
+
+/* Encore "monumental moment" — gold bloom, framing curtains, multiplier pop (~1.6s, non-blocking) */
+@keyframes encore-bloom {
+  0% { transform: scale(0.3); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+.encore-bloom { animation: encore-bloom 1.6s ease-out forwards; }
+
+@keyframes encore-curtain-l {
+  0% { transform: translateX(-100%); }
+  30% { transform: translateX(0); }
+  70% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+@keyframes encore-curtain-r {
+  0% { transform: translateX(100%); }
+  30% { transform: translateX(0); }
+  70% { transform: translateX(0); }
+  100% { transform: translateX(100%); }
+}
+.encore-curtain-l { animation: encore-curtain-l 1.6s ease-in-out forwards; }
+.encore-curtain-r { animation: encore-curtain-r 1.6s ease-in-out forwards; }
+
+/* "+N" buy pop — floats up and fades from a tier pod */
+@keyframes buy-pop {
+  0% { transform: translate(-50%, 0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translate(-50%, -22px); opacity: 0; }
+}
+.buy-pop { animation: buy-pop 0.7s ease-out forwards; }
+
+@keyframes encore-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  30% { transform: scale(1.08); opacity: 1; }
+  45% { transform: scale(1); }
+  80% { opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
+}
+.encore-pop { animation: encore-pop 1.6s ease-out forwards; }

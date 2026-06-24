@@ -6,11 +6,12 @@ import { BuyAmountToggle } from './BuyAmountToggle'
 import { OrchestraStage } from './OrchestraStage'
 import { FloatingNotes } from '../shared/FloatingNotes'
 import { getEncoreCost } from '../../core/constants'
-import { getEncoreGain, getLiveliness } from '../../core/formulas'
+import { getEncoreGain, getLiveliness, getEncoreMultiplier } from '../../core/formulas'
 import { getOvertureGainMultiplier } from '../../core/encoreUpgrades'
 import { playPrestigeSound } from '../../core/audio'
 import { getChallengeById, getActiveChallengeModifiers } from '../../core/challenges'
 import { PrestigeDialog } from '../prestige/PrestigeDialog'
+import { useUiStore } from '../../store/uiStore'
 
 export function ComposePage() {
   const tiers = useGameStore((s) => s.tiers)
@@ -23,6 +24,7 @@ export function ComposePage() {
   const tempo = useGameStore((s) => s.tempo)
   const performEncore = useGameStore((s) => s.performEncore)
   const activeChallenge = useGameStore((s) => s.activeChallenge)
+  const celebrateEncore = useUiStore((s) => s.celebrateEncore)
 
   const [pendingEncore, setPendingEncore] = useState(false)
 
@@ -40,7 +42,12 @@ export function ComposePage() {
   // Magnum Opus era brings violet richness into the hall — a clear mood shift, not just brighter gold.
   const purpleWash = (opusPoints > 0 ? 0.13 : liveliness * 0.03).toFixed(3)
 
-  const doEncore = () => { performEncore(); playPrestigeSound(); setPendingEncore(false) }
+  const doEncore = () => {
+    const from = getEncoreMultiplier(lifetimeEncorePoints).toNumber()
+    const to = getEncoreMultiplier(lifetimeEncorePoints + projectedGain).toNumber()
+    celebrateEncore(from, to)
+    performEncore(); playPrestigeSound(); setPendingEncore(false)
+  }
   const onEncore = () => {
     if (localStorage.getItem('prestige_skip_encore')) doEncore()
     else setPendingEncore(true)
@@ -88,7 +95,14 @@ export function ComposePage() {
         <div className="w-full max-w-3xl mt-1"><TempoBar /></div>
 
         <div className="w-full max-w-5xl flex items-center justify-between mt-5 mb-1">
-          <h2 className="text-lg font-display font-semibold text-accent-gold tracking-wide">Your Orchestra</h2>
+          <div>
+            <h2 className="text-lg font-display font-semibold text-accent-gold tracking-wide">Your Orchestra</h2>
+            {!canEncore && (
+              <p className="text-[11px] text-text-muted mt-0.5">
+                Next goal: <span className="text-text-secondary tabular-nums">{encorePurchased}/{encoreCost.amount}</span> {encoreCost.tierName} {'→'} Encore
+              </p>
+            )}
+          </div>
           <BuyAmountToggle />
         </div>
 
