@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useGameStore } from '../../store/gameStore'
+import { useUiStore } from '../../store/uiStore'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 import { ComposePage } from '../compose/ComposePage'
@@ -17,6 +19,36 @@ const initialTab = (() => {
 
 export function AppShell() {
   const [activeTab, setActiveTab] = useState(initialTab)
+
+  // Global Conduct: hold Space to swell the crescendo from ANY tab (active after the first Magnum
+  // Opus). Lives in the always-mounted shell so switching tabs doesn't drop the hold. The pointer
+  // "Conduct" button on the Compose stage is the other held-source (see uiStore.setPointerHeld).
+  const opusCount = useGameStore((s) => s.opusCount)
+  useEffect(() => {
+    if (opusCount <= 0) return
+    const { setSpaceHeld, releaseConduct } = useUiStore.getState()
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code !== 'Space' || e.repeat) return
+      const t = e.target as HTMLElement
+      if (t?.tagName === 'INPUT' || t?.tagName === 'TEXTAREA' || t?.isContentEditable) return
+      e.preventDefault()
+      setSpaceHeld(true)
+    }
+    const onKeyUp = (e: KeyboardEvent) => { if (e.code === 'Space') setSpaceHeld(false) }
+    const onBlur = () => releaseConduct()
+    const onVisibility = () => { if (document.hidden) releaseConduct() }
+    window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('keyup', onKeyUp)
+    window.addEventListener('blur', onBlur)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('keyup', onKeyUp)
+      window.removeEventListener('blur', onBlur)
+      document.removeEventListener('visibilitychange', onVisibility)
+      releaseConduct()
+    }
+  }, [opusCount])
 
   return (
     <div className="flex flex-col h-full">

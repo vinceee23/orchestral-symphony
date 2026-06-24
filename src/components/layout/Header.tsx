@@ -6,6 +6,7 @@ import { getChallengeById } from '../../core/challenges'
 import { TIER_CONFIGS } from '../../core/constants'
 import { formatNumber } from '../../core/format'
 import { getTierProductionPerSec, getCoreProductionMultiplier } from '../../core/formulas'
+import { getCrescendoMultiplier } from '../../core/crescendo'
 import { SmoothNumber } from '../shared/SmoothNumber'
 import { Icon } from '../shared/Icon'
 
@@ -22,7 +23,14 @@ export function Header() {
   const platinum = useGameStore((s) => s.platinum)
   const finalePoints = useGameStore((s) => s.finalePoints)
   const activeChallenge = useGameStore((s) => s.activeChallenge)
+  const opusCount = useGameStore((s) => s.opusCount)
+  const conducting = useUiStore((s) => s.conducting)
   const toggleHelp = useUiStore((s) => s.toggleHelp)
+
+  // Subtle live Crescendo readout — visible on EVERY tab while the swell is up or you're conducting,
+  // so global Space-conduct (AppShell) is felt off the Compose stage. Hidden when fully decayed & idle.
+  const crescendoMult = getCrescendoMultiplier(crescendo, opusUpgrades)
+  const showCrescendo = opusCount > 0 && (conducting || crescendo > 0.02)
 
   const achievementSet = new Set(achievements)
   const globalMult = getAchievementGlobalMultiplier(achievementSet).times(getCoreProductionMultiplier({
@@ -48,6 +56,15 @@ export function Header() {
         </h1>
       </div>
       <div className="flex items-center gap-5">
+        {showCrescendo && (
+          <div
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border tabular-nums transition-colors ${conducting ? 'border-accent-gold/50 bg-accent-gold/10 text-accent-gold' : 'border-accent-gold/20 bg-accent-gold/5 text-text-secondary'}`}
+            title="Crescendo — hold Space (any tab) to swell"
+          >
+            <span className={conducting ? 'animate-pulse' : ''}>♪</span>
+            <span className="text-xs font-medium">×{crescendoMult.toFixed(2)}</span>
+          </div>
+        )}
         {activeCh && (
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-accent-purple/10 border border-accent-purple/30">
             <span className="text-xs">{activeCh.icon}</span>

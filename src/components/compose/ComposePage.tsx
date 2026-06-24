@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import { SoundwaveDisplay } from './SoundwaveDisplay'
 import { TempoBar } from './TempoBar'
@@ -39,55 +39,11 @@ export function ComposePage() {
   const performMagnumOpus = useGameStore((s) => s.performMagnumOpus)
   const activeChallenge = useGameStore((s) => s.activeChallenge)
   const celebrateEncore = useUiStore((s) => s.celebrateEncore)
-  const setConducting = useUiStore((s) => s.setConducting)
+  // Spacebar conduct is global now (see AppShell). This page only owns the pointer "Conduct" button.
+  const setPointerHeld = useUiStore((s) => s.setPointerHeld)
 
   const [pendingEncore, setPendingEncore] = useState(false)
   const [pendingMO, setPendingMO] = useState(false)
-
-  // Conduct from TWO independent sources — Spacebar and the pointer button. conducting = either is held,
-  // so a stray mouse-leave on the button can't cancel a Space-hold (and vice-versa).
-  const spaceHeld = useRef(false)
-  const pointerHeld = useRef(false)
-  const syncConducting = useCallback(() => setConducting(spaceHeld.current || pointerHeld.current), [setConducting])
-  const releaseAll = useCallback(() => {
-    spaceHeld.current = false
-    pointerHeld.current = false
-    setConducting(false)
-  }, [setConducting])
-
-  useEffect(() => {
-    if (opusCount <= 0) return
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.code !== 'Space' || e.repeat) return
-      const tag = (e.target as HTMLElement)?.tagName
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.isContentEditable) return
-      e.preventDefault()
-      spaceHeld.current = true
-      syncConducting()
-    }
-    const onKeyUp = (e: KeyboardEvent) => {
-      if (e.code !== 'Space') return
-      spaceHeld.current = false
-      syncConducting()
-    }
-    const onBlur = () => releaseAll()
-    const onVisibility = () => {
-      if (document.hidden) releaseAll()
-    }
-
-    window.addEventListener('keydown', onKeyDown)
-    window.addEventListener('keyup', onKeyUp)
-    window.addEventListener('blur', onBlur)
-    document.addEventListener('visibilitychange', onVisibility)
-    return () => {
-      window.removeEventListener('keydown', onKeyDown)
-      window.removeEventListener('keyup', onKeyUp)
-      window.removeEventListener('blur', onBlur)
-      document.removeEventListener('visibilitychange', onVisibility)
-      releaseAll()
-    }
-  }, [opusCount, syncConducting, releaseAll])
 
   const activeCh = activeChallenge ? getChallengeById(activeChallenge.challengeId) ?? null : null
   const prestigeBlocked = getActiveChallengeModifiers(activeCh).noPrestige
@@ -219,10 +175,10 @@ export function ComposePage() {
           <button
             type="button"
             className="px-6 py-2 rounded-full border border-accent-gold/50 bg-accent-gold/10 backdrop-blur text-accent-gold font-display text-sm font-semibold select-none touch-none hover:bg-accent-gold/20 active:bg-accent-gold/30 transition-colors"
-            onPointerDown={() => { pointerHeld.current = true; syncConducting() }}
-            onPointerUp={() => { pointerHeld.current = false; syncConducting() }}
-            onPointerLeave={() => { pointerHeld.current = false; syncConducting() }}
-            onPointerCancel={() => { pointerHeld.current = false; syncConducting() }}
+            onPointerDown={() => setPointerHeld(true)}
+            onPointerUp={() => setPointerHeld(false)}
+            onPointerLeave={() => setPointerHeld(false)}
+            onPointerCancel={() => setPointerHeld(false)}
           >
             Conduct <span className="opacity-60 text-[10px]">(hold / Space)</span>
           </button>
