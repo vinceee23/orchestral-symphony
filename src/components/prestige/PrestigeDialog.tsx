@@ -18,9 +18,9 @@ export const PRESTIGE_INFO: Record<PrestigeKind, {
   },
   mo: {
     title: 'Magnum Opus',
-    color: 'text-red-400',
-    border: 'border-red-500/40',
-    bg: 'bg-red-500/10',
+    color: 'text-accent-purple',
+    border: 'border-accent-purple/40',
+    bg: 'bg-accent-purple/10',
     description: [
       'A Magnum Opus is a bigger reset. It resets everything an Encore does, plus your Applause.',
       'In return you gain an Opus Point — each one permanently multiplies your tempo (the speed of your whole orchestra).',

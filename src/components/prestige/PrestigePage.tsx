@@ -179,9 +179,9 @@ export function PrestigePage() {
       )}
 
       {/* Magnum Opus — Layer 2 */}
-      <section className={`rounded-2xl border p-5 ${layer1WallReached ? 'border-red-500/40 bg-gradient-to-b from-red-500/10 to-transparent' : 'border-border/50 bg-bg-secondary/30'}`}>
+      <section className={`rounded-2xl border p-5 ${layer1WallReached ? 'border-accent-purple/40 bg-gradient-to-b from-accent-purple/10 to-transparent' : 'border-border/50 bg-bg-secondary/30'}`}>
         <div className="flex items-center justify-between">
-          <h2 className={`text-xl font-display font-semibold ${layer1WallReached ? 'text-red-400' : 'text-text-muted'}`}>
+          <h2 className={`text-xl font-display font-semibold ${layer1WallReached ? 'text-accent-purple' : 'text-text-muted'}`}>
             {layer1WallReached ? 'Magnum Opus' : '\u{1F512} ???'}
           </h2>
           <span className="text-[10px] text-text-muted">{layer1WallReached ? 'Layer 2 · record the album' : 'Layer 2 · ???'}</span>
@@ -209,7 +209,7 @@ export function PrestigePage() {
               onClick={() => canMO && tryPrestige('mo')}
               disabled={!canMO}
               className={`w-full py-3 rounded-xl border font-display font-semibold transition-all ${
-                canMO ? 'border-red-500/50 bg-red-500/15 text-red-400 hover:bg-red-500/25' : 'border-border/50 bg-bg-secondary/50 text-text-muted cursor-not-allowed'
+                canMO ? 'border-accent-purple/50 bg-accent-purple/15 text-accent-purple hover:bg-accent-purple/25' : 'border-border/50 bg-bg-secondary/50 text-text-muted cursor-not-allowed'
               }`}
             >
               {canMO ? 'Perform Magnum Opus' : `${moPurchased}/${moCost.amount} ${moCost.tierName}`}

@@ -53,7 +53,7 @@ export function TempoBar() {
           <div className="text-sm font-semibold text-accent-purple">
             {tempo.baseBPM} BPM
             {opusPoints > 0 && (
-              <span className="text-[10px] text-red-400 ml-1.5">
+              <span className="text-[10px] text-accent-purple ml-1.5">
                 (x{opusBPMMult} MO)
               </span>
             )}

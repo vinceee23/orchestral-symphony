@@ -1,12 +1,34 @@
+import Decimal from 'break_infinity.js'
 import { useGameStore } from '../../store/gameStore'
 import { useUiStore } from '../../store/uiStore'
-import { ACHIEVEMENTS } from '../../core/achievements'
+import { ACHIEVEMENTS, getAchievementGlobalMultiplier, getAchievementTierMultiplier } from '../../core/achievements'
 import { getChallengeById } from '../../core/challenges'
+import { TIER_CONFIGS } from '../../core/constants'
+import { formatNumber } from '../../core/format'
+import { getTierProductionPerSec, getCoreProductionMultiplier } from '../../core/formulas'
+import { SmoothNumber } from '../shared/SmoothNumber'
 
 export function Header() {
+  const soundwaves = useGameStore((s) => s.soundwaves)
+  const tiers = useGameStore((s) => s.tiers)
+  const tempo = useGameStore((s) => s.tempo)
   const achievements = useGameStore((s) => s.achievements)
+  const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
+  const encoreUpgrades = useGameStore((s) => s.encoreUpgrades)
+  const opusPoints = useGameStore((s) => s.opusPoints)
+  const finalePoints = useGameStore((s) => s.finalePoints)
   const activeChallenge = useGameStore((s) => s.activeChallenge)
   const toggleHelp = useUiStore((s) => s.toggleHelp)
+
+  const achievementSet = new Set(achievements)
+  const globalMult = getAchievementGlobalMultiplier(achievementSet).times(getCoreProductionMultiplier({
+    lifetimeEncorePoints, finalePoints, opusPoints, encoreUpgrades, tempoLevel: tempo.level, tiers,
+  }))
+  const tier1 = tiers[0]
+  const fullMult = globalMult.times(getAchievementTierMultiplier(achievementSet, 1))
+  const swPerSec = tier1?.unlocked
+    ? getTierProductionPerSec(tier1, TIER_CONFIGS[0], fullMult)
+    : new Decimal(0)
 
   const activeCh = activeChallenge
     ? getChallengeById(activeChallenge.challengeId)
@@ -27,6 +49,17 @@ export function Header() {
             <span className="text-[10px] text-accent-purple font-medium">{activeCh.name}</span>
           </div>
         )}
+        <div className="flex items-baseline gap-1.5 px-2.5 py-1 rounded-lg border border-accent-gold/25 bg-accent-gold/5">
+          <span className="text-[10px] text-text-muted uppercase tracking-wider">SW</span>
+          <span className="text-sm font-semibold text-accent-gold tabular-nums">
+            <SmoothNumber value={soundwaves} rate={swPerSec} />
+          </span>
+          {swPerSec.gt(0) && (
+            <span className="text-[10px] text-text-secondary tabular-nums">
+              +{formatNumber(swPerSec)}/s
+            </span>
+          )}
+        </div>
         <div className="text-xs text-text-muted">
           {achievements.length} / {ACHIEVEMENTS.length} achievements
         </div>
