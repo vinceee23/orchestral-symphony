@@ -81,10 +81,10 @@ export function PrestigePage() {
                 className={`flex flex-col items-center px-2.5 py-1.5 rounded-lg border text-center ${
                   unlocked ? 'border-accent-gold/40 bg-accent-gold/10' : 'border-border/40 bg-bg-secondary/30 opacity-50'
                 }`}
-                title={unlocked ? l.name : `${l.name} — a future layer`}
+                title={unlocked ? l.name : 'A future layer — keep playing to reveal it'}
               >
                 <span className="text-base">{unlocked ? l.icon : '\u{1F512}'}</span>
-                <span className="text-[9px] text-text-muted mt-0.5">{l.name}</span>
+                <span className="text-[9px] text-text-muted mt-0.5">{unlocked ? l.name : '???'}</span>
               </div>
               {i < LADDER.length - 1 && <span className="text-text-muted/40 text-xs">{'→'}</span>}
             </div>
@@ -182,15 +182,15 @@ export function PrestigePage() {
       <section className={`rounded-2xl border p-5 ${layer1WallReached ? 'border-red-500/40 bg-gradient-to-b from-red-500/10 to-transparent' : 'border-border/50 bg-bg-secondary/30'}`}>
         <div className="flex items-center justify-between">
           <h2 className={`text-xl font-display font-semibold ${layer1WallReached ? 'text-red-400' : 'text-text-muted'}`}>
-            {layer1WallReached ? '' : '\u{1F512} '}Magnum Opus
+            {layer1WallReached ? 'Magnum Opus' : '\u{1F512} ???'}
           </h2>
-          <span className="text-[10px] text-text-muted">Layer 2 · record the album</span>
+          <span className="text-[10px] text-text-muted">{layer1WallReached ? 'Layer 2 · record the album' : 'Layer 2 · ???'}</span>
         </div>
 
         {!layer1WallReached ? (
           <div className="mt-3">
             <p className="text-sm text-text-secondary leading-relaxed">
-              Perform <span className="text-text-primary">{ENCORE_WALL_COUNT} Encores</span> to master the stage — then the path to recording opens.
+              Perform <span className="text-text-primary">{ENCORE_WALL_COUNT} Encores</span> to master the stage — then a new path will reveal itself.
             </p>
             <div className="mt-2 text-xs text-text-muted">{encoreCount}/{ENCORE_WALL_COUNT} Encores</div>
             <div className="mt-1 h-2 rounded-full bg-bg-primary overflow-hidden">
