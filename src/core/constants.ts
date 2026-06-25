@@ -108,20 +108,20 @@ export interface PrestigeCost { tierIndex: number; amount: number; tierName: str
 // Symphonies only enter the gate at the 4th Encore (they unlock once encoreCount >= 3 — see tick.ts).
 // Tuned to keep total time-to-Magnum-Opus ~95-99% of the original (sim-validate).
 export function getEncoreCost(encoreCount: number): PrestigeCost {
-  if (encoreCount === 0) return { tierIndex: 4, amount: 30, tierName: 'Harmonies' }
-  if (encoreCount === 1) return { tierIndex: 5, amount: 30, tierName: 'Movements' }
-  if (encoreCount === 2) return { tierIndex: 5, amount: 70, tierName: 'Movements' }
-  if (encoreCount === 3) return { tierIndex: 6, amount: 50, tierName: 'Symphonies' }
-  if (encoreCount === 4) return { tierIndex: 6, amount: 70, tierName: 'Symphonies' }
-  if (encoreCount === 5) return { tierIndex: 6, amount: 100, tierName: 'Symphonies' }
-  if (encoreCount === 6) return { tierIndex: 6, amount: 128, tierName: 'Symphonies' }
-  if (encoreCount === 7) return { tierIndex: 6, amount: 152, tierName: 'Symphonies' }
-  return { tierIndex: 6, amount: 152 + (encoreCount - 7) * 24, tierName: 'Symphonies' }
+  if (encoreCount === 0) return { tierIndex: 4, amount: 12, tierName: 'Harmonies' }
+  if (encoreCount === 1) return { tierIndex: 5, amount: 12, tierName: 'Movements' }
+  if (encoreCount === 2) return { tierIndex: 5, amount: 28, tierName: 'Movements' }
+  if (encoreCount === 3) return { tierIndex: 6, amount: 18, tierName: 'Symphonies' }
+  if (encoreCount === 4) return { tierIndex: 6, amount: 26, tierName: 'Symphonies' }
+  if (encoreCount === 5) return { tierIndex: 6, amount: 36, tierName: 'Symphonies' }
+  if (encoreCount === 6) return { tierIndex: 6, amount: 46, tierName: 'Symphonies' }
+  if (encoreCount === 7) return { tierIndex: 6, amount: 55, tierName: 'Symphonies' }
+  return { tierIndex: 6, amount: 55 + (encoreCount - 7) * 10, tierName: 'Symphonies' }
 }
 
-// Magnum Opus gate: gentle escalation — 100 Symphonies + floor(opusCount/3)
+// Magnum Opus gate: gentle escalation — 72 Symphonies + floor(opusCount/3)
 export function getMagnumOpusCost(opusCount: number): PrestigeCost {
-  const amount = 100 + Math.floor(opusCount / 3)
+  const amount = 72 + Math.floor(opusCount / 3)
   return { tierIndex: 6, amount, tierName: 'Symphonies' }
 }
 // Grand Finale: the "infinity" of music — 1.79e308 (JS Number.MAX_VALUE)
@@ -144,8 +144,8 @@ export const CRESCENDO_DECAY_SEC = 25                   // seconds to decay ceil
 export const AUTO_CONDUCT_FRACTION = 0.5                // auto-conduct sustains this fraction of ceiling AFK
 export const TEMPO_OP_MULT_PER_LEVEL = 1.5              // each Tempo OP-node = x1.5 global tempo/production
 export const RECORDS_PROD_K = 5                         // legacy v0 constant (superseded by RECORDS_ALBUM_K)
-export const RECORDS_ALBUM_K = 1                        // recordsPerSec = K * opusCount^EXP * crescendoMult * chartClimber
-export const RECORDS_OPUS_EXP = 1.15                      // superlinear opus scaling — tunable via sim/era-pacing.test.ts
+export const RECORDS_ALBUM_K = 0.58                       // recordsPerSec = K * opusCount^EXP * crescendoMult * chartClimber
+export const RECORDS_OPUS_EXP = 1.08                      // superlinear opus scaling — tunable via sim/era-pacing.test.ts
 export const OPUS_CATALOG_K = 0.5                       // post-Platinum OP gain scales with catalog size
 export const PLATINUM_THRESHOLD = 1_000_000             // records sold to Go Platinum
 export const FAME_PER = 0.1                             // post-Platinum: prod/OP *= 1 + log10(recordsSold/1e6)*FAME_PER

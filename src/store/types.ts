@@ -78,7 +78,17 @@ export interface GameState {
   // Tracking
   peakSoundwaves: Decimal
   producedThisRun: Decimal
+  /** Manual Tempo purchases this Encore/MO run (excludes head-start level). */
+  tempoPurchasesThisRun: number
+  /** Encore cycles completed without buying Tempo that run. */
+  silentEncoresCompleted: number
+  /** Set when the 8th Encore is completed without buying Tempo that cycle. */
+  wallReachedWithoutTempo: boolean
+  /** Active-play ms when wallReachedWithoutTempo was first earned (for patron deferral). */
+  wallReachedWithoutTempoAtActiveMs: number
   totalTimePlayed: number
+  /** Foreground play only — excludes offline catch-up ticks. */
+  activeTimePlayed: number
   lastSaveTimestamp: number
   currentRunStartTime: number
   version: string

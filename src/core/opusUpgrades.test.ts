@@ -5,6 +5,7 @@ import {
   CRESCENDO_BUILD_SEC,
   CRESCENDO_DECAY_SEC,
   CRESCENDO_BASE_MAX,
+  RECORDS_ALBUM_K,
 } from './constants'
 import {
   OPUS_UPGRADES,
@@ -74,7 +75,7 @@ describe('opusUpgrades', () => {
     expect(getCrescendoCeiling(levels)).toBe(CRESCENDO_BASE_MAX + 1)
     expect(getCrescendoBuildSec(levels)).toBeCloseTo(CRESCENDO_BUILD_SEC * 0.8, 5)
     expect(getCrescendoDecaySec(levels)).toBeCloseTo(CRESCENDO_DECAY_SEC * 1.4, 5)
-    expect(getEffectiveRecordsK(levels)).toBeCloseTo(1.5, 5)
+    expect(getEffectiveRecordsK(levels)).toBeCloseTo(RECORDS_ALBUM_K * 1.5, 5) // base K x 1.5^(records-sell-rate lvl 1)
     expect(getPlatRoot(levels)).toBeCloseTo(0.06, 5)
     expect(getFamePer(levels)).toBeCloseTo(0.15, 5)
     expect(getBpmCapFactor(levels)).toBeCloseTo(1.5, 5)

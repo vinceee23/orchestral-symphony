@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { PLATINUM_THRESHOLD } from './constants'
+import { PLATINUM_THRESHOLD, RECORDS_ALBUM_K, RECORDS_OPUS_EXP } from './constants'
 import {
   getRecordsPerSec,
   accrueRecords,
@@ -25,7 +25,7 @@ describe('records', () => {
     const opusCount = 5
     const mult = 2
     const rate = getRecordsPerSec(opusCount, mult, emptyLevels)
-    expect(rate).toBeCloseTo(Math.pow(5, 1.15) * 2, 5)
+    expect(rate).toBeCloseTo(RECORDS_ALBUM_K * Math.pow(5, RECORDS_OPUS_EXP) * 2, 5)
     const accrued = accrueRecords(0, opusCount, mult, 10, emptyLevels)
     expect(accrued).toBeCloseTo(rate * 10, 5)
   })

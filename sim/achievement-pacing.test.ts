@@ -96,7 +96,12 @@ function createInitialState(simTime: number): GameState {
     finaleCount: 0,
     peakSoundwaves: new Decimal(0),
     producedThisRun: new Decimal(0),
+    tempoPurchasesThisRun: 0,
+    silentEncoresCompleted: 0,
+    wallReachedWithoutTempo: false,
+    wallReachedWithoutTempoAtActiveMs: 0,
     totalTimePlayed: 0,
+    activeTimePlayed: 0,
     lastSaveTimestamp: simTime,
     currentRunStartTime: simTime,
     version: '0.6.0',
@@ -161,6 +166,7 @@ function resetTiersAndSW(achievementIds: string[], simTime: number): Partial<Gam
     ...(crescHeadstart ? { crescendo: CRESCENDO_HEADSTART } : {}),
     currentRunStartTime: simTime,
     producedThisRun: new Decimal(0),
+    tempoPurchasesThisRun: 0,
   }
 }
 
@@ -216,6 +222,7 @@ function buyTempo(state: GameState): void {
 
   const newLevel = state.tempo.level + 1
   state.soundwaves = state.soundwaves.minus(cost)
+  state.tempoPurchasesThisRun = (state.tempoPurchasesThisRun ?? 0) + 1
   state.tempo = {
     level: newLevel,
     tickInterval: getTempoTickInterval(newLevel),
@@ -335,12 +342,22 @@ function performEncore(state: GameState, simTime: number): boolean {
   }
 
   const newEncoreCount = state.encoreCount + 1
+  const runActiveMs = simTime - state.currentRunStartTime
+  const silentRun =
+    !freeEncore &&
+    (state.tempoPurchasesThisRun ?? 0) <= 8 &&
+    runActiveMs >= 3 * 60_000
+  const qualifiedPatron = newEncoreCount >= ENCORE_WALL_COUNT && silentRun
+  const patronActiveMs = state.wallReachedWithoutTempoAtActiveMs || state.activeTimePlayed
   Object.assign(state, reset, {
     peakSoundwaves: new Decimal(0),
     encorePoints: state.encorePoints + gain,
     lifetimeEncorePoints: state.lifetimeEncorePoints + gain,
     encoreCount: newEncoreCount,
     layer1WallReached: state.layer1WallReached || newEncoreCount >= ENCORE_WALL_COUNT,
+    silentEncoresCompleted: state.silentEncoresCompleted + (silentRun ? 1 : 0),
+    wallReachedWithoutTempo: state.wallReachedWithoutTempo || qualifiedPatron,
+    wallReachedWithoutTempoAtActiveMs: qualifiedPatron ? patronActiveMs : state.wallReachedWithoutTempoAtActiveMs,
   })
   return true
 }
@@ -403,6 +420,7 @@ function performMagnumOpus(state: GameState, simTime: number): boolean {
 function applyTick(state: GameState, deltaMs: number, conducting: boolean): void {
   const updates = calculateTick(state, deltaMs, conducting)
   Object.assign(state, updates)
+  state.activeTimePlayed += deltaMs
 }
 
 function recordNewAchievements(

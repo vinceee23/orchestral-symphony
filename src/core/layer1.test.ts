@@ -22,7 +22,10 @@ function freshState(overrides: Partial<GameState> = {}): GameState {
     encorePoints: 0, lifetimeEncorePoints: 0, encoreCount: 0, layer1WallReached: false,
     opusPoints: 0, opusCount: 0, opusUpgrades: {}, crescendo: 0, peakCrescendoMult: 1,
     recordsSold: 0, platinum: false, finalePoints: 0, finaleCount: 0,
-    peakSoundwaves: new Decimal(0), producedThisRun: new Decimal(0), totalTimePlayed: 0,
+    peakSoundwaves: new Decimal(0), producedThisRun: new Decimal(0),
+    tempoPurchasesThisRun: 0, silentEncoresCompleted: 0, wallReachedWithoutTempo: false,
+    wallReachedWithoutTempoAtActiveMs: 0,
+    totalTimePlayed: 0, activeTimePlayed: 0,
     lastSaveTimestamp: 0, currentRunStartTime: 0, version: 'test',
     ...overrides,
   }

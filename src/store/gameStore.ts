@@ -81,7 +81,12 @@ function createInitialState(): GameState {
     finaleCount: 0,
     peakSoundwaves: new Decimal(0),
     producedThisRun: new Decimal(0),
+    tempoPurchasesThisRun: 0,
+    silentEncoresCompleted: 0,
+    wallReachedWithoutTempo: false,
+    wallReachedWithoutTempoAtActiveMs: 0,
     totalTimePlayed: 0,
+    activeTimePlayed: 0,
     lastSaveTimestamp: Date.now(),
     currentRunStartTime: Date.now(),
     version: '0.6.0',
@@ -121,6 +126,7 @@ function resetTiersAndSW(achievementIds: string[]): Partial<GameState> {
     ...(crescHeadstart ? { crescendo: CRESCENDO_HEADSTART } : {}),
     currentRunStartTime: Date.now(),
     producedThisRun: new Decimal(0),
+    tempoPurchasesThisRun: 0,
   }
 }
 
@@ -157,7 +163,7 @@ export const useGameStore = create<GameState & GameActions>()(
         const state = get()
         const conducting = useUiStore.getState().conducting
         const updates = calculateTick(state, deltaMs, conducting)
-        set(updates)
+        set({ ...updates, activeTimePlayed: state.activeTimePlayed + deltaMs })
       },
 
       buyTier: (tierId: number, amount: number = 1) => {
@@ -251,6 +257,7 @@ export const useGameStore = create<GameState & GameActions>()(
           const newLevel = state.tempo.level + 1
           return {
             soundwaves: state.soundwaves.minus(cost),
+            tempoPurchasesThisRun: (state.tempoPurchasesThisRun ?? 0) + 1,
             tempo: {
               level: newLevel,
               tickInterval: getTempoTickInterval(newLevel),
@@ -282,6 +289,7 @@ export const useGameStore = create<GameState & GameActions>()(
 
           return {
             soundwaves: sw,
+            tempoPurchasesThisRun: (state.tempoPurchasesThisRun ?? 0) + levels,
             tempo: {
               level,
               tickInterval: getTempoTickInterval(level),
@@ -533,6 +541,14 @@ export const useGameStore = create<GameState & GameActions>()(
         }
 
         const newEncoreCount = state.encoreCount + 1
+        const runActiveMs = Date.now() - state.currentRunStartTime
+        const silentRun =
+          !freeEncore &&
+          (state.tempoPurchasesThisRun ?? 0) <= 8 &&
+          runActiveMs >= 3 * 60_000
+        const qualifiedPatron =
+          newEncoreCount >= ENCORE_WALL_COUNT && silentRun
+        const patronActiveMs = state.wallReachedWithoutTempoAtActiveMs || state.activeTimePlayed
         set({
           ...reset,
           peakSoundwaves: new Decimal(0),
@@ -540,6 +556,9 @@ export const useGameStore = create<GameState & GameActions>()(
           lifetimeEncorePoints: state.lifetimeEncorePoints + gain,
           encoreCount: newEncoreCount,
           layer1WallReached: state.layer1WallReached || newEncoreCount >= ENCORE_WALL_COUNT,
+          silentEncoresCompleted: state.silentEncoresCompleted + (silentRun ? 1 : 0),
+          wallReachedWithoutTempo: state.wallReachedWithoutTempo || qualifiedPatron,
+          wallReachedWithoutTempoAtActiveMs: qualifiedPatron ? patronActiveMs : state.wallReachedWithoutTempoAtActiveMs,
         })
       },
 
@@ -686,6 +705,11 @@ export const useGameStore = create<GameState & GameActions>()(
           if (state.platinum === undefined) state.platinum = false
           if (state.finalePoints === undefined) state.finalePoints = 0
           if (state.finaleCount === undefined) state.finaleCount = 0
+          if (state.tempoPurchasesThisRun === undefined) state.tempoPurchasesThisRun = 0
+          if (state.silentEncoresCompleted === undefined) state.silentEncoresCompleted = 0
+          if (state.wallReachedWithoutTempo === undefined) state.wallReachedWithoutTempo = false
+          if (state.wallReachedWithoutTempoAtActiveMs === undefined) state.wallReachedWithoutTempoAtActiveMs = 0
+          if (state.activeTimePlayed === undefined) state.activeTimePlayed = 0
           state.peakSoundwaves = state.peakSoundwaves instanceof Decimal
             ? state.peakSoundwaves
             : new Decimal(state.peakSoundwaves || 0)
@@ -725,7 +749,12 @@ export const useGameStore = create<GameState & GameActions>()(
               finaleCount: state.finaleCount,
               peakSoundwaves: state.peakSoundwaves,
               producedThisRun: state.producedThisRun,
+              tempoPurchasesThisRun: state.tempoPurchasesThisRun,
+              silentEncoresCompleted: state.silentEncoresCompleted,
+              wallReachedWithoutTempo: state.wallReachedWithoutTempo,
+              wallReachedWithoutTempoAtActiveMs: state.wallReachedWithoutTempoAtActiveMs,
               totalTimePlayed: state.totalTimePlayed,
+              activeTimePlayed: state.activeTimePlayed,
               lastSaveTimestamp: state.lastSaveTimestamp,
               currentRunStartTime: state.currentRunStartTime,
               version: state.version,
