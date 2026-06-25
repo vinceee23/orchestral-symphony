@@ -3,7 +3,7 @@ import { useGameStore } from '../../store/gameStore'
 import { formatNumber } from '../../core/format'
 import { TIER_CONFIGS } from '../../core/constants'
 import { getTierProductionPerSec, getEncoreMultiplier, getFinaleMultiplier, getCoreProductionMultiplier } from '../../core/formulas'
-import { getAchievementGlobalMultiplier, getAchievementTierMultiplier } from '../../core/achievements'
+import { getAchievementGlobalMultiplier, getAchievementTierMultiplier, getAchievementTempoBonus } from '../../core/achievements'
 import { hasPerk } from '../../core/perks'
 import { SmoothNumber } from '../shared/SmoothNumber'
 
@@ -29,6 +29,7 @@ export function SoundwaveDisplay() {
     lifetimeEncorePoints, finalePoints, encoreUpgrades, tempoLevel: tempo.level, tiers,
     opusUpgrades, crescendoLevel: crescendo, recordsSold, platinum,
     massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
+    achievementTempoBonus: getAchievementTempoBonus(achievementSet),
   }))
 
   const tier1 = tiers[0]

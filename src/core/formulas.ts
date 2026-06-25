@@ -9,6 +9,7 @@ import {
   TEMPO_COST_GROWTH,
   TEMPO_SPEED_FACTOR,
   TEMPO_BASE_INTERVAL,
+  TEMPO_MIN_INTERVAL,
   ENCORE_REWARD_PER,
   ENCORE_EP_THRESHOLD,
   ENCORE_EP_ROOT,
@@ -88,23 +89,27 @@ export function getTierProductionPerTick(
   return getTierProductionPerSec(tier, config, globalMultiplier).times(tickMs / 1000)
 }
 
+/** Additive tempo speed factor: level tiers + achievement tempo bonuses (each +10% = +0.10). */
+export function getTempoSpeedFactor(level: number, achievementTempoBonus = 0): number {
+  return 1 + level * TEMPO_SPEED_FACTOR + achievementTempoBonus
+}
+
 /** Tempo "interval" (display/achievement-derived only — the loop ticks per frame now).
- *  Continuous + uncapped on purpose: every level smoothly raises BPM (+6/level) and the production
- *  multiplier (+0.1x/level). Was floored + min-capped, which made high-level buys not budge BPM/n-per-sec
- *  AND hard-capped tempo — neither wanted (tempo is uncapped; audio gets soft-capped separately). */
-export function getTempoTickInterval(level: number): number {
-  return TEMPO_BASE_INTERVAL / (1 + level * TEMPO_SPEED_FACTOR)
+ *  Continuous by level; floored at TEMPO_MIN_INTERVAL when achievement tempo bonus pushes speed too far. */
+export function getTempoTickInterval(level: number, achievementTempoBonus = 0): number {
+  const speedFactor = getTempoSpeedFactor(level, achievementTempoBonus)
+  return Math.max(TEMPO_MIN_INTERVAL, TEMPO_BASE_INTERVAL / speedFactor)
 }
 
 /** Display BPM from tempo level */
-export function getTempoBPM(level: number): number {
-  return Math.round(60000 / getTempoTickInterval(level))
+export function getTempoBPM(level: number, achievementTempoBonus = 0): number {
+  return Math.round(60000 / getTempoTickInterval(level, achievementTempoBonus))
 }
 
 /** Tempo as a REAL production multiplier (= intended speed-up ratio). The game loop only
  *  shrank the tick interval, which cancels out — so tempo had no production effect. This is the fix. */
-export function getTempoProductionMultiplier(level: number): number {
-  return TEMPO_BASE_INTERVAL / getTempoTickInterval(level)
+export function getTempoProductionMultiplier(level: number, achievementTempoBonus = 0): number {
+  return TEMPO_BASE_INTERVAL / getTempoTickInterval(level, achievementTempoBonus)
 }
 
 /** Cost of the next tempo upgrade */
@@ -204,6 +209,7 @@ export function getCoreProductionMultiplier(p: {
   recordsSold: number
   platinum: boolean
   massProduction?: boolean  // perk-bulk-unlock kicker: x2 per tier owned 1000+
+  achievementTempoBonus?: number
 }): Decimal {
   const crescendoMult = getCrescendoMultiplier(p.crescendoLevel, p.opusUpgrades)
   const fameMult = p.platinum ? getFameMultiplier(p.recordsSold, p.opusUpgrades) : 1
@@ -219,7 +225,7 @@ export function getCoreProductionMultiplier(p: {
     .times(fameMult)
     .times(getPerfectPitchMultiplier(p.encoreUpgrades))
     .times(PRODUCTION_SCALE)
-    .times(getTempoProductionMultiplier(p.tempoLevel))
+    .times(getTempoProductionMultiplier(p.tempoLevel, p.achievementTempoBonus ?? 0))
     .times(getMilestoneTickspeedMultiplier(p.tiers))
     .times(massMult)
 }

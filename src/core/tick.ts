@@ -20,6 +20,7 @@ import {
   getAchievementTierMultiplier,
   getAchievementCostReduction,
   getAchievementTierCostReduction,
+  getAchievementTempoBonus,
 } from './achievements'
 import { getChallengeById, getActiveChallengeModifiers } from './challenges'
 import type { ChallengeModifiers } from './challenges'
@@ -39,11 +40,15 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
     multiplier: new Decimal(t.multiplier),
   }))
   let newSoundwaves = new Decimal(state.soundwaves)
+  let producedThisRun = state.producedThisRun instanceof Decimal
+    ? state.producedThisRun
+    : new Decimal(state.producedThisRun ?? 0)
   let newTempo = state.tempo
   let newAutobuyers = { ...state.autobuyers }
 
   // === Global multiplier stack ===
   const achievementGlobal = getAchievementGlobalMultiplier(achievementSet)
+  const achievementTempoBonus = getAchievementTempoBonus(achievementSet)
 
   // Single source of truth for the production multiplier — shared with the UI rate displays so
   // they can't drift (encore/finale/opus/perfectPitch/tempo/milestone-tickspeed/PRODUCTION_SCALE).
@@ -77,6 +82,7 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
     recordsSold,
     platinum,
     massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
+    achievementTempoBonus,
   }))
 
   // Apply production divisor from challenge
@@ -122,6 +128,7 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
       if (i === newTiers.length - 1) {
         // Highest tier produces Soundwaves in reversed mode
         newSoundwaves = newSoundwaves.plus(production)
+        producedThisRun = producedThisRun.plus(production)
       } else {
         newTiers[i + 1].quantity = newTiers[i + 1].quantity.plus(production)
       }
@@ -152,6 +159,7 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
 
       if (i === 0) {
         newSoundwaves = newSoundwaves.plus(production)
+        producedThisRun = producedThisRun.plus(production)
       } else {
         newTiers[i - 1].quantity = newTiers[i - 1].quantity.plus(production)
       }
@@ -275,6 +283,7 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
 
   return {
     soundwaves: newSoundwaves,
+    producedThisRun,
     tiers: newTiers,
     tempo: newTempo,
     autobuyers: newAutobuyers,

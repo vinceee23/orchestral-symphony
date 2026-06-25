@@ -80,6 +80,7 @@ function createInitialState(): GameState {
     finalePoints: 0,
     finaleCount: 0,
     peakSoundwaves: new Decimal(0),
+    producedThisRun: new Decimal(0),
     totalTimePlayed: 0,
     lastSaveTimestamp: Date.now(),
     currentRunStartTime: Date.now(),
@@ -119,6 +120,7 @@ function resetTiersAndSW(achievementIds: string[]): Partial<GameState> {
     },
     ...(crescHeadstart ? { crescendo: CRESCENDO_HEADSTART } : {}),
     currentRunStartTime: Date.now(),
+    producedThisRun: new Decimal(0),
   }
 }
 
@@ -688,6 +690,9 @@ export const useGameStore = create<GameState & GameActions>()(
             ? state.peakSoundwaves
             : new Decimal(state.peakSoundwaves || 0)
           if (!state.currentRunStartTime) state.currentRunStartTime = Date.now()
+          state.producedThisRun = state.producedThisRun instanceof Decimal
+            ? state.producedThisRun
+            : new Decimal(state.producedThisRun ?? 0)
 
           const now = Date.now()
           const offlineMs = Math.min(now - state.lastSaveTimestamp, MAX_OFFLINE_MS)
@@ -719,6 +724,7 @@ export const useGameStore = create<GameState & GameActions>()(
               finalePoints: state.finalePoints,
               finaleCount: state.finaleCount,
               peakSoundwaves: state.peakSoundwaves,
+              producedThisRun: state.producedThisRun,
               totalTimePlayed: state.totalTimePlayed,
               lastSaveTimestamp: state.lastSaveTimestamp,
               currentRunStartTime: state.currentRunStartTime,
@@ -736,6 +742,7 @@ export const useGameStore = create<GameState & GameActions>()(
             state.autobuyers = currentState.autobuyers
             state.totalTimePlayed = currentState.totalTimePlayed
             state.peakSoundwaves = currentState.peakSoundwaves
+            state.producedThisRun = currentState.producedThisRun
             state.crescendo = currentState.crescendo
             state.peakCrescendoMult = currentState.peakCrescendoMult
             state.recordsSold = currentState.recordsSold

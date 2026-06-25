@@ -35,7 +35,7 @@ export function StageLife({ era, blaze = 0 }: { era: number; blaze?: number }) {
       {/* soft silhouetted crowd, receding rows; gentle warm rim catches the stage light at high eras */}
       {rows > 0 && (
         <svg
-          className="absolute inset-x-0 bottom-0 w-full h-[20%] transition-opacity duration-[1500ms]"
+          className="absolute inset-x-0 bottom-0 w-full h-[14%] transition-opacity duration-[1500ms]"
           style={{ opacity: 0.35 + v * 0.45 }}
           viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true"
         >

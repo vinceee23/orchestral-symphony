@@ -161,7 +161,7 @@ export function ComposePage() {
       {/* Conduct unit, front-center bottom: a slim live readout, the Conduct button, and the podium
           stacked as ONE column (gap-spaced, no overlap) so the swell-meter rises from the podium toward
           the button. Active after the first Magnum Opus; dormant podium ("the baton awaits") before. */}
-      <div className="pointer-events-none absolute left-1/2 bottom-6 -translate-x-1/2 z-20 flex flex-col items-center gap-3">
+      <div className={`pointer-events-none absolute left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-3 ${opusCount > 0 ? 'bottom-6' : 'bottom-[16%]'}`}>
         {opusCount > 0 && (
           <>
             <div className="text-center leading-tight tabular-nums">

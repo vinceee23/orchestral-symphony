@@ -144,7 +144,8 @@ export const CRESCENDO_DECAY_SEC = 25                   // seconds to decay ceil
 export const AUTO_CONDUCT_FRACTION = 0.5                // auto-conduct sustains this fraction of ceiling AFK
 export const TEMPO_OP_MULT_PER_LEVEL = 1.5              // each Tempo OP-node = x1.5 global tempo/production
 export const RECORDS_PROD_K = 5                         // legacy v0 constant (superseded by RECORDS_ALBUM_K)
-export const RECORDS_ALBUM_K = 1                        // recordsPerSec = K * opusCount * crescendoMult
+export const RECORDS_ALBUM_K = 1                        // recordsPerSec = K * opusCount^EXP * crescendoMult * chartClimber
+export const RECORDS_OPUS_EXP = 1.15                      // superlinear opus scaling — tunable via sim/era-pacing.test.ts
 export const OPUS_CATALOG_K = 0.5                       // post-Platinum OP gain scales with catalog size
 export const PLATINUM_THRESHOLD = 1_000_000             // records sold to Go Platinum
 export const FAME_PER = 0.1                             // post-Platinum: prod/OP *= 1 + log10(recordsSold/1e6)*FAME_PER

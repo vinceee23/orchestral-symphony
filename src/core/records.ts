@@ -1,4 +1,4 @@
-import { OPUS_CATALOG_K, PLATINUM_THRESHOLD } from './constants'
+import { OPUS_CATALOG_K, PLATINUM_THRESHOLD, RECORDS_OPUS_EXP } from './constants'
 import { getCrescendoOpBonus } from './crescendo'
 import {
   getEffectiveRecordsK,
@@ -11,7 +11,7 @@ export function getRecordsPerSec(
   crescendoMult: number,
   levels: Record<string, number>,
 ): number {
-  return getEffectiveRecordsK(levels) * opusCount * crescendoMult
+  return getEffectiveRecordsK(levels) * Math.pow(opusCount, RECORDS_OPUS_EXP) * crescendoMult
 }
 
 /** Accrue records over dtSec. */

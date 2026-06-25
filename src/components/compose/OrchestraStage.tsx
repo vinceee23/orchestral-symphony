@@ -5,7 +5,7 @@ import { TIER_CONFIGS } from '../../core/constants'
 import {
   getTierProductionPerSec, getTierBatchCost, getMaxBuyable, getCoreProductionMultiplier,
 } from '../../core/formulas'
-import { getAchievementGlobalMultiplier, getAchievementTierMultiplier } from '../../core/achievements'
+import { getAchievementGlobalMultiplier, getAchievementTierMultiplier, getAchievementTempoBonus } from '../../core/achievements'
 import { hasPerk } from '../../core/perks'
 import { formatNumber, formatCost } from '../../core/format'
 import { playBuySound } from '../../core/audio'
@@ -111,6 +111,7 @@ export function OrchestraStage() {
     lifetimeEncorePoints, finalePoints, encoreUpgrades, tempoLevel: tempo.level, tiers,
     opusUpgrades, crescendoLevel: crescendo, recordsSold, platinum,
     massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
+    achievementTempoBonus: getAchievementTempoBonus(achievementSet),
   }))
 
   return (

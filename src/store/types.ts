@@ -77,6 +77,7 @@ export interface GameState {
 
   // Tracking
   peakSoundwaves: Decimal
+  producedThisRun: Decimal
   totalTimePlayed: number
   lastSaveTimestamp: number
   currentRunStartTime: number

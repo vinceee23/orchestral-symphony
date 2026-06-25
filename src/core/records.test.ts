@@ -25,7 +25,7 @@ describe('records', () => {
     const opusCount = 5
     const mult = 2
     const rate = getRecordsPerSec(opusCount, mult, emptyLevels)
-    expect(rate).toBe(10)
+    expect(rate).toBeCloseTo(Math.pow(5, 1.15) * 2, 5)
     const accrued = accrueRecords(0, opusCount, mult, 10, emptyLevels)
     expect(accrued).toBeCloseTo(rate * 10, 5)
   })
