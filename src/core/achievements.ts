@@ -2176,11 +2176,15 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   {
     id: 'ach_perk_tempo_headstart',
     name: 'Speed of Sound',
-    description: 'Produce 1e40 Soundwaves this run within 12 minutes (after your first Magnum Opus)',
+    description: 'On an early Magnum Opus run (no Sight-Reading head-start), produce 1e40 Soundwaves within 12 minutes',
     icon: '\u{23F1}',
+    // Early-game speed race: gated to the first couple of MO runs AND no Sight-Reading head-start, so a
+    // developed player's huge production can't trivially auto-pop it. Not strandable (pre-Platinum, MO
+    // resets Encore upgrades, so a no-Sight-Reading run is always available).
     check: (s) => {
       const elapsed = Date.now() - s.currentRunStartTime
-      if (elapsed > 720000 || s.opusCount < 1) return false
+      if (elapsed > 720000 || s.opusCount < 1 || s.opusCount > 2) return false
+      if ((s.encoreUpgrades['sightReading'] ?? 0) >= 1) return false
       return s.producedThisRun.gte('1e40')
     },
     reward: { perk: 'perk-tempo-headstart' },
