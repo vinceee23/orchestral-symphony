@@ -83,6 +83,12 @@ export interface GameState {
   catalogueSnapshot: Decimal
   worldTourUnlocked: boolean
   keepAutobuyers: boolean
+  /** Mid-ladder unlock — auto-performs Magnum Opus when profitable. */
+  autoMO: boolean
+  /** Toggle for Auto-MO (defaults on when unlocked). */
+  autoMOEnabled: boolean
+  /** Full venue circuit graduated — Acclaim rate uses live catalogue. */
+  circuitComplete: boolean
   /** MOs performed after Platinum — drives the hybrid L3 unlock gate. */
   postPlatinumMoCount: number
 
@@ -133,5 +139,6 @@ export interface GameActions {
   performTour: () => void
   unlockWorldTour: () => void
   bankVenueAcclaim: () => void
+  setAutoMOEnabled: (enabled: boolean) => void
   hardReset: () => void
 }

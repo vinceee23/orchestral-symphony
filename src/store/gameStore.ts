@@ -35,7 +35,8 @@ import { createDecimalStorage } from '../core/save'
 import { useUiStore } from './uiStore'
 import {
   L3, getCatalogueSnapshot, getComponentCost, isVenueGraduatable,
-  canUnlockWorldTour, VENUE_1,
+  canUnlockWorldTour, getVenue, LAST_VENUE_ID, getComponentMaxTier,
+  isAutoMOUnlocked, canAutoPerformMagnumOpus,
 } from '../core/worldTour'
 
 function createDefaultAutobuyer(): AutobuyerState {
@@ -92,6 +93,9 @@ function createInitialState(): GameState {
     catalogueSnapshot: new Decimal(1),
     worldTourUnlocked: false,
     keepAutobuyers: false,
+    autoMO: false,
+    autoMOEnabled: true,
+    circuitComplete: false,
     postPlatinumMoCount: 0,
     finalePoints: 0,
     finaleCount: 0,
@@ -183,6 +187,9 @@ export const useGameStore = create<GameState & GameActions>()(
         const after = get()
         if (!after.worldTourUnlocked && canUnlockWorldTour(after)) {
           get().unlockWorldTour()
+        }
+        if (canAutoPerformMagnumOpus(after)) {
+          get().performMagnumOpus()
         }
       },
 
@@ -670,11 +677,13 @@ export const useGameStore = create<GameState & GameActions>()(
 
       buyComponent: (componentId: string) => {
         set((state) => {
-          if (!state.worldTourUnlocked || state.currentVenue !== VENUE_1.id) return state
+          if (!state.worldTourUnlocked) return state
+          const venue = getVenue(state.currentVenue)
+          if (!venue.componentIds.includes(componentId as typeof venue.componentIds[number])) return state
           if (!(componentId in L3.COMPONENTS)) return state
           const level = state.components[componentId] ?? 0
-          if (level >= L3.MAX_COMPONENT_TIER) return state
-          const cost = getComponentCost(componentId, level)
+          if (level >= getComponentMaxTier(componentId)) return state
+          const cost = getComponentCost(componentId, level, state.currentVenue)
           const acclaim = state.acclaim instanceof Decimal ? state.acclaim : new Decimal(state.acclaim ?? 0)
           if (acclaim.lt(cost)) return state
           return {
@@ -699,14 +708,36 @@ export const useGameStore = create<GameState & GameActions>()(
 
       graduateVenue: () => {
         set((state) => {
-          if (!state.worldTourUnlocked || state.currentVenue !== VENUE_1.id) return state
-          if (!isVenueGraduatable(state.components)) return state
-          return {
-            currentVenue: 1,
-            components: {},
+          if (!state.worldTourUnlocked) return state
+          if (!isVenueGraduatable(state.components, state.currentVenue)) return state
+
+          const nextVenue = state.currentVenue + 1
+          const unlockAutoMO =
+            state.autoMO ||
+            state.tourCount >= L3.AUTO_MO_FROM_TOUR ||
+            nextVenue >= L3.AUTO_MO_VENUE ||
+            state.currentVenue >= L3.AUTO_MO_VENUE
+
+          const base = {
+            components: {} as Record<string, number>,
             venueBuffer: new Decimal(0),
             venueSoldOut: false,
+            autoMO: unlockAutoMO,
+            autoMOEnabled: state.autoMOEnabled ?? true,
           }
+
+          if (state.currentVenue >= LAST_VENUE_ID) {
+            return { ...base, circuitComplete: true }
+          }
+
+          return { ...base, currentVenue: nextVenue }
+        })
+      },
+
+      setAutoMOEnabled: (enabled: boolean) => {
+        set((state) => {
+          if (!state.autoMO) return state
+          return { autoMOEnabled: enabled }
         })
       },
 
@@ -737,6 +768,8 @@ export const useGameStore = create<GameState & GameActions>()(
         const keepEncoreUpgrades = hasPerk(achSet, 'perk-keep-encore-upgrades')
         const opusCount = state.opusCount
         const keptAutobuyers = state.keepAutobuyers ? { ...state.autobuyers } : {}
+        const newTourCount = state.tourCount + 1
+        const grantAutoMO = isAutoMOUnlocked({ ...state, tourCount: newTourCount })
 
         set({
           ...resetTiersAndSW(state.achievements),
@@ -754,10 +787,12 @@ export const useGameStore = create<GameState & GameActions>()(
           recordsSold: carriedRecords,
           platinum: carriedRecords >= PLATINUM_THRESHOLD,
           autobuyers: keptAutobuyers,
-          tourCount: state.tourCount + 1,
+          tourCount: newTourCount,
           catalogueSnapshot: new Decimal(getCatalogueSnapshot(opusCount, carriedRecords)),
           venueBuffer: new Decimal(0),
           venueSoldOut: false,
+          autoMO: state.autoMO || grantAutoMO,
+          autoMOEnabled: state.autoMOEnabled ?? true,
         })
       },
 
@@ -806,6 +841,7 @@ export const useGameStore = create<GameState & GameActions>()(
           startChallenge, abandonChallenge,
           performEncore, performMagnumOpus, performGrandFinale,
           buyComponent, buyKeepAutobuyers, graduateVenue, performTour, unlockWorldTour, bankVenueAcclaim,
+          setAutoMOEnabled,
           hardReset,
           ...data
         } = state
@@ -848,6 +884,9 @@ export const useGameStore = create<GameState & GameActions>()(
           else state.catalogueSnapshot = state.catalogueSnapshot instanceof Decimal ? state.catalogueSnapshot : new Decimal(state.catalogueSnapshot ?? 1)
           if (state.worldTourUnlocked === undefined) state.worldTourUnlocked = false
           if (state.keepAutobuyers === undefined) state.keepAutobuyers = false
+          if (state.autoMO === undefined) state.autoMO = false
+          if (state.autoMOEnabled === undefined) state.autoMOEnabled = true
+          if (state.circuitComplete === undefined) state.circuitComplete = false
           if (state.postPlatinumMoCount === undefined) state.postPlatinumMoCount = 0
           if (state.finalePoints === undefined) state.finalePoints = 0
           if (state.finaleCount === undefined) state.finaleCount = 0
@@ -901,6 +940,9 @@ export const useGameStore = create<GameState & GameActions>()(
               catalogueSnapshot: state.catalogueSnapshot,
               worldTourUnlocked: state.worldTourUnlocked,
               keepAutobuyers: state.keepAutobuyers,
+              autoMO: state.autoMO,
+              autoMOEnabled: state.autoMOEnabled,
+              circuitComplete: state.circuitComplete,
               postPlatinumMoCount: state.postPlatinumMoCount,
               finalePoints: state.finalePoints,
               finaleCount: state.finaleCount,
