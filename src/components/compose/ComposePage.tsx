@@ -34,6 +34,7 @@ export function ComposePage() {
   const finalePoints = useGameStore((s) => s.finalePoints)
   const layer1WallReached = useGameStore((s) => s.layer1WallReached)
   const opusCount = useGameStore((s) => s.opusCount)
+  const worldTourUnlocked = useGameStore((s) => s.worldTourUnlocked)
   const peakCrescendoMult = useGameStore((s) => s.peakCrescendoMult)
   const performEncore = useGameStore((s) => s.performEncore)
   const performMagnumOpus = useGameStore((s) => s.performMagnumOpus)
@@ -67,9 +68,8 @@ export function ComposePage() {
 
   // Ambient liveliness (bland pre-Encore, warmer each layer) — feeds the backdrop grandeur ramp.
   const liveliness = getLiveliness(lifetimeEncorePoints, opusCount, finalePoints)
-  // Stage era = one hall tier per prestige layer (0 intimate · 1 Encore · 2 Magnum Opus ·
-  // 3 Repertoire · 4 Genre · 5 Virtuoso · 6 Canon). Only 0-2 reachable today; finale jumps to the top tier.
-  const era = finalePoints > 0 ? 6 : opusCount > 0 ? 2 : lifetimeEncorePoints > 0 ? 1 : 0
+  // Stage era = one hall tier per prestige layer (0 intimate · 1 Encore · 2 Magnum Opus · 3 World Tour · 6 Finale).
+  const era = finalePoints > 0 ? 6 : worldTourUnlocked ? 3 : opusCount > 0 ? 2 : lifetimeEncorePoints > 0 ? 1 : 0
   const orchestraScale = [1, 0.93, 0.86, 0.82, 0.78, 0.74, 0.7][era] ?? 0.7 // camera pulls back per layer
   // §11 "lights up as you climb": the hall brightens with your Soundwave climb and BLAZES as you conduct.
   const climb = peakSoundwaves.gt(1) ? Math.min(1, Math.max(0, peakSoundwaves.log10()) / 100) : 0 // 0..1 across the climb

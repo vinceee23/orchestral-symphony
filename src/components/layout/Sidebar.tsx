@@ -19,7 +19,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const worldTourUnlocked = useGameStore((s) => s.worldTourUnlocked)
   const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const finalePoints = useGameStore((s) => s.finalePoints)
-  const era = getEra(lifetimeEncorePoints, opusCount, finalePoints)
+  const era = getEra(lifetimeEncorePoints, opusCount, finalePoints, worldTourUnlocked)
   let tabs = opusCount > 0
     ? [
         BASE_TABS[0],

@@ -37,7 +37,7 @@ export function Header() {
   const crescendoMult = getCrescendoMultiplier(crescendo, opusUpgrades)
   const showCrescendo = opusCount > 0 && (conducting || crescendo > 0.02)
 
-  const era = getEra(lifetimeEncorePoints, opusCount, finalePoints)
+  const era = getEra(lifetimeEncorePoints, opusCount, finalePoints, worldTourUnlocked)
   const achievementSet = new Set(achievements)
   const globalMult = getAchievementGlobalMultiplier(achievementSet).times(getCoreProductionMultiplier({
     lifetimeEncorePoints, finalePoints, encoreUpgrades, tempoLevel: tempo.level, tiers,

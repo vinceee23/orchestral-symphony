@@ -5,9 +5,14 @@
  */
 export const ERA_COLORS = ['#d4a843', '#d4a843', '#7c3aed', '#2dd4bf', '#ec4899', '#ef4444', '#fbbf24']
 
-/** Stage/app era from progression — one tier per prestige layer (0 intimate · 1 Encore · 2 Magnum Opus · 6 Finale). */
-export function getEra(lifetimeEncorePoints: number, opusCount: number, finalePoints: number): number {
-  return finalePoints > 0 ? 6 : opusCount > 0 ? 2 : lifetimeEncorePoints > 0 ? 1 : 0
+/** Stage/app era from progression — one tier per prestige layer (0 intimate · 1 Encore · 2 Magnum Opus · 3 World Tour · 6 Finale). */
+export function getEra(
+  lifetimeEncorePoints: number,
+  opusCount: number,
+  finalePoints: number,
+  worldTourUnlocked: boolean,
+): number {
+  return finalePoints > 0 ? 6 : worldTourUnlocked ? 3 : opusCount > 0 ? 2 : lifetimeEncorePoints > 0 ? 1 : 0
 }
 
 /** A subtle era-color undertone gradient for app chrome. Strength ramps with era; stays readable.
