@@ -10,6 +10,7 @@ import { AchievementsPage } from '../achievements/AchievementsPage'
 import { ChallengesPage } from '../challenges/ChallengesPage'
 import { OpusPage } from '../opus/OpusPage'
 import { AutobuyersPage } from '../autobuyers/AutobuyersPage'
+import { WorldTourPage } from '../worldtour/WorldTourPage'
 import { StatsPanel } from '../shared/StatsPanel'
 
 // Dev/screenshot convenience: open a specific tab with ?tab=prestige (etc.). Harmless in prod.
@@ -70,6 +71,7 @@ export function AppShell() {
           {activeTab === 'prestige' && <PrestigePage />}
           {activeTab === 'opus' && <OpusPage />}
           {activeTab === 'autobuyers' && <AutobuyersPage />}
+          {activeTab === 'worldtour' && <WorldTourPage />}
           {activeTab === 'achievements' && <AchievementsPage />}
           {activeTab === 'challenges' && <ChallengesPage />}
           {activeTab === 'stats' && <StatsPanel />}

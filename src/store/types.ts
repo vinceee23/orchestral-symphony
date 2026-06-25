@@ -71,7 +71,22 @@ export interface GameState {
   recordsSold: number     // cumulative records sold; 1,000,000 => Go Platinum
   platinum: boolean       // has Gone Platinum (flips OP gain to the post-break formula)
 
-  // Prestige Layer 3: Grand Finale (the "infinity" reset at 1.79e308 SW)
+  // Prestige Layer 3: World Tour (touring ensemble — venues + Acclaim)
+  acclaim: Decimal
+  lifetimeAcclaim: Decimal
+  tourCount: number
+  currentVenue: number
+  venueBuffer: Decimal
+  /** True when the venue sold out after banking — accrual pauses until upgrade/graduate. */
+  venueSoldOut: boolean
+  components: Record<string, number>
+  catalogueSnapshot: Decimal
+  worldTourUnlocked: boolean
+  keepAutobuyers: boolean
+  /** MOs performed after Platinum — drives the hybrid L3 unlock gate. */
+  postPlatinumMoCount: number
+
+  // Prestige Layer 6: Grand Finale (the "infinity" reset at 1.79e308 SW)
   finalePoints: number
   finaleCount: number
 
@@ -112,5 +127,11 @@ export interface GameActions {
   performEncore: () => void
   performMagnumOpus: () => void
   performGrandFinale: () => void
+  buyComponent: (componentId: string) => void
+  buyKeepAutobuyers: () => void
+  graduateVenue: () => void
+  performTour: () => void
+  unlockWorldTour: () => void
+  bankVenueAcclaim: () => void
   hardReset: () => void
 }

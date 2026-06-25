@@ -210,6 +210,8 @@ export function getCoreProductionMultiplier(p: {
   platinum: boolean
   massProduction?: boolean  // perk-bulk-unlock kicker: x2 per tier owned 1000+
   achievementTempoBonus?: number
+  /** lifetimeAcclaim production snowball (Layer 3 World Tour). */
+  acclaimMult?: number
 }): Decimal {
   const crescendoMult = getCrescendoMultiplier(p.crescendoLevel, p.opusUpgrades)
   const fameMult = p.platinum ? getFameMultiplier(p.recordsSold, p.opusUpgrades) : 1
@@ -228,4 +230,5 @@ export function getCoreProductionMultiplier(p: {
     .times(getTempoProductionMultiplier(p.tempoLevel, p.achievementTempoBonus ?? 0))
     .times(getMilestoneTickspeedMultiplier(p.tiers))
     .times(massMult)
+    .times(p.acclaimMult ?? 1)
 }

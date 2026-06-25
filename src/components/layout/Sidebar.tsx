@@ -17,10 +17,11 @@ const BASE_TABS: { id: string; label: string; icon: IconName }[] = [
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const opusCount = useGameStore((s) => s.opusCount)
+  const worldTourUnlocked = useGameStore((s) => s.worldTourUnlocked)
   const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const finalePoints = useGameStore((s) => s.finalePoints)
   const era = getEra(lifetimeEncorePoints, opusCount, finalePoints)
-  const tabs = opusCount > 0
+  let tabs = opusCount > 0
     ? [
         BASE_TABS[0],
         BASE_TABS[1],
@@ -29,6 +30,14 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         ...BASE_TABS.slice(2),
       ]
     : BASE_TABS
+  if (worldTourUnlocked) {
+    const insertAt = tabs.findIndex((t) => t.id === 'autobuyers') + 1
+    tabs = [
+      ...tabs.slice(0, insertAt),
+      { id: 'worldtour', label: 'World Tour', icon: 'sparkle' as IconName },
+      ...tabs.slice(insertAt),
+    ]
+  }
 
   return (
     <nav

@@ -9,6 +9,7 @@ import {
   GRAND_FINALE_SW_THRESHOLD,
   AUTOBUYER_DEFAULT_INTERVAL,
   ENCORE_WALL_COUNT,
+  PLATINUM_THRESHOLD,
 } from '../core/constants'
 import {
   ENCORE_UPGRADE_MAP, getEncoreUpgradeCost,
@@ -32,6 +33,10 @@ import { ACHIEVEMENTS, getAchievementStartingSW, getAchievementCostReduction, ge
 import { getChallengeById, getActiveChallengeModifiers } from '../core/challenges'
 import { createDecimalStorage } from '../core/save'
 import { useUiStore } from './uiStore'
+import {
+  L3, getCatalogueSnapshot, getComponentCost, isVenueGraduatable,
+  canUnlockWorldTour, VENUE_1,
+} from '../core/worldTour'
 
 function createDefaultAutobuyer(): AutobuyerState {
   return {
@@ -77,6 +82,17 @@ function createInitialState(): GameState {
     peakCrescendoMult: 1,
     recordsSold: 0,
     platinum: false,
+    acclaim: new Decimal(0),
+    lifetimeAcclaim: new Decimal(0),
+    tourCount: 0,
+    currentVenue: 0,
+    venueBuffer: new Decimal(0),
+    venueSoldOut: false,
+    components: {},
+    catalogueSnapshot: new Decimal(1),
+    worldTourUnlocked: false,
+    keepAutobuyers: false,
+    postPlatinumMoCount: 0,
     finalePoints: 0,
     finaleCount: 0,
     peakSoundwaves: new Decimal(0),
@@ -164,6 +180,10 @@ export const useGameStore = create<GameState & GameActions>()(
         const conducting = useUiStore.getState().conducting
         const updates = calculateTick(state, deltaMs, conducting)
         set({ ...updates, activeTimePlayed: state.activeTimePlayed + deltaMs })
+        const after = get()
+        if (!after.worldTourUnlocked && canUnlockWorldTour(after)) {
+          get().unlockWorldTour()
+        }
       },
 
       buyTier: (tierId: number, amount: number = 1) => {
@@ -614,6 +634,7 @@ export const useGameStore = create<GameState & GameActions>()(
         const achSet = new Set(state.achievements)
         const skipWall = hasPerk(achSet, 'perk-skip-wall')
         const keepEncoreUpgrades = hasPerk(achSet, 'perk-keep-encore-upgrades')
+        const wasPlatinum = state.platinum || state.recordsSold >= PLATINUM_THRESHOLD
         set({
           ...resetTiersAndSW(state.achievements),
           peakSoundwaves: new Decimal(0),
@@ -628,10 +649,119 @@ export const useGameStore = create<GameState & GameActions>()(
           crescendo: hasPerk(achSet, 'perk-crescendo-headstart') ? CRESCENDO_HEADSTART : 0,
           peakCrescendoMult: 1,
           autobuyers,
+          postPlatinumMoCount: wasPlatinum ? state.postPlatinumMoCount + 1 : state.postPlatinumMoCount,
         })
       },
 
-      // === Prestige Layer 3: Grand Finale (the "infinity" at 1.79e308, resets EP+OP) ===
+      // === Layer 3: World Tour (resets L1+L2, persists venue ladder + Acclaim) ===
+      unlockWorldTour: () => {
+        const state = get()
+        if (state.worldTourUnlocked || !canUnlockWorldTour(state)) return
+        const snapshot = getCatalogueSnapshot(state.opusCount, state.recordsSold)
+        set({
+          worldTourUnlocked: true,
+          catalogueSnapshot: new Decimal(snapshot),
+          currentVenue: 0,
+          components: {},
+          venueBuffer: new Decimal(0),
+          venueSoldOut: false,
+        })
+      },
+
+      buyComponent: (componentId: string) => {
+        set((state) => {
+          if (!state.worldTourUnlocked || state.currentVenue !== VENUE_1.id) return state
+          if (!(componentId in L3.COMPONENTS)) return state
+          const level = state.components[componentId] ?? 0
+          if (level >= L3.MAX_COMPONENT_TIER) return state
+          const cost = getComponentCost(componentId, level)
+          const acclaim = state.acclaim instanceof Decimal ? state.acclaim : new Decimal(state.acclaim ?? 0)
+          if (acclaim.lt(cost)) return state
+          return {
+            acclaim: acclaim.minus(cost),
+            components: { ...state.components, [componentId]: level + 1 },
+            venueSoldOut: false,
+          }
+        })
+      },
+
+      buyKeepAutobuyers: () => {
+        set((state) => {
+          if (!state.worldTourUnlocked || state.keepAutobuyers) return state
+          const acclaim = state.acclaim instanceof Decimal ? state.acclaim : new Decimal(state.acclaim ?? 0)
+          if (acclaim.lt(L3.KEEP_AUTOBUYERS_COST)) return state
+          return {
+            acclaim: acclaim.minus(L3.KEEP_AUTOBUYERS_COST),
+            keepAutobuyers: true,
+          }
+        })
+      },
+
+      graduateVenue: () => {
+        set((state) => {
+          if (!state.worldTourUnlocked || state.currentVenue !== VENUE_1.id) return state
+          if (!isVenueGraduatable(state.components)) return state
+          return {
+            currentVenue: 1,
+            components: {},
+            venueBuffer: new Decimal(0),
+            venueSoldOut: false,
+          }
+        })
+      },
+
+      bankVenueAcclaim: () => {
+        set((state) => {
+          if (!state.worldTourUnlocked) return state
+          const buffer = state.venueBuffer instanceof Decimal ? state.venueBuffer : new Decimal(state.venueBuffer ?? 0)
+          if (buffer.lte(0)) return state
+          let acclaim = state.acclaim instanceof Decimal ? state.acclaim : new Decimal(state.acclaim ?? 0)
+          let lifetimeAcclaim = state.lifetimeAcclaim instanceof Decimal ? state.lifetimeAcclaim : new Decimal(state.lifetimeAcclaim ?? 0)
+          acclaim = acclaim.plus(buffer)
+          lifetimeAcclaim = lifetimeAcclaim.plus(buffer)
+          return {
+            acclaim,
+            lifetimeAcclaim,
+            venueBuffer: new Decimal(0),
+            venueSoldOut: false,
+          }
+        })
+      },
+
+      performTour: () => {
+        const state = get()
+        if (!state.worldTourUnlocked) return
+
+        const carriedRecords = Math.floor(state.recordsSold * L3.LEGACY_RECORDS_FRACTION)
+        const achSet = new Set(state.achievements)
+        const keepEncoreUpgrades = hasPerk(achSet, 'perk-keep-encore-upgrades')
+        const opusCount = state.opusCount
+        const keptAutobuyers = state.keepAutobuyers ? { ...state.autobuyers } : {}
+
+        set({
+          ...resetTiersAndSW(state.achievements),
+          peakSoundwaves: new Decimal(0),
+          encorePoints: 0,
+          lifetimeEncorePoints: 0,
+          encoreCount: 3,
+          encoreUpgrades: keepEncoreUpgrades ? state.encoreUpgrades : {},
+          layer1WallReached: true,
+          opusPoints: 0,
+          opusCount,
+          opusUpgrades: {},
+          crescendo: hasPerk(achSet, 'perk-crescendo-headstart') ? CRESCENDO_HEADSTART : 0,
+          peakCrescendoMult: 1,
+          recordsSold: carriedRecords,
+          platinum: carriedRecords >= PLATINUM_THRESHOLD,
+          autobuyers: keptAutobuyers,
+          tourCount: state.tourCount + 1,
+          catalogueSnapshot: new Decimal(getCatalogueSnapshot(opusCount, carriedRecords)),
+          venueBuffer: new Decimal(0),
+          venueSoldOut: false,
+        })
+      },
+
+      // === Prestige Layer 6: Grand Finale (the "infinity" at 1.79e308, resets EP+OP) ===
       performGrandFinale: () => {
         const state = get()
 
@@ -675,6 +805,7 @@ export const useGameStore = create<GameState & GameActions>()(
           toggleAutobuyer, setAutobuyerBulk, buyEncoreUpgrade, buyOpusUpgrade, checkAchievements, checkChallengeCompletion,
           startChallenge, abandonChallenge,
           performEncore, performMagnumOpus, performGrandFinale,
+          buyComponent, buyKeepAutobuyers, graduateVenue, performTour, unlockWorldTour, bankVenueAcclaim,
           hardReset,
           ...data
         } = state
@@ -703,6 +834,21 @@ export const useGameStore = create<GameState & GameActions>()(
           if (state.peakCrescendoMult === undefined) state.peakCrescendoMult = 1
           if (state.recordsSold === undefined) state.recordsSold = 0
           if (state.platinum === undefined) state.platinum = false
+          if (state.acclaim === undefined) state.acclaim = new Decimal(0)
+          else state.acclaim = state.acclaim instanceof Decimal ? state.acclaim : new Decimal(state.acclaim ?? 0)
+          if (state.lifetimeAcclaim === undefined) state.lifetimeAcclaim = new Decimal(0)
+          else state.lifetimeAcclaim = state.lifetimeAcclaim instanceof Decimal ? state.lifetimeAcclaim : new Decimal(state.lifetimeAcclaim ?? 0)
+          if (state.tourCount === undefined) state.tourCount = 0
+          if (state.currentVenue === undefined) state.currentVenue = 0
+          if (state.venueBuffer === undefined) state.venueBuffer = new Decimal(0)
+          else state.venueBuffer = state.venueBuffer instanceof Decimal ? state.venueBuffer : new Decimal(state.venueBuffer ?? 0)
+          if (state.venueSoldOut === undefined) state.venueSoldOut = false
+          if (!state.components) state.components = {}
+          if (state.catalogueSnapshot === undefined) state.catalogueSnapshot = new Decimal(1)
+          else state.catalogueSnapshot = state.catalogueSnapshot instanceof Decimal ? state.catalogueSnapshot : new Decimal(state.catalogueSnapshot ?? 1)
+          if (state.worldTourUnlocked === undefined) state.worldTourUnlocked = false
+          if (state.keepAutobuyers === undefined) state.keepAutobuyers = false
+          if (state.postPlatinumMoCount === undefined) state.postPlatinumMoCount = 0
           if (state.finalePoints === undefined) state.finalePoints = 0
           if (state.finaleCount === undefined) state.finaleCount = 0
           if (state.tempoPurchasesThisRun === undefined) state.tempoPurchasesThisRun = 0
@@ -745,6 +891,17 @@ export const useGameStore = create<GameState & GameActions>()(
               peakCrescendoMult: state.peakCrescendoMult,
               recordsSold: state.recordsSold,
               platinum: state.platinum,
+              acclaim: state.acclaim,
+              lifetimeAcclaim: state.lifetimeAcclaim,
+              tourCount: state.tourCount,
+              currentVenue: state.currentVenue,
+              venueBuffer: state.venueBuffer,
+              venueSoldOut: state.venueSoldOut,
+              components: state.components,
+              catalogueSnapshot: state.catalogueSnapshot,
+              worldTourUnlocked: state.worldTourUnlocked,
+              keepAutobuyers: state.keepAutobuyers,
+              postPlatinumMoCount: state.postPlatinumMoCount,
               finalePoints: state.finalePoints,
               finaleCount: state.finaleCount,
               peakSoundwaves: state.peakSoundwaves,
@@ -776,7 +933,36 @@ export const useGameStore = create<GameState & GameActions>()(
             state.peakCrescendoMult = currentState.peakCrescendoMult
             state.recordsSold = currentState.recordsSold
             state.platinum = currentState.platinum
+            state.acclaim = currentState.acclaim
+            state.lifetimeAcclaim = currentState.lifetimeAcclaim
+            state.venueBuffer = currentState.venueBuffer
+            state.venueSoldOut = currentState.venueSoldOut
           }
+
+          // Dev shortcut: ?l3 seeds World Tour for instant playtesting
+          if (/(?:[?&#])l3\b/.test(location.search + location.hash)) {
+            const snapshot = getCatalogueSnapshot(4, 750_000)
+            state.worldTourUnlocked = true
+            state.catalogueSnapshot = new Decimal(snapshot)
+            state.currentVenue = 0
+            state.components = {}
+            state.venueBuffer = new Decimal(0)
+            state.venueSoldOut = false
+            state.layer1WallReached = true
+            state.opusCount = Math.max(state.opusCount, 4)
+            state.platinum = true
+            state.recordsSold = Math.max(state.recordsSold, 750_000)
+            state.postPlatinumMoCount = Math.max(state.postPlatinumMoCount, L3.GATE_POST_PLAT_MO)
+            try {
+              const url = new URL(location.href)
+              url.searchParams.delete('l3')
+              url.hash = url.hash.replace(/([?&#])l3\b&?/g, '$1').replace(/[?&#]+$/, '')
+              history.replaceState(null, '', url.pathname + url.search + url.hash)
+            } catch { /* noop */ }
+            // eslint-disable-next-line no-console
+            console.info('[playtest] ?l3 — World Tour unlocked with seeded catalogue')
+          }
+
           state.lastSaveTimestamp = now
         }
       },

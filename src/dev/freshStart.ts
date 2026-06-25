@@ -1,7 +1,6 @@
-// OPT-IN save wipe: clears the saved game ONLY when the URL asks for it (load with ?fresh).
-// Works in dev AND production so playtesters can restart cleanly. A normal refresh keeps your save.
-// Imported first in main.tsx (before the store hydrates). After wiping we strip the `fresh` flag from
-// the URL so a subsequent reload doesn't keep re-wiping the new playthrough.
+// OPT-IN dev shortcuts (load before the store hydrates):
+//   ?fresh — wipe saved game for a clean start
+//   ?l3    — handled in gameStore onRehydrate: unlock World Tour + seed catalogue (see gameStore.ts)
 if (/(?:[?&#])fresh\b/.test(location.search + location.hash)) {
   for (const k of Object.keys(localStorage)) {
     if (k.startsWith('orchestral-symphony')) localStorage.removeItem(k)

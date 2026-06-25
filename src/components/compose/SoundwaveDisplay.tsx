@@ -5,6 +5,7 @@ import { TIER_CONFIGS } from '../../core/constants'
 import { getTierProductionPerSec, getEncoreMultiplier, getFinaleMultiplier, getCoreProductionMultiplier } from '../../core/formulas'
 import { getAchievementGlobalMultiplier, getAchievementTierMultiplier, getAchievementTempoBonus } from '../../core/achievements'
 import { hasPerk } from '../../core/perks'
+import { getAcclaimMultiplier } from '../../core/worldTour'
 import { SmoothNumber } from '../shared/SmoothNumber'
 
 export function SoundwaveDisplay() {
@@ -20,6 +21,8 @@ export function SoundwaveDisplay() {
   const recordsSold = useGameStore((s) => s.recordsSold)
   const platinum = useGameStore((s) => s.platinum)
   const finalePoints = useGameStore((s) => s.finalePoints)
+  const worldTourUnlocked = useGameStore((s) => s.worldTourUnlocked)
+  const lifetimeAcclaim = useGameStore((s) => s.lifetimeAcclaim)
 
   const achievementSet = new Set(achievements)
   const achievementGlobal = getAchievementGlobalMultiplier(achievementSet)
@@ -30,6 +33,7 @@ export function SoundwaveDisplay() {
     opusUpgrades, crescendoLevel: crescendo, recordsSold, platinum,
     massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
     achievementTempoBonus: getAchievementTempoBonus(achievementSet),
+    acclaimMult: worldTourUnlocked ? getAcclaimMultiplier(lifetimeAcclaim) : 1,
   }))
 
   const tier1 = tiers[0]

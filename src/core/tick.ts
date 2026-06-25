@@ -24,6 +24,7 @@ import {
 } from './achievements'
 import { getChallengeById, getActiveChallengeModifiers } from './challenges'
 import type { ChallengeModifiers } from './challenges'
+import { getAcclaimMultiplier, calculateWorldTourTick } from './worldTour'
 
 export function calculateTick(state: GameState, deltaMs: number, conducting = false): Partial<GameState> {
   const achievementSet = new Set(state.achievements)
@@ -71,6 +72,10 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
   )
   const platinum = state.platinum || isPlatinum(recordsSold)
 
+  const acclaimMult = state.worldTourUnlocked && !noP
+    ? getAcclaimMultiplier(state.lifetimeAcclaim)
+    : 1
+
   let globalMult = achievementGlobal.times(getCoreProductionMultiplier({
     lifetimeEncorePoints: noP ? 0 : state.lifetimeEncorePoints,
     finalePoints: noP ? 0 : state.finalePoints,
@@ -83,6 +88,7 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
     platinum,
     massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
     achievementTempoBonus,
+    acclaimMult,
   }))
 
   // Apply production divisor from challenge
@@ -281,6 +287,8 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
     newPeak = new Decimal(newSoundwaves)
   }
 
+  const worldTourUpdates = calculateWorldTourTick(state, deltaMs, conducting)
+
   return {
     soundwaves: newSoundwaves,
     producedThisRun,
@@ -293,5 +301,6 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
     recordsSold,
     platinum,
     totalTimePlayed: state.totalTimePlayed + deltaMs,
+    ...worldTourUpdates,
   }
 }

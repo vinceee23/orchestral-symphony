@@ -6,6 +6,7 @@ import { getChallengeById } from '../../core/challenges'
 import { TIER_CONFIGS } from '../../core/constants'
 import { formatNumber } from '../../core/format'
 import { getTierProductionPerSec, getCoreProductionMultiplier } from '../../core/formulas'
+import { getAcclaimMultiplier } from '../../core/worldTour'
 import { getCrescendoMultiplier } from '../../core/crescendo'
 import { hasPerk } from '../../core/perks'
 import { getEra, eraTintCss } from '../../core/eraTheme'
@@ -26,6 +27,8 @@ export function Header() {
   const finalePoints = useGameStore((s) => s.finalePoints)
   const activeChallenge = useGameStore((s) => s.activeChallenge)
   const opusCount = useGameStore((s) => s.opusCount)
+  const worldTourUnlocked = useGameStore((s) => s.worldTourUnlocked)
+  const lifetimeAcclaim = useGameStore((s) => s.lifetimeAcclaim)
   const conducting = useUiStore((s) => s.conducting)
   const toggleHelp = useUiStore((s) => s.toggleHelp)
 
@@ -41,6 +44,7 @@ export function Header() {
     opusUpgrades, crescendoLevel: crescendo, recordsSold, platinum,
     massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
     achievementTempoBonus: getAchievementTempoBonus(achievementSet),
+    acclaimMult: worldTourUnlocked ? getAcclaimMultiplier(lifetimeAcclaim) : 1,
   }))
   const tier1 = tiers[0]
   const fullMult = globalMult.times(getAchievementTierMultiplier(achievementSet, 1))
