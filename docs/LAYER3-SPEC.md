@@ -33,6 +33,10 @@ era 1          era 2              era 3            era 4           era 5        
 - **Passive currency-generation without resetting** (AD-style "auto-gen EP/OP, no reset") is an **L4+ reward only** — L3's automation is still reset-based (Auto-MO resets). 
 - The rule scales up the ladder: each layer's *own* mechanic is hands-on while you're in it; the next layer up automates it.
 
+**Concrete automation placement (locked 2026-06-25):**
+- **Auto-Encore** (auto-*prestige* — still resets, gains Applause normally) = an **OP-tree upgrade** you buy, surfacing around L3. *(Auto-MO sits in the L3 venue tree per §2.5.)*
+- **Passive Applause/EP generation WITHOUT resetting** (the AD-style "auto-gain 1%/sec of the Applause an Encore would grant you right now") = an **L4+ reward**. Tie it to current-run strength (not stored Applause) so it stays bounded by the sublinear gain. Applause gain is already sublinear: `floor((peakSW/1e15)^0.03)`.
+
 ---
 
 ## 2. Layer 3 design — "World Tour" (the touring ensemble)
@@ -86,6 +90,7 @@ Each venue is a mini-build you improve by pouring Acclaim into **components**, e
 
 ### 2.8 Challenges arrive at L3
 - A **separate challenges panel** opens at L3 (moved here from the old L5 idea). Each challenge unlocks at **its own SW/Encore/MO threshold** (independent of the venue loop — optional side content). This also kills the old "challenges gated on finaleCount unlock after the end" bug.
+  - **Confirmed live (sim, 2026-06-25):** all 12 challenges currently gate on `finaleCount >= unlockAt` (min 1), but a Grand Finale needs 1.79e308 SW → **challenges are unreachable in normal play today** (dead content; `ach_around_world`/`ach_vivaldi` can never fire). Re-gating them to L3 thresholds is the fix.
 - **Clearing a challenge grants all three** reward types: a **permanent production/Acclaim bonus** + a **tour component/Acclaim lump** + a specific **unlock**.
 - **Challenge rewards reset on an L4 (Signature) ascension** — making them L3-tier progress and giving L4 its own fresh-start meaning. (Note: this changes `completedChallenges` semantics — some achievements read it; handle in migration.)
 
@@ -163,7 +168,7 @@ autoMO: boolean               // mid-venue special upgrade — auto-performs a M
 - `src/core/constants.ts` / a new `src/core/repertoire.ts` — L3 formulas, venue configs, the new L3 gate (NOT `GRAND_FINALE_SW_THRESHOLD` — that's L6).
 - `src/core/tick.ts` — Acclaim accrual (parallel track).
 - `src/core/formulas.ts` — fold the **Acclaim** (`lifetimeAcclaim`) production mult into `getCoreProductionMultiplier`.
-- `src/components/` — a World Tour tab (venues) + the stage section in `StageHall`/`OrchestraStage`.
+- `src/components/` — a **dedicated "World Tour" tab** (sidebar reveals it at L3, same pattern as Opus/Autobuyers appearing post-MO): the venue ladder + per-venue component upgrades + the **living-venue art** (old house → grand hall) live here, NOT on the Compose stage. Compose keeps only the lighter era-3 ambient nod (§11). Don't let the tour UI coincide with Compose.
 - `sim/` — an L3 pacing sim (new) BEFORE tuning any numbers.
 
 ## 5. Decisions — status

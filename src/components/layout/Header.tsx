@@ -1,7 +1,7 @@
 import Decimal from 'break_infinity.js'
 import { useGameStore } from '../../store/gameStore'
 import { useUiStore } from '../../store/uiStore'
-import { ACHIEVEMENTS, getAchievementGlobalMultiplier, getAchievementTierMultiplier } from '../../core/achievements'
+import { ACHIEVEMENTS, getAchievementGlobalMultiplier, getAchievementTierMultiplier, getAchievementTempoBonus } from '../../core/achievements'
 import { getChallengeById } from '../../core/challenges'
 import { TIER_CONFIGS } from '../../core/constants'
 import { formatNumber } from '../../core/format'
@@ -40,6 +40,7 @@ export function Header() {
     lifetimeEncorePoints, finalePoints, encoreUpgrades, tempoLevel: tempo.level, tiers,
     opusUpgrades, crescendoLevel: crescendo, recordsSold, platinum,
     massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
+    achievementTempoBonus: getAchievementTempoBonus(achievementSet),
   }))
   const tier1 = tiers[0]
   const fullMult = globalMult.times(getAchievementTierMultiplier(achievementSet, 1))
@@ -92,6 +93,16 @@ export function Header() {
         <div className="text-xs text-text-muted tabular-nums">
           {achievements.length} / {ACHIEVEMENTS.length}<span className="hidden md:inline"> achievements</span>
         </div>
+        <a
+          href="https://ko-fi.com/vinceangelolmacaraig"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Support the dev — buy me a coffee on Ko-fi"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border-light text-text-secondary hover:text-accent-gold hover:border-accent-gold/50 transition-colors text-xs"
+        >
+          <span aria-hidden="true">☕</span>
+          <span className="hidden md:inline">Support</span>
+        </a>
         <button
           onClick={toggleHelp}
           title="Help & hotkeys (H)"

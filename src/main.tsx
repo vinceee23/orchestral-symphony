@@ -1,4 +1,4 @@
-import './dev/freshStart.ts' // DEV-only: must run before the store hydrates (wipes save each playtest)
+import './dev/freshStart.ts' // opt-in ?fresh save wipe; must run before the store hydrates
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'

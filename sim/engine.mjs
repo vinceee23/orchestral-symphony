@@ -25,14 +25,17 @@ const TEMPO_MIN_INT = 50
 const TEMPO_BASE_INT = 1000
 const START_SW = D(10)
 
-// Escalating Encore gate (mirror getEncoreCost): {tierIdx, amount}
+// Escalating Encore gate — source of truth: getEncoreCost() in src/core/constants.ts
 export function encoreGate(count) {
   if (count === 0) return { tierIdx: 4, amount: 30 } // Harmonies
   if (count === 1) return { tierIdx: 5, amount: 30 } // Movements
-  if (count === 2) return { tierIdx: 6, amount: 30 } // Symphonies
-  if (count === 3) return { tierIdx: 6, amount: 50 }
+  if (count === 2) return { tierIdx: 5, amount: 70 } // Movements (not Symphonies)
+  if (count === 3) return { tierIdx: 6, amount: 50 } // Symphonies
   if (count === 4) return { tierIdx: 6, amount: 70 }
-  return { tierIdx: 6, amount: 70 + (count - 4) * 30 }
+  if (count === 5) return { tierIdx: 6, amount: 100 }
+  if (count === 6) return { tierIdx: 6, amount: 128 }
+  if (count === 7) return { tierIdx: 6, amount: 152 }
+  return { tierIdx: 6, amount: 152 + (count - 7) * 24 }
 }
 
 // ---- default tunable params ----

@@ -31,3 +31,6 @@ release
 
 # Image/work drafts for review (not committed; final assets go in public/)
 drafts/
+
+# Generated sim output (pacing CSVs etc.)
+sim/out/
