@@ -41,6 +41,7 @@ export interface GameState {
   tempo: TempoState
   buyAmount: BuyAmount
   achievements: string[]
+  /** L3 challenge clears — TODO(L4): reset on Signature ascension (LAYER3-SPEC §2.8). */
   completedChallenges: string[]
 
   // Layer 1 Encore shop — id -> level (spends encorePoints)

@@ -1,22 +1,30 @@
 import { useGameStore } from '../../store/gameStore'
-import { CHALLENGES } from '../../core/challenges'
+import { CHALLENGES, isChallengeUnlocked } from '../../core/challenges'
 import { formatNumber } from '../../core/format'
 
 export function ChallengesPage() {
   const completedChallenges = useGameStore((s) => s.completedChallenges)
   const activeChallenge = useGameStore((s) => s.activeChallenge)
   const soundwaves = useGameStore((s) => s.soundwaves)
-  const finaleCount = useGameStore((s) => s.finaleCount)
+  const challengeGate = useGameStore((s) => ({
+    worldTourUnlocked: s.worldTourUnlocked,
+    peakSoundwaves: s.peakSoundwaves,
+    encoreCount: s.encoreCount,
+    opusCount: s.opusCount,
+  }))
   const startChallenge = useGameStore((s) => s.startChallenge)
   const abandonChallenge = useGameStore((s) => s.abandonChallenge)
 
   const completedSet = new Set(completedChallenges)
 
-  // Filter challenges: show only unlocked (finaleCount >= unlockAt) or completed or active
+  const challengeUnlocked = (ch: (typeof CHALLENGES)[number]) =>
+    isChallengeUnlocked(challengeGate, ch)
+
+  // Show challenges unlocked at L3 thresholds, plus any completed or active
   const visibleChallenges = CHALLENGES.filter((ch) =>
     completedSet.has(ch.id) ||
     activeChallenge?.challengeId === ch.id ||
-    finaleCount >= ch.unlockAt
+    challengeUnlocked(ch)
   )
   const hiddenCount = CHALLENGES.length - visibleChallenges.length
 

@@ -1,4 +1,5 @@
 import Decimal from 'break_infinity.js'
+import { CHALLENGES } from './challenges'
 import { GRAND_FINALE_SW_THRESHOLD } from './constants'
 import { getCrescendoMultiplier } from './crescendo'
 import {
@@ -945,7 +946,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     name: 'The Four Seasons',
     description: 'Complete all challenges',
     icon: '\u{1F342}',
-    check: (s) => s.completedChallenges.length >= 10,
+    check: (s) => s.completedChallenges.length >= CHALLENGES.length,
     reward: { globalPercent: 0.06 },
     rewardDescription: '+6% all production',
   },

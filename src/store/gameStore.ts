@@ -30,7 +30,7 @@ import {
   getEncoreGain,
 } from '../core/formulas'
 import { ACHIEVEMENTS, getAchievementStartingSW, getAchievementCostReduction, getAchievementTierCostReduction, getAchievementHeadStartBoost } from '../core/achievements'
-import { getChallengeById, getActiveChallengeModifiers } from '../core/challenges'
+import { getChallengeById, getActiveChallengeModifiers, isChallengeUnlocked } from '../core/challenges'
 import { createDecimalStorage } from '../core/save'
 import { useUiStore } from './uiStore'
 import {
@@ -478,6 +478,7 @@ export const useGameStore = create<GameState & GameActions>()(
 
         const challenge = getChallengeById(id)
         if (!challenge) return
+        if (!isChallengeUnlocked(state, challenge)) return
 
         // Snapshot current state
         const snapshot = {
