@@ -87,11 +87,21 @@ Detailed enough to implement directly against the v1 schema. (Existing kept entr
 
 ## 5. Perks v2 — 10 → ~14
 
-**Keep all 10.** Add (L2/L3 quality-of-life, the build-defining tier):
-1. **Encore Bus** (`perk-encore-bus`) — *World Tour* — gives a **flat, capped head-start** toward the Encore wall each run (e.g. start +1 Encore), NOT a continuous passive advance. *(Codex MUST-FIX #4: a perpetual "advances your wall passively" effect compounds with production into a runaway. Make it a one-time per-run boost.)*
-2. **Split the Bill** (`perk-split-bill`) — *Double Bill* — a **one-way, capped, delayed** trickle from home production into Acclaim (a slow flat bonus, not a multiplier). *(Codex MUST-FIX #4: production already stacks Encore×Finale×tempo×crescendo×Fame×milestones per `formulas.ts`; a multiplicative or two-way feed self-amplifies. One-way + capped only.)*
-3. **Legacy** (`perk-legacy`) — *Legacy* — carry a **fraction of `recordsSold`** across an **L3 tour reset** (softens the studio wipe). *(Codex MUST-FIX #6: Fame is **derived** from `recordsSold` in `records.ts`, not a stored field — so Legacy must preserve a slice of `recordsSold` itself, not "Fame". The carry-across-**Grand-Finale** version is a separate **L6** perk, not this one.)*
-4. **Catalogue Royalties** (`perk-catalogue-royalties`) — an L2 perk: Records keep selling (at reduced rate) through an Encore/MO reset. Smooths the L2 grind.
+**Perk architecture (LOCKED):** perks = **earned QoL / convenience**, never raw production (so they don't eat the ≤+150–200% power budget). **Automation you *buy* lives in the Opus tree** (auto-conduct exists; **auto-prestige/auto-Encore = a new OP-tree upgrade**, NOT a perk) — perks are the things you *earn*. Game is **strongly idle-friendly**; the strongest QoL is **earned late**.
+
+**Keep all 10.** New perks, split by wave:
+
+**Wave A (now — no L3 dependency):**
+1. **Offline Boost** (`perk-offline-boost`) — *earned late* — base offline is already full-fidelity replay capped at **24h** (`MAX_OFFLINE_MS`), so this perk **extends the cap** (e.g. 24h→48–72h) **and adds a >100% offline bonus** (come back to ~+25–50% more than idling online would give). A real "reward for stepping away."
+2. **Mass Production / Autobuyer Max** (`perk-bulk-unlock` already exists; extend or add) — bulk-buy + autobuyers available early — **earned via an achievement tied to investing OP into autobuyers** (not handed out free).
+
+**Wave B (with L3):**
+3. **Encore Bus** (`perk-encore-bus`) — *full circuit* — a **flat, capped per-run head-start** toward the Encore wall (e.g. start +1 Encore), NOT a continuous passive advance. *(Codex #4: perpetual advance compounds into a runaway.)*
+4. **Split the Bill** (`perk-split-bill`) — *one-way, capped, delayed* trickle from home production into Acclaim (slow flat bonus, not a multiplier). *(Codex #4: no two-way self-feed.)*
+5. **Legacy** (`perk-legacy`) — carry a **fraction of `recordsSold`** across an **L3 tour reset**. *(Codex #6: Fame is derived from `recordsSold`, not stored — preserve records, not "Fame". The carry-across-Grand-Finale version is a separate **L6** perk.)*
+6. **Catalogue Royalties** (`perk-catalogue-royalties`) — L2: records keep selling (reduced rate) through an Encore/MO reset.
+
+**Plus a non-perk note:** **auto-prestige/auto-Encore** must be added as an **OP-tree upgrade** (separate follow-up task after Wave A), per the architecture decision.
 
 **Engine change required:** `perks.ts` `PerkId` union + `PERKS` array + effect constants; `hasPerk` already generic. Each perk's *effect* wires into the same spots its sibling perks do (gameStore reset/tick/cost paths). No new engine concept — just more entries. (ponytail: reuse the existing perk plumbing, don't build a perk framework.)
 
@@ -123,4 +133,7 @@ Detailed enough to implement directly against the v1 schema. (Existing kept entr
 > **Adversarial review:** run through Codex (gpt-5.5) on 2026-06-25. Folded-in must-fixes: R10/multi-Finale contradiction (→ finaleCount moved to the L6 row), the Legacy/Fame-derivation inconsistency (Legacy now carries `recordsSold`, not "Fame"), the runaway cross-feed perks (Encore Bus & Split the Bill now one-way/capped), the `Date.now()`-impurity + stale-`sim` pacing caveat, and the per-row mult budget.
 
 ## 9. Build order (once signed off)
-1. Lock §2 goals + §3 row targets with Vince. 2. Build the sim timestamp instrument (§7). 3. Wave A: re-pace R1–R8 + add L2 perks → sim → tune. 4. Ship Wave A. 5. After L3 (LAYER3-SPEC) lands: Wave B R9/R10 + L3 perks → sim → tune.
+
+**Wave A scope — LOCKED (2026-06-25):** keep **all ~70** existing achievements (re-pace + re-distribute thresholds/reward-types; **no culling**, never re-lock); keep the **easter-egg sprinkle + add a few** across later rows; new achievements keep the **song-title + orchestral-wit** voice; total achievement power **capped ≤ +150–200%**; new Wave A perks = **Offline Boost** + **OP-autobuyer-gated bulk** (QoL, not raw power). L3/R9+ achievements + Wave-B perks come with L3.
+
+1. **Sync `sim/` to live `constants.ts`** (import as source of truth) + add the per-achievement first-unlock timestamp instrument (§7). 2. Re-pace R1–R8 (re-distribute existing thresholds, smooth the drip, kill the MO spike) + add the two Wave A perks → sim → tune to the budget. 3. Ship Wave A (Cursor builds, Codex reviews, Claude gates). 4. *(Separate follow-up)* add **auto-prestige as an OP-tree upgrade**. 5. After L3 lands: R9 (World Tour) + Wave-B perks → sim → tune.

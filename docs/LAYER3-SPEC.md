@@ -25,6 +25,14 @@ era 1          era 2              era 3            era 4           era 5        
 
 **This spec designs L3 = World Tour** (the touring ensemble). L4 Signature / L5 Virtuoso / L6 Grand Finale are sketched at the end (§6.5) but not fully specced — build them in order.
 
+## 1.5 The automation arc — **LOCKED principle (governs L3–L6)**
+**Each layer automates the layer below it.** Attention always rides the *newest* layer; older layers fade to background as the next matures (the AD pattern).
+- **L2** frees your hands *within* a run (autobuyers, auto-conduct).
+- **L3** automates **L1/L2 across runs** — Auto-MO + Keep-Autobuyers + the `lifetimeAcclaim` snowball make re-climbs trend from **~minutes at L3 entry → near-instant late-L3** (gradual, never instant at entry, so the catalogue-snapshot/re-tour loop keeps meaning). Your attention shifts to the **tour**. L3's own tour stays **hands-on**.
+- **L4** automates **L3** — **auto-touring** lives in L4, not L3.
+- **Passive currency-generation without resetting** (AD-style "auto-gen EP/OP, no reset") is an **L4+ reward only** — L3's automation is still reset-based (Auto-MO resets). 
+- The rule scales up the ladder: each layer's *own* mechanic is hands-on while you're in it; the next layer up automates it.
+
 ---
 
 ## 2. Layer 3 design — "World Tour" (the touring ensemble)
@@ -33,22 +41,25 @@ era 1          era 2              era 3            era 4           era 5        
 
 > **Terminology lock:** L3's currency is **Acclaim** (spendable) + **`lifetimeAcclaim`** (permanent). The words `finalePoints`/`finaleCount`/"Finale" do **not** appear in L3 — they're L6 only.
 
-### 2.1 Entry / gate — **hybrid** (difficulty-first, structural floor)
+### 2.1 Entry / gate + reveal — **hybrid** (difficulty-first, structural floor)
 A difficulty threshold (high SW / precursor) tuned to land naturally well after Platinum, that **also cannot fire before Platinum exists**. Honors "tune by difficulty, not artificial gates" (the threshold is the real gate) while guaranteeing it never appears pre-Platinum. NOT the 1.79e308 L6 gate. `[PROPOSAL]` first tour's full re-climb targets ~20–40 min; sim-tune.
+- **Reveal (cliffhanger from L2):** hitting the gate fires a narrative beat at the studio's peak — *"you've outgrown the studio — take it on the road"* — and reveals the humble **old house** (Venue 1) to begin touring. Deliberate L2→L3 teaser, matching the layer-cliffhanger design value.
 
 ### 2.2 Currency
 - **Acclaim** (spendable): earned by filling venues, spent on venue **component upgrades** (§2.4).
-- **`lifetimeAcclaim`** (permanent, never spent): total Acclaim ever earned → drives a **global production multiplier** (`[PROPOSAL]` `1 + lifetimeAcclaim·k` additive or capped-log; sim before choosing). Mirrors the L1 `encorePoints`/`lifetimeEncorePoints` split.
+- **`lifetimeAcclaim`** (permanent, never spent): total Acclaim ever earned → drives a **global production multiplier** that boosts **all production** (multiplies SW, which cascades up through everything — the snowball that speeds re-climbs). `[PROPOSAL]` `1 + lifetimeAcclaim·k` additive or capped-log; sim before choosing. Mirrors the L1 `encorePoints`/`lifetimeEncorePoints` split. (It boosts production only — NOT the Acclaim/tour rate, which would be a one-layer self-feed.)
 
 ### 2.3 The venue ladder + the core loop
 - **A linear ladder of 5–7 venues**: Old House → … → World Tour (final). The room you perform in.
 - **The loop:** enter a venue → it **fills with Acclaim over time** (idle; **conducting/crescendo speeds the fill** — reuses the existing Space-hold) → spend that Acclaim on the venue's **component upgrades** → when the venue's components are maxed, **graduate** to the next venue. Repeat to the final venue.
 - **Capacity-bounded (anti-AFK):** a venue fills toward a cap and **sells out** — accrual stops until you act (upgrade/graduate). Idle income is bounded by your venue/upgrade progress; you can't park and farm unbounded Acclaim (matters: offline replay runs up to **24h**, `gameStore.ts`).
+- **Offline = bounded (~one buffer):** while away, the current venue fills its buffer once and then sells out, so you return to ~one buffer of Acclaim (rewards checking in; not a 24h Acclaim faucet). The earned **offline-boost** perk can enlarge this.
 
 ### 2.4 Venue components — the heart of L3 (a *living build*)
 Each venue is a mini-build you improve by pouring Acclaim into **components**, each a multiplier that **visibly changes the venue's art** (functional-first; art layered after — §3).
 - **Escalating depth:** **Venue 1 has 3 components**; each higher venue **unlocks more** (V1: Roof/Lighting/Instruments → later venues add Crowd, Acoustics, Marketing, Backstage…). `[PROPOSAL]` +1 component per venue (V1=3 … V7=9).
-- **Graduate to advance:** max a venue's components → graduate → next venue. **Components reset to 0 on the new venue** (a fresh, bigger grind), but the **multiplier gains bank permanently** into `lifetimeAcclaim`.
+- **Granularity is per-component:** the **visual** components (Lighting/Instruments/Roof/Crowd) have **few discrete tiers (~5)**, each a distinct art state (dark→dim→lit→bright→dazzling); **pure-number** components (Acoustics/Marketing…) can have many small levels. Art only needs to render the visual ones' tiers.
+- **Graduate = a threshold, NOT full-max:** advance once you've invested "enough" (`[PROPOSAL]` every component to a minimum tier, or a total-level bar) — so the 8–9-component late venues don't drag. Extra component levels past the threshold are optional power. On graduate, **components reset to 0 on the new venue** (a fresh, bigger grind); the **multiplier gains already banked** into `lifetimeAcclaim` stay.
 
 | Component | Effect (lever) | Visible change |
 |---|---|---|
@@ -60,7 +71,7 @@ Each venue is a mini-build you improve by pouring Acclaim into **components**, e
 
 ### 2.5 Two special upgrades (live in the venue tree)
 - **Keep Autobuyers** — **Venue 1, early/cheap.** Autobuyers otherwise reset on every L3 tour reset; this keeps them, so **re-touring isn't tedious** (essential for idle-friendly). 
-- **Auto-MO** — **mid-tour venue, earned.** Auto-performs a Magnum Opus when ready — removes the re-climb tedium exactly when repeated L1/L2 resets would start to drag. (Auto-Encore is an OP-tree upgrade per the perk-architecture decision; Auto-MO sits here as a tour reward.)
+- **Auto-MO** — **mid-tour venue, earned.** Auto-performs a Magnum Opus **when it's profitable** (nets more OP than waiting), with a **toggle** to disable it for manual play. Removes re-climb tedium exactly when repeated L1/L2 resets would start to drag. (Auto-Encore is an OP-tree upgrade per the perk-architecture decision; Auto-MO sits here as a tour reward.)
 
 ### 2.6 Starting a tour = the L3 reset (one loop, re-tour bigger)
 - **Booking a fresh tour IS the prestige reset:** it **resets L1 + L2** (SW/tiers/tempo/Encore + OP/Opus-upgrades + Records/Platinum) and **snapshots your catalogue** = **blend of `opusCount` + `recordsSold`** at that moment → sets this tour's Acclaim rate.
@@ -69,8 +80,9 @@ Each venue is a mini-build you improve by pouring Acclaim into **components**, e
 - **Persists across L1/L2:** Encores and Magnum Opuses do NOT wipe the tour — only starting a new tour does.
 - **Platinum resets each tour** (it's part of L2); the earned **Legacy** perk carries a fraction of `recordsSold` forward to soften it.
 
-### 2.7 The break (the "aha", mirrors Platinum)
-Completing the **full circuit** (all venues) switches Acclaim gain to **catalogue-scaling** — the earned-break beat, parallel to Platinum. (The *layer* is "World Tour"; the all-venues milestone is "the full circuit" to avoid the name collision.)
+### 2.7 The break + the L3→L4 climax
+- **The break (mirrors Platinum):** completing the **full circuit** (all venues graduated) switches Acclaim gain to **catalogue-scaling** — the earned-break beat. (The *layer* is "World Tour"; the all-venues milestone is "the full circuit" to avoid the name collision.)
+- **Circuit complete = the L3 climax → reveals L4 Signature** (the cliffhanger into the next layer). After it, you **keep re-touring** to stack `lifetimeAcclaim` toward the L4 unlock gate. So circuit-complete is both L3's "aha" and the L4 teaser.
 
 ### 2.8 Challenges arrive at L3
 - A **separate challenges panel** opens at L3 (moved here from the old L5 idea). Each challenge unlocks at **its own SW/Encore/MO threshold** (independent of the venue loop — optional side content). This also kills the old "challenges gated on finaleCount unlock after the end" bug.
