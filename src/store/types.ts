@@ -83,11 +83,15 @@ export interface GameState {
   components: Record<string, number>
   catalogueSnapshot: Decimal
   worldTourUnlocked: boolean
+  /** V1 Instruments unlock — venue auto-banks buffer into Acclaim on sell-out. */
+  autoCollect: boolean
   keepAutobuyers: boolean
   /** Mid-ladder unlock — auto-performs Magnum Opus when profitable. */
   autoMO: boolean
   /** Toggle for Auto-MO (defaults on when unlocked). */
   autoMOEnabled: boolean
+  /** Late-ladder unlock — graduates a venue once all components are maxed. */
+  autoGraduate: boolean
   /** Full venue circuit graduated — Acclaim rate uses live catalogue. */
   circuitComplete: boolean
   /** MOs performed after Platinum — drives the hybrid L3 unlock gate. */

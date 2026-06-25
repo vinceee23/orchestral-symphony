@@ -4,20 +4,27 @@ import { formatNumber } from '../../core/format'
 import {
   L3, VENUES, getVenue, getAcclaimRate, getFillSpeed, getVenueCapacity,
   getComponentCost, isVenueGraduatable, getAcclaimMultiplier, getEffectiveCatalogue,
-  getComponentMaxTier,
+  getComponentMaxTier, getComponentDef,
 } from '../../core/worldTour'
 import { Button } from '../shared/Button'
 import { playBuySound } from '../../core/audio'
 
 function componentEffectLabel(id: string, level: number): string {
-  if (id === 'roof') return `Cap ×${(1 + level * L3.ROOF_PER).toFixed(2)}`
-  if (id === 'backstage') return `Cap +${(level * L3.BACKSTAGE_CAP_PER * 100).toFixed(0)}%`
-  if (id === 'lighting') return `Fill ×${(1 + level * L3.LIGHT_FILL_PER).toFixed(2)}`
-  if (id === 'acoustics') return `Fill +${(level * L3.ACOUSTIC_FILL_PER * 100).toFixed(0)}%`
-  if (id === 'instruments') return `Rate ×${(1 + level * L3.INSTR_PER).toFixed(2)}`
-  if (id === 'crowd') return `Rate +${(level * L3.CROWD_PER * 100).toFixed(0)}%`
-  if (id === 'marketing') return `Rate +${(level * L3.MARKETING_PER * 100).toFixed(0)}%`
-  if (id === 'premiere') return `Quality +${(level * 10).toFixed(0)}%`
+  const cfg = getComponentDef(id)
+  if (!cfg) return ''
+  if (cfg.role === 'unlock') {
+    switch (cfg.target) {
+      case 'autoCollect': return 'Auto-collect Acclaim'
+      case 'keepAutobuyers': return 'Autobuyers survive tours'
+      case 'autoMO': return 'Auto Magnum Opus'
+      case 'autoGraduate': return 'Auto-graduate venues'
+      default: return 'Unlock'
+    }
+  }
+  const per = cfg.perLevel ?? 0
+  if (cfg.target === 'capacity') return `Cap ×${(1 + level * per).toFixed(2)}`
+  if (cfg.target === 'fillSpeed') return `Fill ×${(1 + level * per).toFixed(2)}`
+  if (cfg.target === 'acclaimRate') return `Rate ×${(1 + level * per).toFixed(2)}`
   return ''
 }
 
@@ -32,13 +39,13 @@ export function WorldTourPage() {
   const venueSoldOut = useGameStore((s) => s.venueSoldOut)
   const currentVenue = useGameStore((s) => s.currentVenue)
   const tourCount = useGameStore((s) => s.tourCount)
-  const keepAutobuyers = useGameStore((s) => s.keepAutobuyers)
+  const autoCollect = useGameStore((s) => s.autoCollect)
   const autoMO = useGameStore((s) => s.autoMO)
   const autoMOEnabled = useGameStore((s) => s.autoMOEnabled)
   const circuitComplete = useGameStore((s) => s.circuitComplete)
   const conducting = useUiStore((s) => s.conducting)
   const buyComponent = useGameStore((s) => s.buyComponent)
-  const buyKeepAutobuyers = useGameStore((s) => s.buyKeepAutobuyers)
+  const bankVenueAcclaim = useGameStore((s) => s.bankVenueAcclaim)
   const graduateVenue = useGameStore((s) => s.graduateVenue)
   const performTour = useGameStore((s) => s.performTour)
   const setAutoMOEnabled = useGameStore((s) => s.setAutoMOEnabled)
@@ -104,7 +111,6 @@ export function WorldTourPage() {
         </div>
       </div>
 
-      {/* Venue ladder */}
       <section className="space-y-2">
         <h2 className="text-xs font-semibold text-teal-400 uppercase tracking-wider">Venue ladder</h2>
         <div className="flex flex-wrap gap-2">
@@ -129,7 +135,6 @@ export function WorldTourPage() {
         </div>
       </section>
 
-      {/* Venue placeholder art */}
       <section className="rounded-xl border border-teal-500/20 bg-bg-secondary/30 p-6 text-center space-y-3">
         <div
           className="mx-auto w-full max-w-md h-40 rounded-lg border border-dashed border-teal-500/40 bg-gradient-to-b from-teal-950/40 to-bg-primary flex items-center justify-center"
@@ -142,11 +147,11 @@ export function WorldTourPage() {
         <p className="text-xs text-text-muted">
           Catalogue {circuitComplete ? 'live' : 'snapshot'} ×{formatNumber(effectiveCatalogue, 2)}
           {' · '}Tours started: {tourCount}
+          {autoCollect && ' · Auto-collect'}
           {conducting && ' · Conducting (+fill speed)'}
         </p>
       </section>
 
-      {/* Buffer / fill bar */}
       <section className="space-y-2">
         <div className="flex justify-between text-xs text-text-muted uppercase tracking-wider">
           <span>Venue buffer</span>
@@ -161,56 +166,55 @@ export function WorldTourPage() {
             style={{ width: `${fillPct}%` }}
           />
         </div>
+        {venueSoldOut && bufferNum > 0 && !autoCollect && (
+          <Button onClick={() => bankVenueAcclaim()} variant="purple" className="w-full">
+            Collect {formatNumber(bufferNum, 1)} Acclaim
+          </Button>
+        )}
       </section>
 
-      {/* Component upgrades */}
       <section className="space-y-3">
         <h2 className="text-xs font-semibold text-teal-400 uppercase tracking-wider">Venue components</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {venue.componentIds.map((id) => {
-              const cfg = L3.COMPONENTS[id]
-              const level = components[id] ?? 0
-              const maxTier = getComponentMaxTier(id)
-              const maxed = level >= maxTier
-              const cost = getComponentCost(id, level, currentVenue)
-              const affordable = acclaimNum >= cost
-              const buy = () => {
-                if (!maxed && affordable) {
-                  buyComponent(id)
-                  playBuySound(5)
-                }
+            const cfg = L3.COMPONENTS[id]
+            const level = components[id] ?? 0
+            const maxTier = getComponentMaxTier(id)
+            const maxed = level >= maxTier
+            const isUnlock = cfg.role === 'unlock'
+            const cost = getComponentCost(id, level, currentVenue)
+            const affordable = acclaimNum >= cost
+            const buy = () => {
+              if (!maxed && affordable) {
+                buyComponent(id)
+                playBuySound(5)
               }
+            }
 
-              return (
-                <Button
-                  key={id}
-                  onClick={buy}
-                  disabled={maxed || !affordable}
-                  variant={affordable && !maxed ? 'purple' : 'ghost'}
-                  className="flex flex-col items-start gap-1 h-auto py-3"
-                >
-                  <span className="font-semibold">{cfg.label}</span>
-                  <span className="text-xs opacity-80">
-                    Lv {level}/{maxTier} · {componentEffectLabel(id, level)}
-                  </span>
-                  <span className="text-xs opacity-70">{maxed ? 'Maxed' : `${formatNumber(cost, 0)} Acclaim`}</span>
-                </Button>
-              )
-            })}
+            return (
+              <Button
+                key={id}
+                onClick={buy}
+                disabled={maxed || !affordable}
+                variant={affordable && !maxed ? 'purple' : 'ghost'}
+                className="flex flex-col items-start gap-1 h-auto py-3"
+              >
+                <span className="font-semibold">{cfg.label}</span>
+                <span className="text-xs opacity-80">
+                  {isUnlock
+                    ? (maxed ? 'Owned' : 'Unlock')
+                    : `Lv ${level}/${maxTier}`}
+                  {' · '}
+                  {componentEffectLabel(id, level)}
+                </span>
+                <span className="text-xs opacity-70">
+                  {maxed ? 'Maxed' : `${formatNumber(cost, 0)} Acclaim`}
+                </span>
+              </Button>
+            )
+          })}
         </div>
       </section>
-
-      {/* Keep Autobuyers special — Venue 1 only */}
-      {currentVenue === 0 && !keepAutobuyers && (
-        <Button
-          onClick={() => { buyKeepAutobuyers(); playBuySound(6) }}
-          disabled={acclaimNum < L3.KEEP_AUTOBUYERS_COST}
-          variant="ghost"
-          className="w-full"
-        >
-          Keep Autobuyers — {L3.KEEP_AUTOBUYERS_COST} Acclaim
-        </Button>
-      )}
 
       {graduable && !circuitComplete && (
         <Button onClick={graduateVenue} variant="gold" className="w-full">

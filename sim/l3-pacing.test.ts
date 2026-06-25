@@ -55,70 +55,26 @@ import {
   getAchievementGlobalMultiplier,
   getAchievementTempoBonus,
 } from '../src/core/achievements'
+import {
+  L3,
+  getVenue,
+  getCatalogueSnapshot as catalogueSnapshotFromCore,
+  getVenueCapacity,
+  getFillSpeed,
+  getComponentCost,
+  getComponentMaxTier,
+  isVenueGraduatable,
+  getUnlockFlagsFromComponent,
+  getAcclaimMultiplier,
+} from '../src/core/worldTour'
 import type { GameState } from '../src/store/types'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT_DIR = join(__dirname, 'out')
 const CSV_PATH = join(OUT_DIR, 'l3-pacing-report.csv')
 
-// =============================================================================
-// TUNED L3 CONSTANTS — drop these into src/core when implementing World Tour
-// =============================================================================
-export const L3 = {
-  /** Base acclaim accrual before catalogue / component multipliers (acclaim per second). */
-  ACCLAIM_BASE: 0.168,
-  /** Catalogue snapshot exponent — sublinear so late catalogue doesn't explode rate. */
-  CAT_EXP: 0.62,
-  /** Per Instruments tier: rate *= (1 + level * INSTR_PER). */
-  INSTR_PER: 0.2,
-  /** Venue buffer capacity at roof level 0. */
-  CAP_BASE: 88,
-  /** Per Roof tier: cap *= (1 + level * ROOF_PER). */
-  ROOF_PER: 0.48,
-  /** Per Lighting tier: fill speed *= (1 + level * LIGHT_FILL_PER). */
-  LIGHT_FILL_PER: 0.24,
-  /** Space-hold conducting multiplier on fill speed (not on rate). */
-  CONDUCT_FILL_MULT: 1.75,
-  /** Max discrete tiers per visual component (~5). */
-  MAX_COMPONENT_TIER: 5,
-  /** Graduate Venue 1 when every component reaches this tier (not full max). */
-  GRADUATE_MIN_TIER: 3,
-  /** Alternative bar: graduate if sum(component levels) >= this (unused when MIN_TIER mode). */
-  GRADUATE_TOTAL_LEVELS: 9,
-  /** catalogueSnapshot = OPUS_W * opusCount + RECORDS_W * (recordsSold / PLATINUM_THRESHOLD). */
-  CATALOGUE_OPUS_W: 1.15,
-  CATALOGUE_RECORDS_W: 2.2,
-  /**
-   * Production multiplier from lifetimeAcclaim (capped log + linear — anti-runaway):
-   *   M = 1 + min(LOG_MULT * log10(1 + LA * LOG_SCALE) + min(LA * LINEAR_K, LINEAR_CAP), MULT_CAP)
-   */
-  MULT_FORM: 'capped-log' as const,
-  MULT_LOG_SCALE: 0.022,
-  MULT_LOG_MULT: 0.72,
-  MULT_LINEAR_K: 0.00032,
-  MULT_LINEAR_CAP: 36,
-  MULT_CAP: 48,
-  /** Hybrid L3 gate: must be Platinum AND have this many post-Platinum Magnum Opuses. */
-  GATE_POST_PLAT_MO: 2,
-  /** Optional SW floor at gate (0 = difficulty-only via MO count). */
-  GATE_MIN_PEAK_SW_LOG10: 0,
-  /** Venue-1 special: cheap Keep Autobuyers (acclaim cost). */
-  KEEP_AUTOBUYERS_COST: 165,
-  /** Tour index after which Auto-MO is available (buys automatically in reclimb). */
-  AUTO_MO_FROM_TOUR: 2,
-  /** Per-component upgrade costs in spendable Acclaim. */
-  COMPONENTS: {
-    roof: { costBase: 215, costGrowth: 2.34 },
-    lighting: { costBase: 185, costGrowth: 2.28 },
-    instruments: { costBase: 235, costGrowth: 2.4 },
-  } as const,
-  /** Legacy perk softens tour reset: fraction of recordsSold carried into next tour snapshot. */
-  LEGACY_RECORDS_FRACTION: 0.12,
-} as const
-
 type ComponentId = keyof typeof L3.COMPONENTS
-
-// --- sim harness ---
+const VENUE_1_IDS = getVenue(0).componentIds
 const NUM_SEEDS = 8
 const BASE_SEED = 77_001
 const TICK_MS = 1000
@@ -153,78 +109,24 @@ class SeededRng {
   }
 }
 
-// --- L3 economy (parametric) ---
-
-export function catalogueSnapshot(opusCount: number, recordsSold: number): number {
-  const recordsNorm = recordsSold / PLATINUM_THRESHOLD
-  return Math.max(1, L3.CATALOGUE_OPUS_W * opusCount + L3.CATALOGUE_RECORDS_W * recordsNorm)
+function catalogueSnapshot(opusCount: number, recordsSold: number): number {
+  return catalogueSnapshotFromCore(opusCount, recordsSold)
 }
 
-export function venueCapacity(roofLvl: number): number {
-  return L3.CAP_BASE * (1 + roofLvl * L3.ROOF_PER)
-}
-
-export function acclaimRatePerSec(
-  snapshot: number,
-  instrumentsLvl: number,
-  conductFactor = 1,
-): number {
-  const cat = Math.pow(Math.max(1, snapshot), L3.CAT_EXP)
-  const instr = 1 + instrumentsLvl * L3.INSTR_PER
-  const raw = L3.ACCLAIM_BASE * cat * instr * conductFactor
-  return Number.isFinite(raw) && raw > 0 ? raw : 0
-}
-
-export function fillSpeedPerSec(
-  snapshot: number,
-  instrumentsLvl: number,
-  lightingLvl: number,
-  conducting: boolean,
-): number {
-  const rate = acclaimRatePerSec(snapshot, instrumentsLvl, 1)
-  const light = 1 + lightingLvl * L3.LIGHT_FILL_PER
-  const conduct = conducting ? L3.CONDUCT_FILL_MULT : 1
-  return rate * light * conduct
-}
-
-export function componentCost(id: ComponentId, tier: number): number {
-  const cfg = L3.COMPONENTS[id]
-  const raw = cfg.costBase * Math.pow(cfg.costGrowth, tier)
-  return Number.isFinite(raw) ? raw : Infinity
-}
-
-export function canGraduateVenue1(components: Record<ComponentId, number>): boolean {
-  const ids = Object.keys(L3.COMPONENTS) as ComponentId[]
-  if (L3.GRADUATE_MIN_TIER > 0) {
-    return ids.every((id) => (components[id] ?? 0) >= L3.GRADUATE_MIN_TIER)
-  }
-  const total = ids.reduce((s, id) => s + (components[id] ?? 0), 0)
-  return total >= L3.GRADUATE_TOTAL_LEVELS
-}
-
-export function lifetimeAcclaimProductionMult(lifetimeAcclaim: number): number {
-  const la = Math.max(0, lifetimeAcclaim)
-  if (la === 0) return 1
-  if (L3.MULT_FORM === 'capped-log') {
-    const logTerm = Math.log10(1 + la * L3.MULT_LOG_SCALE)
-    const logAdd = L3.MULT_LOG_MULT * logTerm
-    const linearAdd = Math.min(la * L3.MULT_LINEAR_K, L3.MULT_LINEAR_CAP)
-    const add = Math.min(logAdd + linearAdd, L3.MULT_CAP)
-    const m = 1 + add
-    return Number.isFinite(m) && m >= 1 ? m : 1
-  }
-  return 1
+function lifetimeAcclaimProductionMult(lifetimeAcclaim: number): number {
+  return getAcclaimMultiplier(lifetimeAcclaim)
 }
 
 interface VenueState {
   buffer: number
   acclaim: number
   lifetimeAcclaim: number
-  components: Record<ComponentId, number>
+  components: Record<string, number>
   soldOut: boolean
   currentVenue: number
   tourCount: number
   catalogueSnapshot: number
+  autoCollect: boolean
   keepAutobuyers: boolean
   autoMO: boolean
 }
@@ -234,11 +136,12 @@ function freshVenueState(snapshot: number): VenueState {
     buffer: 0,
     acclaim: 0,
     lifetimeAcclaim: 0,
-    components: { roof: 0, lighting: 0, instruments: 0 },
+    components: {},
     soldOut: false,
     currentVenue: 0,
     tourCount: 0,
     catalogueSnapshot: snapshot,
+    autoCollect: false,
     keepAutobuyers: false,
     autoMO: false,
   }
@@ -254,34 +157,43 @@ function bankBuffer(venue: VenueState): void {
 
 function tickVenue(venue: VenueState, dtSec: number, conducting: boolean): void {
   if (venue.soldOut) return
-  const cap = venueCapacity(venue.components.roof)
-  const speed = fillSpeedPerSec(
-    venue.catalogueSnapshot,
-    venue.components.instruments,
-    venue.components.lighting,
-    conducting,
-  )
+  const cap = getVenueCapacity(venue.components, venue.currentVenue)
+  const speed = getFillSpeed(venue.catalogueSnapshot, venue.components, conducting, venue.currentVenue)
   venue.buffer = Math.min(cap, venue.buffer + speed * dtSec)
   if (venue.buffer >= cap - 1e-9) {
     venue.buffer = cap
-    venue.soldOut = true
+    if (venue.autoCollect) {
+      bankBuffer(venue)
+    } else {
+      venue.soldOut = true
+    }
   }
 }
 
+function applyUnlockFlags(venue: VenueState, componentId: string): void {
+  const flags = getUnlockFlagsFromComponent(componentId)
+  if (flags.autoCollect) venue.autoCollect = true
+  if (flags.keepAutobuyers) venue.keepAutobuyers = true
+  if (flags.autoMO) venue.autoMO = true
+}
+
 function tryBuyComponent(venue: VenueState, id: ComponentId): boolean {
-  const lvl = venue.components[id]
-  if (lvl >= L3.MAX_COMPONENT_TIER) return false
-  const cost = componentCost(id, lvl)
+  const lvl = venue.components[id] ?? 0
+  if (lvl >= getComponentMaxTier(id)) return false
+  const cost = getComponentCost(id, lvl, venue.currentVenue)
   if (venue.acclaim < cost) return false
   venue.acclaim -= cost
   venue.components[id] = lvl + 1
+  applyUnlockFlags(venue, id)
+  venue.soldOut = false
   return true
 }
 
 function listAffordableComponents(venue: VenueState): ComponentId[] {
-  return (Object.keys(L3.COMPONENTS) as ComponentId[]).filter((id) => {
-    const lvl = venue.components[id]
-    return lvl < L3.MAX_COMPONENT_TIER && venue.acclaim >= componentCost(id, lvl)
+  const ids = getVenue(venue.currentVenue).componentIds
+  return ids.filter((id) => {
+    const lvl = venue.components[id] ?? 0
+    return lvl < getComponentMaxTier(id) && venue.acclaim >= getComponentCost(id, lvl, venue.currentVenue)
   })
 }
 
@@ -339,7 +251,12 @@ function createInitialState(simTime: number): GameState {
     components: {},
     catalogueSnapshot: new Decimal(1),
     worldTourUnlocked: false,
+    autoCollect: false,
     keepAutobuyers: false,
+    autoMO: false,
+    autoMOEnabled: true,
+    autoGraduate: false,
+    circuitComplete: false,
     postPlatinumMoCount: 0,
   }
 }
@@ -642,10 +559,6 @@ function humanSpendMeta(state: GameState, rng: SeededRng): void {
 }
 
 function humanVenueDecision(venue: VenueState, rng: SeededRng): void {
-  if (!venue.keepAutobuyers && venue.acclaim >= L3.KEEP_AUTOBUYERS_COST && rng.chance(0.7)) {
-    venue.acclaim -= L3.KEEP_AUTOBUYERS_COST
-    venue.keepAutobuyers = true
-  }
   if (venue.soldOut && rng.chance(0.55)) {
     bankBuffer(venue)
   }
@@ -653,7 +566,9 @@ function humanVenueDecision(venue: VenueState, rng: SeededRng): void {
   if (affordable.length === 0) return
   if (!rng.chance(0.4)) return
   const pick = rng.chance(0.75)
-    ? affordable.reduce((a, b) => (componentCost(a, venue.components[a]) <= componentCost(b, venue.components[b]) ? a : b))
+    ? affordable.reduce((a, b) => (
+      getComponentCost(a, venue.components[a] ?? 0, venue.currentVenue)
+        <= getComponentCost(b, venue.components[b] ?? 0, venue.currentVenue) ? a : b))
     : rng.pick(affordable)!
   tryBuyComponent(venue, pick)
 }
@@ -680,10 +595,8 @@ function performTour(state: GameState, venue: VenueState, simTime: number): void
     platinum: carriedRecords >= PLATINUM_THRESHOLD,
     autobuyers: keptAutobuyers,
   })
-  if (venue.tourCount + 1 >= L3.AUTO_MO_FROM_TOUR) {
-    venue.autoMO = true
-  }
   venue.tourCount += 1
+  if (venue.tourCount >= 2) venue.autoMO = true
   venue.catalogueSnapshot = catalogueSnapshot(state.opusCount, state.recordsSold)
   venue.buffer = 0
   venue.soldOut = false
@@ -949,13 +862,13 @@ function runL3Seed(seed: number, setClock: (t: number) => void): L3RunResult {
   let bankDelaySinceSoldOut: number | null = null
   nextDecisionAt = simMs + rng.range(1200, 4000)
 
-  while (simMs < MAX_SIM_MS && steps < MAX_STEPS && !canGraduateVenue1(venue.components)) {
+  while (simMs < MAX_SIM_MS && steps < MAX_STEPS && !isVenueGraduatable(venue.components, 0)) {
     steps++
     if (inSession && activeMs >= sessionEndsAtActiveMs) {
       inSession = false
       const idleMs = rng.range(5 * 60_000, 2 * 60 * 60_000)
       const idleSec = idleMs / 1000
-      const cap = venueCapacity(venue.components.roof)
+      const cap = getVenueCapacity(venue.components, 0)
       const pre = venue.buffer
       tickVenue(venue, idleSec, false)
       if (venue.soldOut) soldOutIdleMs += idleMs
@@ -999,12 +912,31 @@ function runL3Seed(seed: number, setClock: (t: number) => void): L3RunResult {
   }
 
   const venue1GraduateActiveMin = (activeMs - venue1StartActiveMs) / 60000
+  const v1MaxedComponents = { ...venue.components }
+
+  // Graduate to Local Hall and try to unlock Keep Autobuyers before the tour loop.
+  venue.currentVenue = 1
+  venue.components = {}
+  venue.buffer = 0
+  venue.soldOut = false
+  const keepDeadline = activeMs + rng.range(6, 12) * 60_000
+  while (activeMs < keepDeadline && !venue.keepAutobuyers && simMs < MAX_SIM_MS && steps < MAX_STEPS) {
+    steps++
+    const dt = TICK_MS
+    tickVenue(venue, dt / 1000, venueConducting)
+    if (venue.soldOut && rng.chance(0.4)) bankBuffer(venue)
+    applyTick(state, dt, conducting, lifetimeAcclaimProductionMult(venue.lifetimeAcclaim))
+    simMs += dt
+    activeMs += dt
+    if (rng.chance(0.35)) tryBuyComponent(venue, 'keepAutobuyers')
+  }
 
   // Idle AFK bound: 24h offline should yield ~one buffer
   const afkVenue = freshVenueState(snapshot)
-  afkVenue.components = { ...venue.components }
+  afkVenue.components = v1MaxedComponents
+  afkVenue.autoCollect = false
   tickVenue(afkVenue, MAX_OFFLINE_MS / 1000, false)
-  const idleBufferRatio = afkVenue.buffer / venueCapacity(afkVenue.components.roof)
+  const idleBufferRatio = afkVenue.buffer / getVenueCapacity(afkVenue.components, 0)
 
   // Phase C: multi-tour loop
   const tourCycles: TourMetrics[] = []
@@ -1215,15 +1147,11 @@ describe('L3 World Tour pacing instrument', () => {
 
     console.log('\n=== L3 World Tour Pacing Report (N=%d seeds) ===', NUM_SEEDS)
     console.log('')
-    console.log('--- TUNED CONSTANTS (copy to game) ---')
+    console.log('--- TUNED CONSTANTS (from src/core/worldTour.ts) ---')
     console.log('  ACCLAIM_BASE          ', L3.ACCLAIM_BASE)
     console.log('  CAT_EXP               ', L3.CAT_EXP)
-    console.log('  INSTR_PER             ', L3.INSTR_PER)
     console.log('  CAP_BASE              ', L3.CAP_BASE)
-    console.log('  ROOF_PER              ', L3.ROOF_PER)
-    console.log('  LIGHT_FILL_PER        ', L3.LIGHT_FILL_PER)
     console.log('  CONDUCT_FILL_MULT     ', L3.CONDUCT_FILL_MULT)
-    console.log('  GRADUATE_MIN_TIER     ', L3.GRADUATE_MIN_TIER, `(of ${L3.MAX_COMPONENT_TIER})`)
     console.log('  CATALOGUE_OPUS_W      ', L3.CATALOGUE_OPUS_W)
     console.log('  CATALOGUE_RECORDS_W   ', L3.CATALOGUE_RECORDS_W)
     console.log('  MULT_FORM             ', L3.MULT_FORM)
@@ -1231,9 +1159,7 @@ describe('L3 World Tour pacing instrument', () => {
     console.log('  MULT_LINEAR_K         ', L3.MULT_LINEAR_K)
     console.log('  MULT_LINEAR_CAP       ', L3.MULT_LINEAR_CAP)
     console.log('  GATE_POST_PLAT_MO     ', L3.GATE_POST_PLAT_MO)
-    console.log('  roof costBase/growth  ', L3.COMPONENTS.roof.costBase, '/', L3.COMPONENTS.roof.costGrowth)
-    console.log('  lighting costBase/growth', L3.COMPONENTS.lighting.costBase, '/', L3.COMPONENTS.lighting.costGrowth)
-    console.log('  instruments costBase/growth', L3.COMPONENTS.instruments.costBase, '/', L3.COMPONENTS.instruments.costGrowth)
+    console.log('  V1 components         ', VENUE_1_IDS.join(', '))
     console.log('')
     console.log('--- Metrics ---')
     console.log(`  Venue 1 graduate:  median ${median(v1).toFixed(1)} min (${minMax(v1).min.toFixed(1)}–${minMax(v1).max.toFixed(1)})`)

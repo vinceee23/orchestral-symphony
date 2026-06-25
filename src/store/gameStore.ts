@@ -35,8 +35,8 @@ import { createDecimalStorage } from '../core/save'
 import { useUiStore } from './uiStore'
 import {
   L3, getCatalogueSnapshot, getComponentCost, isVenueGraduatable,
-  canUnlockWorldTour, getVenue, LAST_VENUE_ID, getComponentMaxTier,
-  isAutoMOUnlocked, canAutoPerformMagnumOpus,
+  canUnlockWorldTour, getVenue, getComponentMaxTier,
+  canAutoPerformMagnumOpus, getUnlockFlagsFromComponent, buildVenueGraduationPatch,
 } from '../core/worldTour'
 
 function createDefaultAutobuyer(): AutobuyerState {
@@ -92,9 +92,11 @@ function createInitialState(): GameState {
     components: {},
     catalogueSnapshot: new Decimal(1),
     worldTourUnlocked: false,
+    autoCollect: false,
     keepAutobuyers: false,
     autoMO: false,
     autoMOEnabled: true,
+    autoGraduate: false,
     circuitComplete: false,
     postPlatinumMoCount: 0,
     finalePoints: 0,
@@ -188,7 +190,17 @@ export const useGameStore = create<GameState & GameActions>()(
         if (!after.worldTourUnlocked && canUnlockWorldTour(after)) {
           get().unlockWorldTour()
         }
-        if (canAutoPerformMagnumOpus(after)) {
+        if (
+          after.worldTourUnlocked &&
+          after.autoGraduate &&
+          !after.circuitComplete &&
+          isVenueGraduatable(after.components, after.currentVenue)
+        ) {
+          const gradPatch = buildVenueGraduationPatch(after)
+          if (gradPatch) set(gradPatch)
+        }
+        const postGrad = get()
+        if (canAutoPerformMagnumOpus(postGrad)) {
           get().performMagnumOpus()
         }
       },
@@ -687,51 +699,41 @@ export const useGameStore = create<GameState & GameActions>()(
           const cost = getComponentCost(componentId, level, state.currentVenue)
           const acclaim = state.acclaim instanceof Decimal ? state.acclaim : new Decimal(state.acclaim ?? 0)
           if (acclaim.lt(cost)) return state
-          return {
+          const nextComponents = { ...state.components, [componentId]: level + 1 }
+          const unlockFlags = getUnlockFlagsFromComponent(componentId)
+          const patch: Partial<GameState> = {
             acclaim: acclaim.minus(cost),
-            components: { ...state.components, [componentId]: level + 1 },
+            components: nextComponents,
             venueSoldOut: false,
+            ...unlockFlags,
           }
+          if (
+            state.autoGraduate &&
+            !state.circuitComplete &&
+            isVenueGraduatable(nextComponents, state.currentVenue)
+          ) {
+            const gradPatch = buildVenueGraduationPatch(state)
+            if (gradPatch) Object.assign(patch, gradPatch)
+          }
+          return patch
         })
       },
 
       buyKeepAutobuyers: () => {
-        set((state) => {
-          if (!state.worldTourUnlocked || state.keepAutobuyers) return state
-          const acclaim = state.acclaim instanceof Decimal ? state.acclaim : new Decimal(state.acclaim ?? 0)
-          if (acclaim.lt(L3.KEEP_AUTOBUYERS_COST)) return state
-          return {
-            acclaim: acclaim.minus(L3.KEEP_AUTOBUYERS_COST),
-            keepAutobuyers: true,
-          }
-        })
+        const state = get()
+        if (!state.worldTourUnlocked || state.keepAutobuyers) return
+        const venue = getVenue(state.currentVenue)
+        if (venue.componentIds.includes('keepAutobuyers')) {
+          get().buyComponent('keepAutobuyers')
+        }
       },
 
       graduateVenue: () => {
         set((state) => {
           if (!state.worldTourUnlocked) return state
           if (!isVenueGraduatable(state.components, state.currentVenue)) return state
-
-          const nextVenue = state.currentVenue + 1
-          const unlockAutoMO =
-            state.autoMO ||
-            state.tourCount >= L3.AUTO_MO_FROM_TOUR ||
-            nextVenue >= L3.AUTO_MO_VENUE ||
-            state.currentVenue >= L3.AUTO_MO_VENUE
-
-          const base = {
-            components: {} as Record<string, number>,
-            venueBuffer: new Decimal(0),
-            venueSoldOut: false,
-            autoMO: unlockAutoMO,
-            autoMOEnabled: state.autoMOEnabled ?? true,
-          }
-
-          if (state.currentVenue >= LAST_VENUE_ID) {
-            return { ...base, circuitComplete: true }
-          }
-
-          return { ...base, currentVenue: nextVenue }
+          const patch = buildVenueGraduationPatch(state)
+          return patch ?? state
         })
       },
 
@@ -770,7 +772,6 @@ export const useGameStore = create<GameState & GameActions>()(
         const opusCount = state.opusCount
         const keptAutobuyers = state.keepAutobuyers ? { ...state.autobuyers } : {}
         const newTourCount = state.tourCount + 1
-        const grantAutoMO = isAutoMOUnlocked({ ...state, tourCount: newTourCount })
 
         set({
           ...resetTiersAndSW(state.achievements),
@@ -792,8 +793,6 @@ export const useGameStore = create<GameState & GameActions>()(
           catalogueSnapshot: new Decimal(getCatalogueSnapshot(opusCount, carriedRecords)),
           venueBuffer: new Decimal(0),
           venueSoldOut: false,
-          autoMO: state.autoMO || grantAutoMO,
-          autoMOEnabled: state.autoMOEnabled ?? true,
         })
       },
 
@@ -884,9 +883,11 @@ export const useGameStore = create<GameState & GameActions>()(
           if (state.catalogueSnapshot === undefined) state.catalogueSnapshot = new Decimal(1)
           else state.catalogueSnapshot = state.catalogueSnapshot instanceof Decimal ? state.catalogueSnapshot : new Decimal(state.catalogueSnapshot ?? 1)
           if (state.worldTourUnlocked === undefined) state.worldTourUnlocked = false
+          if (state.autoCollect === undefined) state.autoCollect = false
           if (state.keepAutobuyers === undefined) state.keepAutobuyers = false
           if (state.autoMO === undefined) state.autoMO = false
           if (state.autoMOEnabled === undefined) state.autoMOEnabled = true
+          if (state.autoGraduate === undefined) state.autoGraduate = false
           if (state.circuitComplete === undefined) state.circuitComplete = false
           if (state.postPlatinumMoCount === undefined) state.postPlatinumMoCount = 0
           if (state.finalePoints === undefined) state.finalePoints = 0
@@ -940,9 +941,11 @@ export const useGameStore = create<GameState & GameActions>()(
               components: state.components,
               catalogueSnapshot: state.catalogueSnapshot,
               worldTourUnlocked: state.worldTourUnlocked,
+              autoCollect: state.autoCollect,
               keepAutobuyers: state.keepAutobuyers,
               autoMO: state.autoMO,
               autoMOEnabled: state.autoMOEnabled,
+              autoGraduate: state.autoGraduate,
               circuitComplete: state.circuitComplete,
               postPlatinumMoCount: state.postPlatinumMoCount,
               finalePoints: state.finalePoints,

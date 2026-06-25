@@ -13,8 +13,11 @@ import {
   getCatalogueSnapshot,
   getEffectiveCatalogue,
   getComponentMaxTier,
+  getComponentDef,
+  getUnlockFlagsFromComponent,
   isAutoMOUnlocked,
   canAutoPerformMagnumOpus,
+  calculateWorldTourTick,
 } from './worldTour'
 import type { GameState } from '../store/types'
 
@@ -50,9 +53,11 @@ function minimalState(overrides: Partial<GameState> = {}): GameState {
     components: {},
     catalogueSnapshot: new Decimal(10),
     worldTourUnlocked: true,
+    autoCollect: false,
     keepAutobuyers: false,
     autoMO: false,
     autoMOEnabled: true,
+    autoGraduate: false,
     circuitComplete: false,
     postPlatinumMoCount: 2,
     finalePoints: 0,
@@ -97,24 +102,45 @@ describe('worldTour helpers', () => {
     expect(post).toBeGreaterThan(10)
   })
 
-  it('venue ladder has 6 venues with escalating components', () => {
+  it('venue ladder has heterogeneous escalating components', () => {
     expect(VENUES).toHaveLength(6)
-    expect(getVenue(0).componentIds).toHaveLength(3)
+    expect(getVenue(0).componentIds).toEqual(['lighting', 'roof', 'instruments'])
+    expect(getVenue(1).componentIds).toContain('keepAutobuyers')
+    expect(getVenue(2).componentIds).toContain('autoMO')
+    expect(getVenue(5).componentIds).toContain('autoGraduate')
     expect(getVenue(5).componentIds).toHaveLength(8)
-    expect(getVenue(1).componentIds).toContain('crowd')
-    expect(getVenue(5).componentIds).toContain('premiere')
+  })
+
+  it('each component has role, maxLevel, and target', () => {
+    expect(getComponentDef('lighting')).toMatchObject({
+      role: 'multiplier',
+      maxLevel: 3,
+      target: 'fillSpeed',
+    })
+    expect(getComponentDef('instruments')).toMatchObject({
+      role: 'unlock',
+      maxLevel: 1,
+      target: 'autoCollect',
+    })
+    expect(getComponentDef('keepAutobuyers')).toMatchObject({
+      role: 'unlock',
+      target: 'keepAutobuyers',
+    })
   })
 
   it('capacity scales with roof level and venue tier', () => {
     expect(getVenueCapacity({ roof: 0 }, 0)).toBe(L3.CAP_BASE)
-    expect(getVenueCapacity({ roof: 2 }, 0)).toBeCloseTo(L3.CAP_BASE * (1 + 2 * L3.ROOF_PER), 5)
+    const roofPer = L3.COMPONENTS.roof.perLevel!
+    expect(getVenueCapacity({ roof: 2 }, 0)).toBeCloseTo(L3.CAP_BASE * (1 + 2 * roofPer), 5)
     expect(getVenueCapacity({ roof: 0 }, 1)).toBeGreaterThan(L3.CAP_BASE)
   })
 
-  it('acclaim rate scales with catalogue and instruments', () => {
-    const base = getAcclaimRate(10, { instruments: 0 })
-    const boosted = getAcclaimRate(10, { instruments: 2 })
-    expect(boosted / base).toBeCloseTo(1 + 2 * L3.INSTR_PER, 5)
+  it('acclaim rate scales with crowd multiplier, not instruments unlock', () => {
+    const base = getAcclaimRate(10, {})
+    const boosted = getAcclaimRate(10, { crowd: 2 })
+    const crowdPer = L3.COMPONENTS.crowd.perLevel!
+    expect(boosted / base).toBeCloseTo(1 + 2 * crowdPer, 5)
+    expect(getAcclaimRate(10, { instruments: 1 })).toBeCloseTo(base, 5)
   })
 
   it('later venues cost more for the same component', () => {
@@ -122,13 +148,14 @@ describe('worldTour helpers', () => {
   })
 
   it('fill speed applies lighting, acoustics, and conducting', () => {
-    const idle = getFillSpeed(10, { lighting: 1, instruments: 0 }, false)
-    const lit = getFillSpeed(10, { lighting: 2, instruments: 0 }, false)
-    const conducting = getFillSpeed(10, { lighting: 1, instruments: 0 }, true)
-    expect(lit / idle).toBeCloseTo((1 + 2 * L3.LIGHT_FILL_PER) / (1 + L3.LIGHT_FILL_PER), 5)
+    const lightPer = L3.COMPONENTS.lighting.perLevel!
+    const idle = getFillSpeed(10, { lighting: 1 }, false)
+    const lit = getFillSpeed(10, { lighting: 2 }, false)
+    const conducting = getFillSpeed(10, { lighting: 1 }, true)
+    expect(lit / idle).toBeCloseTo((1 + 2 * lightPer) / (1 + lightPer), 5)
     expect(conducting / idle).toBeCloseTo(L3.CONDUCT_FILL_MULT, 5)
-    const acoustic = getFillSpeed(10, { lighting: 0, acoustics: 2, instruments: 0 }, false)
-    expect(acoustic).toBeGreaterThan(getFillSpeed(10, { lighting: 0, instruments: 0 }, false))
+    const acoustic = getFillSpeed(10, { acoustics: 2 }, false)
+    expect(acoustic).toBeGreaterThan(getFillSpeed(10, {}, false))
   })
 
   it('component cost grows per tier', () => {
@@ -136,18 +163,21 @@ describe('worldTour helpers', () => {
     expect(getComponentCost('roof', 1)).toBeCloseTo(L3.COMPONENTS.roof.costBase * L3.COMPONENTS.roof.costGrowth, 5)
   })
 
-  it('visual components cap at 5 tiers; number components at 8', () => {
-    expect(getComponentMaxTier('lighting')).toBe(L3.MAX_COMPONENT_TIER)
-    expect(getComponentMaxTier('acoustics')).toBe(L3.MAX_NUMBER_TIER)
-  })
-
-  it('graduate requires every venue component at min tier', () => {
+  it('graduate requires every component at its own max level', () => {
     const v0 = getVenue(0).componentIds
-    const partial = Object.fromEntries(v0.map((id) => [id, L3.GRADUATE_MIN_TIER - 1]))
+    const partial = Object.fromEntries(v0.map((id) => [id, getComponentMaxTier(id) - 1]))
     expect(isVenueGraduatable(partial, 0)).toBe(false)
 
-    const ready = Object.fromEntries(v0.map((id) => [id, L3.GRADUATE_MIN_TIER]))
+    const ready = Object.fromEntries(v0.map((id) => [id, getComponentMaxTier(id)]))
     expect(isVenueGraduatable(ready, 0)).toBe(true)
+  })
+
+  it('unlock components map to automation flags', () => {
+    expect(getUnlockFlagsFromComponent('instruments')).toEqual({ autoCollect: true })
+    expect(getUnlockFlagsFromComponent('keepAutobuyers')).toEqual({ keepAutobuyers: true })
+    expect(getUnlockFlagsFromComponent('autoMO')).toEqual({ autoMO: true, autoMOEnabled: true })
+    expect(getUnlockFlagsFromComponent('autoGraduate')).toEqual({ autoGraduate: true })
+    expect(getUnlockFlagsFromComponent('lighting')).toEqual({})
   })
 
   it('lifetime acclaim multiplier is capped and >= 1', () => {
@@ -156,15 +186,9 @@ describe('worldTour helpers', () => {
     expect(getAcclaimMultiplier(1e9)).toBeLessThanOrEqual(L3.MULT_CAP + 1)
   })
 
-  it('getAcclaimRate accepts Decimal catalogue snapshot', () => {
-    const rate = getAcclaimRate(new Decimal(10), { instruments: 1 })
-    expect(rate).toBeGreaterThan(0)
-  })
-
-  it('Auto-MO unlocks at tour count or mid venue', () => {
-    expect(isAutoMOUnlocked({ autoMO: false, tourCount: 0, currentVenue: 0 })).toBe(false)
-    expect(isAutoMOUnlocked({ autoMO: false, tourCount: 2, currentVenue: 0 })).toBe(true)
-    expect(isAutoMOUnlocked({ autoMO: false, tourCount: 0, currentVenue: L3.AUTO_MO_VENUE })).toBe(true)
+  it('Auto-MO unlocks only via component flag', () => {
+    expect(isAutoMOUnlocked({ autoMO: false })).toBe(false)
+    expect(isAutoMOUnlocked({ autoMO: true })).toBe(true)
   })
 
   it('canAutoPerformMagnumOpus requires owned, enabled, and affordable MO', () => {
@@ -192,5 +216,24 @@ describe('worldTour helpers', () => {
       autoMOEnabled: true,
       tiers,
     }))).toBe(true)
+  })
+
+  it('auto-collect banks buffer on sell-out; manual mode holds buffer', () => {
+    const cap = getVenueCapacity({ roof: 0 }, 0)
+    const base = minimalState({
+      venueBuffer: new Decimal(cap),
+      components: { roof: 0, lighting: 0 },
+    })
+
+    const manual = calculateWorldTourTick({ ...base, autoCollect: false }, 1000, false)
+    expect(manual.venueSoldOut).toBe(true)
+    expect(manual.venueBuffer?.toNumber()).toBe(cap)
+    expect(manual.acclaim?.toNumber() ?? 0).toBe(0)
+
+    const auto = calculateWorldTourTick({ ...base, autoCollect: true }, 1000, false)
+    expect(auto.venueSoldOut).toBe(true)
+    expect(auto.venueBuffer?.toNumber()).toBe(0)
+    expect(auto.acclaim?.toNumber()).toBe(cap)
+    expect(auto.lifetimeAcclaim?.toNumber()).toBe(cap)
   })
 })
