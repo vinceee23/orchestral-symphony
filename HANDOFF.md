@@ -57,11 +57,14 @@ Full spec: **`docs/L2-AUTOMATION-SPEC.md`** (LOCKED, ~97%). Decision: don't spee
 - **Encore Resonance** (@25 lifetime Encores, new `lifetimeEncoreCount`) — Encore carries SW (literal, resim-flagged). **Opus Memory** (@10 post-plat MOs) — MO keeps the layers below it (literal, resim-flagged). Both store-tested (src/store/breakPerks.test.ts).
 - **Legacy DROPPED** — no-op mechanic + all redrafts double-dipped with #9/Roadies; Opus Memory is the real capstone. Breadcrumb left in plan §3b to revisit at L4.
 
-### RESUME POINT — remaining Break-phase pieces (#13 cont.)
-Build each → gate (tsc + unit + AFK sims) → commit. DRAFT magnitudes in **docs/L1-L3-RELEASE-PLAN.md §3b-numbers**:
-1. **Auto-tour capstone** — AP-gated near circuit end (auto-performs the World Tour like auto-MO does the MO).
-2. **WT-reset persistence** — AP + Fame persist across World Tour reset (Fame already persists via meta; **verify performTour doesn't wipe spendableFame/lifetimeFame/fameUpgrades/lifetimeEncoreCount**); automations reset unless Roadies (keepAutobuyers).
-3. Then **L3-circuit idle-verify** in sim/l3-pacing.test.ts (port goal-directed buying into Phase A/B; recalibrate assertions; AFK-after-automation reaching Platinum + circuit hands-free).
+### WT-reset persistence (#13) — ✅ DONE (committed 85a3d48)
+- performTour preserves Fame/AP/lifetimeEncoreCount/opusCount + venue ladder by omission. Fixed: auto-MO (separate boolean) was persisting unconditionally — now resets unless Roadies, matching auto-encore + the plan. Tests in breakPerks.test.ts.
+
+### RESUME POINT — final two Break-phase pieces (#13 cont.) — DO IN THIS ORDER (auto-tour depends on the sim)
+Everything else in the Break phase is done/gated/committed. These two are a focused L3-economy effort (fresh-context, like the first idle-verify):
+1. **L3-circuit idle-verify FIRST** in sim/l3-pacing.test.ts — port goal-directed buying into Phase A/B; recalibrate assertions; AFK-after-automation scenario reaching Platinum + completing the circuit hands-free. **This models the re-tour economy.**
+2. **THEN auto-tour capstone** — AP-gated unlock that auto-performs the World Tour (analogous to auto-MO's `canAutoPerformMagnumOpus`). Its trigger heuristic ("when is re-touring worth it?") should be derived from what the idle-verify sim shows about the L3 circuit — DON'T guess it blind. New AP unlock (`AP_UNLOCK`) + tick-driver auto-fire + AutobuyersPage UI + WT-reset symmetry (reset unless Roadies).
+- After these two: Break phase COMPLETE → then #9 challenge rewards → polish → ship.
 
 ### Review LOOP — Round 1 COMPLETE (2026-06-26, all 5 parallel streams done)
 Streams: resim ✓ · ultracode 4-lens review ✓ · Codex balance ✓ · Claude balance ✓ · dir-cleanup ✓.
