@@ -81,6 +81,7 @@ function createInitialState(): GameState {
     encorePoints: 0,
     lifetimeEncorePoints: 0,
     encoreCount: 0,
+    lifetimeEncoreCount: 0,
     applausePoints: 0,
     layer1WallReached: false,
     opusPoints: 0,
@@ -666,6 +667,12 @@ export const useGameStore = create<GameState & GameActions>()(
         if (headExp > 0 && state.peakSoundwaves.gt(1)) {
           reset.soundwaves = Decimal.max(reset.soundwaves ?? STARTING_SOUNDWAVES, state.peakSoundwaves.pow(headExp))
         }
+        // perk-encore-resonance (Break phase, @25 lifetime Encores): Encore stops resetting Soundwaves —
+        // carry the full current SW through the reset (tiers still reset). ⚠️ resim flag: peak still resets,
+        // so EP gain (peak-based) is unaffected this reset but the next climb is trivial.
+        if (hasPerk(new Set(state.achievements), 'perk-encore-resonance') && state.soundwaves.gt(reset.soundwaves ?? STARTING_SOUNDWAVES)) {
+          reset.soundwaves = state.soundwaves
+        }
 
         const newEncoreCount = state.encoreCount + 1
         const runActiveMs = Date.now() - state.currentRunStartTime
@@ -684,6 +691,7 @@ export const useGameStore = create<GameState & GameActions>()(
           // Encore Magnetism (Fame tree) boosts AP gain.
           applausePoints: state.applausePoints + Math.floor(getApplauseGain(gain) * getFameApMult(state.fameUpgrades)),
           encoreCount: newEncoreCount,
+          lifetimeEncoreCount: (state.lifetimeEncoreCount ?? 0) + 1,
           layer1WallReached: state.layer1WallReached || newEncoreCount >= ENCORE_WALL_COUNT,
           silentEncoresCompleted: state.silentEncoresCompleted + (silentRun ? 1 : 0),
           wallReachedWithoutTempo: state.wallReachedWithoutTempo || qualifiedPatron,
@@ -748,21 +756,31 @@ export const useGameStore = create<GameState & GameActions>()(
         // Break phase: each post-Platinum MO mints Fame (0 pre-Platinum). Spendable + lifetime both grow;
         // Fame is meta, so it survives this reset (not listed below = preserved by the partial set()).
         const fameGain = wasPlatinum ? getFameGain(state.recordsSold, state.fameUpgrades) : 0
+        // perk-opus-memory (Break phase, @10 post-Plat MOs): MO stops resetting the layers below it —
+        // keep tiers/SW/peakSW + the whole Encore layer intact. Only the MO-layer crescendo re-seeds.
+        // ⚠️ resim flag: this removes the L1 re-climb entirely post-unlock; intended deep QoL reward.
+        const opusMemory = hasPerk(achSet, 'perk-opus-memory')
+        const crescendoSeed = hasPerk(achSet, 'perk-crescendo-headstart') ? CRESCENDO_HEADSTART : 0
+        const resetPatch: Partial<GameState> = opusMemory
+          ? { crescendo: crescendoSeed, peakCrescendoMult: 1 }
+          : {
+              ...resetTiersAndSW(state.achievements),
+              peakSoundwaves: new Decimal(0),
+              encorePoints: 0,
+              lifetimeEncorePoints: 0,
+              encoreCount: 0,
+              encoreUpgrades: keepEncoreUpgrades ? state.encoreUpgrades : {},
+              layer1WallReached: skipWall,
+              // honor perk-crescendo-headstart (resetTiersAndSW's value is overridden by this explicit key)
+              crescendo: crescendoSeed,
+              peakCrescendoMult: 1,
+            }
         set({
-          ...resetTiersAndSW(state.achievements),
+          ...resetPatch,
           spendableFame: state.spendableFame + fameGain,
           lifetimeFame: state.lifetimeFame + fameGain,
-          peakSoundwaves: new Decimal(0),
-          encorePoints: 0,
-          lifetimeEncorePoints: 0,
-          encoreCount: 0,
-          encoreUpgrades: keepEncoreUpgrades ? state.encoreUpgrades : {},
-          layer1WallReached: skipWall,
           opusPoints: state.opusPoints + gain,
           opusCount: newOpusCount,
-          // honor perk-crescendo-headstart (resetTiersAndSW's value is overridden by this explicit key)
-          crescendo: hasPerk(achSet, 'perk-crescendo-headstart') ? CRESCENDO_HEADSTART : 0,
-          peakCrescendoMult: 1,
           autobuyers,
           postPlatinumMoCount: wasPlatinum ? state.postPlatinumMoCount + 1 : state.postPlatinumMoCount,
         })
@@ -958,6 +976,7 @@ export const useGameStore = create<GameState & GameActions>()(
           if (state.encorePoints === undefined) state.encorePoints = 0
           if (state.lifetimeEncorePoints === undefined) state.lifetimeEncorePoints = 0
           if (state.encoreCount === undefined) state.encoreCount = 0
+          if (typeof state.lifetimeEncoreCount !== 'number' || !isFinite(state.lifetimeEncoreCount)) state.lifetimeEncoreCount = 0
           if (typeof state.applausePoints !== 'number' || !isFinite(state.applausePoints)) state.applausePoints = 0
           if (state.opusPoints === undefined) state.opusPoints = 0
           if (state.opusCount === undefined) state.opusCount = 0
@@ -1023,6 +1042,7 @@ export const useGameStore = create<GameState & GameActions>()(
               encorePoints: state.encorePoints,
               lifetimeEncorePoints: state.lifetimeEncorePoints,
               encoreCount: state.encoreCount,
+              lifetimeEncoreCount: state.lifetimeEncoreCount,
               applausePoints: state.applausePoints,
               layer1WallReached: state.layer1WallReached,
               opusPoints: state.opusPoints,

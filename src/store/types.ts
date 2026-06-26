@@ -59,6 +59,8 @@ export interface GameState {
   encorePoints: number
   lifetimeEncorePoints: number
   encoreCount: number
+  /** Monotonic total Encores ever performed (encoreCount resets each MO; this never does). Gates deep perks. */
+  lifetimeEncoreCount: number
 
   // Layer-1 automation currency: Applause Points. Earned per Encore (alongside EP); spent to unlock
   // autobuyers (tiers 1-7, tempo, auto-encore, auto-MO). MO upgrades raise automation power.

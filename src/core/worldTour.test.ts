@@ -36,6 +36,7 @@ function minimalState(overrides: Partial<GameState> = {}): GameState {
     encorePoints: 0,
     lifetimeEncorePoints: 0,
     encoreCount: 0,
+    lifetimeEncoreCount: 0,
     applausePoints: 0,
     layer1WallReached: true,
     opusPoints: 0,
