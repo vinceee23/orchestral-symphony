@@ -196,8 +196,12 @@ export const useGameStore = create<GameState & GameActions>()(
         // encore would yield ≥1 EP (peak past the threshold) so it never auto-prestiges a net-loss.
         // performEncore() itself still gates on the tier-cost, so a premature fire just no-ops.
         const enc = after.autobuyers['encore']
+        // Auto-encore re-climbs TO the 8-encore wall, then yields: gate on !layer1WallReached so it can't
+        // keep resetting the board past the wall and starve auto-MO (which needs 72 Symphonies). After an
+        // auto-MO the wall flag clears, so the next re-climb resumes. Also stops it from wiping a board the
+        // player is hand-saving for a Magnum Opus.
         // .gt (not .gte): getEncoreGain returns 0 at peak == threshold (formulas.ts), so equality would auto-reset for 0 EP.
-        if (enc?.unlocked && enc.enabled && !after.activeChallenge && after.peakSoundwaves.gt(ENCORE_EP_THRESHOLD)) {
+        if (enc?.unlocked && enc.enabled && !after.activeChallenge && !after.layer1WallReached && after.peakSoundwaves.gt(ENCORE_EP_THRESHOLD)) {
           const now = Date.now()
           if (now - (enc.lastTick ?? 0) >= getAutoEncoreInterval(after.opusCount)) {
             get().performEncore()
@@ -905,7 +909,7 @@ export const useGameStore = create<GameState & GameActions>()(
           if (state.encorePoints === undefined) state.encorePoints = 0
           if (state.lifetimeEncorePoints === undefined) state.lifetimeEncorePoints = 0
           if (state.encoreCount === undefined) state.encoreCount = 0
-          if (state.applausePoints === undefined) state.applausePoints = 0
+          if (typeof state.applausePoints !== 'number' || !isFinite(state.applausePoints)) state.applausePoints = 0
           if (state.opusPoints === undefined) state.opusPoints = 0
           if (state.opusCount === undefined) state.opusCount = 0
           if (!state.opusUpgrades) state.opusUpgrades = {}

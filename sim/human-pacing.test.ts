@@ -15,6 +15,10 @@ import {
   STARTING_SOUNDWAVES,
   getEncoreCost,
   getMagnumOpusCost,
+  getApplauseGain,
+  getAutoEncoreInterval,
+  AP_UNLOCK,
+  ENCORE_EP_THRESHOLD,
   ENCORE_WALL_COUNT,
   AUTOBUYER_DEFAULT_INTERVAL,
   MAX_OFFLINE_MS,
@@ -132,6 +136,7 @@ function createInitialState(simTime: number): GameState {
     encorePoints: 0,
     lifetimeEncorePoints: 0,
     encoreCount: 0,
+    applausePoints: 0,
     layer1WallReached: false,
     opusPoints: 0,
     opusCount: 0,
@@ -326,6 +331,7 @@ function performEncore(state: GameState, simTime: number): boolean {
     peakSoundwaves: new Decimal(0),
     encorePoints: state.encorePoints + gain,
     lifetimeEncorePoints: state.lifetimeEncorePoints + gain,
+    applausePoints: (state.applausePoints ?? 0) + getApplauseGain(gain),
     encoreCount: newEncoreCount,
     layer1WallReached: state.layer1WallReached || newEncoreCount >= ENCORE_WALL_COUNT,
     silentEncoresCompleted: state.silentEncoresCompleted + (silentRun ? 1 : 0),
@@ -599,6 +605,7 @@ function runHumanSeed(seed: number, setClock: (t: number) => void): RunResult {
   let encoreReadySinceActive: number | null = null
   let moReadySinceActive: number | null = null
   let lastPrestigeActiveMs = 0
+  let lastAutoEncoreMs = -Infinity // throttle for the auto-encore autobuyer once AP-unlocked
 
   let firstEncoreActiveMin: number | null = null
   let wallActiveMin: number | null = null
@@ -664,18 +671,36 @@ function runHumanSeed(seed: number, setClock: (t: number) => void): RunResult {
     if (simMs >= nextDecisionAt) {
       enableUnlockedAutobuyers(state)
 
+      // Model the player buying the AP automation unlocks ASAP once affordable + gated.
+      if (!state.autobuyers['encore']?.unlocked && state.opusCount >= AP_UNLOCK.encore.minOpusCount && (state.applausePoints ?? 0) >= AP_UNLOCK.encore.cost) {
+        state.applausePoints -= AP_UNLOCK.encore.cost
+        state.autobuyers = { ...state.autobuyers, encore: { unlocked: true, enabled: true, interval: AUTOBUYER_DEFAULT_INTERVAL, bulk: 1, lastTick: 0 } }
+      }
+      if (!state.autoMO && state.opusCount >= AP_UNLOCK.autoMO.minOpusCount && (state.applausePoints ?? 0) >= AP_UNLOCK.autoMO.cost) {
+        state.applausePoints -= AP_UNLOCK.autoMO.cost
+        state.autoMO = true
+      }
+
       if (!rng.chance(0.12)) {
         humanBuyDecision(state, rng)
         humanSpendMeta(state, rng)
       }
 
-      // Delayed prestige — not frame-perfect
+      // Encore: once the auto-encore autobuyer is unlocked it fires on its MO-upgraded throttle (no
+      // human delay/decision); otherwise the realistic delayed-prestige path.
+      const encAb = state.autobuyers['encore']
+      const autoEnc = !!(encAb?.unlocked && encAb.enabled)
       if (canEncoreNow(state)) {
         if (encoreReadySinceActive === null) encoreReadySinceActive = activeMs
-        const delay = rng.range(20_000, 90_000)
-        if (activeMs - encoreReadySinceActive >= delay && rng.chance(0.35)) {
+        // Mirror the game: auto-encore only re-climbs to the wall (!layer1WallReached) so it never starves
+        // auto-MO, and throttles on the wall clock (simMs == mocked Date.now()), not active time.
+        const ready = autoEnc
+          ? !state.layer1WallReached && state.peakSoundwaves.gt(ENCORE_EP_THRESHOLD) && simMs - lastAutoEncoreMs >= getAutoEncoreInterval(state.opusCount)
+          : activeMs - encoreReadySinceActive >= rng.range(20_000, 90_000) && rng.chance(0.35)
+        if (ready) {
           const prevEncore = state.encoreCount
           if (performEncore(state, simMs)) {
+            if (autoEnc) lastAutoEncoreMs = simMs
             if (firstMoActiveMin === null) firstClimbEncoreMin.push(activeMs / 60000)
             if (prevEncore === 0 && firstEncoreActiveMin === null) {
               firstEncoreActiveMin = activeMs / 60000
@@ -696,10 +721,13 @@ function runHumanSeed(seed: number, setClock: (t: number) => void): RunResult {
         encoreReadySinceActive = null
       }
 
+      // Magnum Opus: auto-MO fires as-ready once unlocked; otherwise the realistic delayed path.
       if (state.layer1WallReached && canMoNow(state)) {
         if (moReadySinceActive === null) moReadySinceActive = activeMs
-        const delay = rng.range(30_000, 120_000)
-        if (activeMs - moReadySinceActive >= delay && rng.chance(0.3)) {
+        const ready = state.autoMO
+          ? true
+          : activeMs - moReadySinceActive >= rng.range(30_000, 120_000) && rng.chance(0.3)
+        if (ready) {
           const prevOpus = state.opusCount
           if (performMagnumOpus(state, simMs)) {
             if (prevOpus === 0 && firstMoActiveMin === null) firstMoActiveMin = activeMs / 60000
