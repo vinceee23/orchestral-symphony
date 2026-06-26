@@ -947,9 +947,8 @@ describe('full-era pacing instrument', () => {
       }
     }
 
-    expect(state.opusCount).toBeGreaterThanOrEqual(1)
-    expect(state.platinum || state.recordsSold >= PLATINUM_THRESHOLD).toBe(true)
-
+    // NOTE: Platinum/opusCount assertions moved to AFTER the report block below, so the full
+    // pacing report (incl. L1 encore cadence) prints even when an assertion fails.
     const deadZones = findAchievementDeadZones(unlockedAt, unlockedPhase, simMs)
     const topDeadZones = deadZones.slice(0, 10)
 
@@ -1040,6 +1039,19 @@ describe('full-era pacing instrument', () => {
       console.log(`  MO→MO: ${worstMo.gapMin.toFixed(1)} min`)
     }
 
+    console.log('\n--- L1 Encore cadence (PERFECT player, per-encore time) ---')
+    {
+      let prevE = 0
+      for (const [i, t] of encoreTimes.slice(0, 12).entries()) {
+        const dMin = (t - prevE) / 60000
+        console.log(`  Encore ${String(i + 1).padStart(2)}: +${dMin.toFixed(1).padStart(6)} min   (cumulative ${(t / 60000).toFixed(1)} min)`)
+        prevE = t
+      }
+      if (moTimes.length > 0) {
+        console.log(`  → 1st Magnum Opus at ${(moTimes[0] / 60000).toFixed(1)} min (wall→MO: +${((moTimes[0] - (encoreTimes[encoreTimes.length - 1] ?? 0)) / 60000).toFixed(1)} min)`)
+      }
+    }
+
     console.log('\n--- Per-Era Summary ---')
     console.log('  era            | span (min) | achievements | longest internal dead-zone (min)')
     for (const es of eraSummaries) {
@@ -1073,6 +1085,8 @@ describe('full-era pacing instrument', () => {
 
     console.log(`\nCSV written to: ${CSV_PATH}`)
 
+    expect(state.opusCount).toBeGreaterThanOrEqual(1)
+    expect(state.platinum || state.recordsSold >= PLATINUM_THRESHOLD).toBe(true)
     expect(restraintCollisions, 'restraint achievements must not auto-unlock from head-start').toHaveLength(0)
     if (moEraSummary) {
       expect(moEraSummary.longestDeadZoneMin).toBeLessThan(25)

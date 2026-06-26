@@ -10,7 +10,14 @@
   - Venue ladder 2–7 + circuit break, **challenges-at-L3** (re-gated off finaleCount → reachable), **era-3 app theming**.
   - Game logic **verified-good**: tsc clean · 45/45 unit · `sim/l3-pacing` reaches Platinum (~25h) · `sim/achievement-pacing` pass.
 
-## THE ONE BLOCKER (needs Vince's call) — why L3 isn't deployed
+## ⭐ ACTIVE PLAN (2026-06-26) — L2 idle rework, supersedes "just merge L3"
+Full spec: **`docs/L2-AUTOMATION-SPEC.md`** (LOCKED, ~97%). Decision: don't speed records; make L1/L2 **idle** AD-style instead of an active 13h slog.
+- **Root cause found:** all autobuyers (tier_1–7, tempo, `encore`=auto-encore, auto-MO) already exist but are **gated behind L3 challenges** → L1/L2 forced-manual = the slog.
+- **Fix:** new **Applause Points** currency unlocks autobuyers in L1/L2. Option-1 timing: tier autobuyers from Encore 4–5; auto-encore post first MO (weak→MO-upgraded); auto-MO AP-purchased at opusCount≥3. Auto-MO moves L3→L2; L3 headline = auto-tour (`performTour()` exists). Challenges repurposed → AP + automation-power. Platinum stays ~22h wall-clock but now mostly idle.
+- **Only genuinely new code:** Applause Points currency, the AP→unlock purchase path, and **auto-encore execution** (the `encore` autobuyer key was never wired; trigger it in the gameStore tick-driver beside the `autoMO` trigger at gameStore.ts:204). Everything else = re-gating + tuning.
+- **Sequence:** (1) ship **P2** (soften Encore 6–8 costs) now; (2) build L2 rework; (3) **resim** (sims must drive autobuyers off SIM time, not Date.now()); (4) reconcile L3, re-pace the 2 held sims on the new idler baseline; (5) merge → deploy.
+
+## OLD BLOCKER (now folded into the plan above) — why L3 isn't deployed yet
 Two HEAVY pacing-sim INSTRUMENTS fail: **`sim/era-pacing.test.ts` + `sim/human-pacing.test.ts`** — assertion `expect(platinum || recordsSold >= PLATINUM_THRESHOLD).toBe(true)` fails (their modeled player doesn't reach 1M records within `MAX_STEPS=250_000`).
 - **NOT a game regression:** `l3-pacing` reaches Platinum; `calculateWorldTourTick` no-ops when L3 locked (worldTour.ts:391 `if(!worldTourUnlocked) return {}`); gameStore MO/records path unchanged. Cause = pacing-v2 **intentionally** slowed records (RECORDS_ALBUM_K 1→0.58, RECORDS_OPUS_EXP 1.15→1.08, Platinum ~22h) so these sims' step budget / under-conducting player no longer reaches Platinum.
 - **DECISION NEEDED:** is the ~22h Platinum / records pace intended (Vince approved it earlier)? If **yes** → fix = **extend the era/human-pacing sim step budgets** (test-only, no game change) → `npm run test` green → **merge `feat/layer3` → master to deploy full L3**. If records should be faster → small balance tweak in `src/core/constants.ts`.
@@ -35,4 +42,4 @@ Two HEAVY pacing-sim INSTRUMENTS fail: **`sim/era-pacing.test.ts` + `sim/human-p
 - git remote pinned to vinceee23 (personal). NEVER push with the gh/work account.
 
 ## Immediate next step on resume
-Ask Vince: "Confirm Platinum ~22h is intended → I extend the 2 sim budgets (test-only) + deploy full L3?" Then merge `feat/layer3` → master. Then living-venue art (his approval) + filler cleanup.
+Per `docs/L2-AUTOMATION-SPEC.md` §13: **build & ship P2** (soften `getEncoreCost` Encore 6–8 amounts in `src/core/constants.ts`; re-sim cadence). Then start the L2 automation rework. Living-venue art (drafts in `drafts/l3-venues/` — 6 ladder + 3 `oh-state` progression; rest archived) + filler-achievement cleanup remain pending, after mechanics deploy.

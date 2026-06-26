@@ -19,7 +19,7 @@ function freshState(overrides: Partial<GameState> = {}): GameState {
     buyAmount: 1,
     achievements: [], completedChallenges: [], encoreUpgrades: {}, autobuyers: {},
     activeChallenge: null, preChallengeState: null,
-    encorePoints: 0, lifetimeEncorePoints: 0, encoreCount: 0, layer1WallReached: false,
+    encorePoints: 0, lifetimeEncorePoints: 0, encoreCount: 0, applausePoints: 0, layer1WallReached: false,
     opusPoints: 0, opusCount: 0, opusUpgrades: {}, crescendo: 0, peakCrescendoMult: 1,
     recordsSold: 0, platinum: false,
     acclaim: new Decimal(0), lifetimeAcclaim: new Decimal(0), tourCount: 0,

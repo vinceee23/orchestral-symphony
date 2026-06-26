@@ -119,6 +119,31 @@ export function getEncoreCost(encoreCount: number): PrestigeCost {
   return { tierIndex: 6, amount: 55 + (encoreCount - 7) * 10, tierName: 'Symphonies' }
 }
 
+// === Applause Points (L1 automation currency) ===
+// Earned per Encore alongside EP. apGained = floor(AP_BASE * encoreGain^AP_EXP).
+// Starting values — TUNED in the resim (sim/era + human) against the §4.1 accrual targets:
+//   ~1st autobuyer affordable by Encore 4-5; full tier_1-7 + auto-encore by Encore 8 / first MO.
+export const AP_BASE = 1
+export const AP_EXP = 1.0
+export function getApplauseGain(encoreGain: number): number {
+  return Math.floor(AP_BASE * Math.pow(Math.max(0, encoreGain), AP_EXP))
+}
+
+// Auto-encore (the `encore` autobuyer): WEAK at first, faster with each Magnum Opus (MO-upgraded).
+// Interval = base shortened by opusCount, floored so it never goes instant. Curve TUNED in resim.
+export const AUTO_ENCORE_BASE_INTERVAL = 60_000
+export function getAutoEncoreInterval(opusCount: number): number {
+  return Math.max(2000, AUTO_ENCORE_BASE_INTERVAL / (1 + opusCount * 0.5))
+}
+
+// AP unlock costs + gates for the prestige automations. Auto-encore opens after the 1st manual MO
+// (so the first 8-encore climb is hand-played once); auto-MO lags to ~MO#3 so L2's prestige decision
+// is learned before it automates. Costs are starting guesses — TUNED in the resim vs AP accrual.
+export const AP_UNLOCK: Record<'encore' | 'autoMO', { cost: number; minOpusCount: number }> = {
+  encore: { cost: 5, minOpusCount: 1 },
+  autoMO: { cost: 25, minOpusCount: 3 },
+}
+
 // Magnum Opus gate: gentle escalation — 72 Symphonies + floor(opusCount/3)
 export function getMagnumOpusCost(opusCount: number): PrestigeCost {
   const amount = 72 + Math.floor(opusCount / 3)

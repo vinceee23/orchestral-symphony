@@ -529,6 +529,7 @@ interface RunResult {
     firstMoActiveMin: number | null
     platinumActiveMin: number | null
     platinumGlobalMult: number | null
+    firstClimbEncoreMin: number[] // cumulative active-min at each encore of the FIRST L1 climb (pre-first-MO)
   }
   tempoEarly: {
     atFirstEncoreWith: number | null
@@ -602,6 +603,7 @@ function runHumanSeed(seed: number, setClock: (t: number) => void): RunResult {
   let firstEncoreActiveMin: number | null = null
   let wallActiveMin: number | null = null
   let firstMoActiveMin: number | null = null
+  const firstClimbEncoreMin: number[] = []
   let platinumActiveMin: number | null = null
   let platinumGlobalMult: number | null = null
   let postPlatinumMos = 0
@@ -674,6 +676,7 @@ function runHumanSeed(seed: number, setClock: (t: number) => void): RunResult {
         if (activeMs - encoreReadySinceActive >= delay && rng.chance(0.35)) {
           const prevEncore = state.encoreCount
           if (performEncore(state, simMs)) {
+            if (firstMoActiveMin === null) firstClimbEncoreMin.push(activeMs / 60000)
             if (prevEncore === 0 && firstEncoreActiveMin === null) {
               firstEncoreActiveMin = activeMs / 60000
               tempoAtFirstEncoreWith = estimateSwPerSec(state, false)
@@ -738,6 +741,7 @@ function runHumanSeed(seed: number, setClock: (t: number) => void): RunResult {
       firstMoActiveMin,
       platinumActiveMin,
       platinumGlobalMult,
+      firstClimbEncoreMin,
     },
     tempoEarly: {
       atFirstEncoreWith: tempoAtFirstEncoreWith,
@@ -953,6 +957,21 @@ describe('human pacing instrument', () => {
     console.log(`  8-Encore wall:     ${wallTimes.length ? fmt(wallTimes) : 'n/a'} min`)
     console.log(`  First Magnum Opus: ${moTimes.length ? fmt(moTimes) : 'n/a'} min`)
     console.log(`  Platinum:          ${platTimes.length ? fmt(platTimes) : 'n/a'} min (${fmt(platTimes.map((m) => m / 60))} h)`)
+
+    // Per-encore cadence of the FIRST L1 climb (median across seeds) — compare side-by-side with the era (perfect) report.
+    const maxEnc = Math.max(0, ...results.map((r) => r.milestones.firstClimbEncoreMin.length))
+    if (maxEnc > 0) {
+      console.log('')
+      console.log('--- L1 Encore cadence (HUMAN median across seeds, first climb) ---')
+      let prevMed = 0
+      for (let i = 0; i < maxEnc; i++) {
+        const cums = results.map((r) => r.milestones.firstClimbEncoreMin[i]).filter((v): v is number => v != null)
+        if (!cums.length) continue
+        const med = median(cums)
+        console.log(`  Encore ${String(i + 1).padStart(2)}: +${(med - prevMed).toFixed(1).padStart(6)} min   (cumulative ${med.toFixed(1)} min)`)
+        prevMed = med
+      }
+    }
     console.log('')
     console.log('--- Restraint / stranding ---')
     if (restraintAutos.length) {

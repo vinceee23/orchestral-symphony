@@ -5,8 +5,10 @@ import type { GameState, GameActions, AutobuyerState } from './types'
 import type { BuyAmount } from '../core/constants'
 import {
   TIER_CONFIGS, STARTING_SOUNDWAVES, MAX_OFFLINE_MS,
-  getEncoreCost, getMagnumOpusCost,
+  getEncoreCost, getMagnumOpusCost, getApplauseGain, getAutoEncoreInterval,
+  AP_UNLOCK,
   GRAND_FINALE_SW_THRESHOLD,
+  ENCORE_EP_THRESHOLD,
   AUTOBUYER_DEFAULT_INTERVAL,
   ENCORE_WALL_COUNT,
   PLATINUM_THRESHOLD,
@@ -75,6 +77,7 @@ function createInitialState(): GameState {
     encorePoints: 0,
     lifetimeEncorePoints: 0,
     encoreCount: 0,
+    applausePoints: 0,
     layer1WallReached: false,
     opusPoints: 0,
     opusCount: 0,
@@ -187,6 +190,22 @@ export const useGameStore = create<GameState & GameActions>()(
         const updates = calculateTick(state, deltaMs, conducting)
         set({ ...updates, activeTimePlayed: state.activeTimePlayed + deltaMs })
         const after = get()
+
+        // Auto-encore (L1 automation): the `encore` autobuyer, throttled + MO-upgraded. Fires the SAME
+        // performEncore() the player would — only when unlocked, enabled, not in a challenge, and an
+        // encore would yield ≥1 EP (peak past the threshold) so it never auto-prestiges a net-loss.
+        // performEncore() itself still gates on the tier-cost, so a premature fire just no-ops.
+        const enc = after.autobuyers['encore']
+        if (enc?.unlocked && enc.enabled && !after.activeChallenge && after.peakSoundwaves.gte(ENCORE_EP_THRESHOLD)) {
+          const now = Date.now()
+          if (now - (enc.lastTick ?? 0) >= getAutoEncoreInterval(after.opusCount)) {
+            get().performEncore()
+            set((st) => ({
+              autobuyers: { ...st.autobuyers, encore: { ...(st.autobuyers['encore'] ?? enc), lastTick: now } },
+            }))
+          }
+        }
+
         if (!after.worldTourUnlocked && canUnlockWorldTour(after)) {
           get().unlockWorldTour()
         }
@@ -363,6 +382,27 @@ export const useGameStore = create<GameState & GameActions>()(
             autobuyers: {
               ...state.autobuyers,
               [key]: { ...ab, bulk },
+            },
+          }
+        })
+      },
+
+      // Spend Applause Points to unlock a prestige automation in L2 (auto-encore / auto-MO).
+      // Gated by opusCount so the first climb (and a few MO decisions) are hand-played first.
+      unlockWithApplause: (key: 'encore' | 'autoMO') => {
+        set((state) => {
+          const cfg = AP_UNLOCK[key]
+          if (!cfg || state.opusCount < cfg.minOpusCount || state.applausePoints < cfg.cost) return state
+          if (key === 'autoMO') {
+            if (state.autoMO) return state
+            return { applausePoints: state.applausePoints - cfg.cost, autoMO: true, autoMOEnabled: true }
+          }
+          if (state.autobuyers['encore']?.unlocked) return state
+          return {
+            applausePoints: state.applausePoints - cfg.cost,
+            autobuyers: {
+              ...state.autobuyers,
+              encore: { unlocked: true, enabled: true, interval: AUTOBUYER_DEFAULT_INTERVAL, bulk: 1, lastTick: 0 },
             },
           }
         })
@@ -594,6 +634,7 @@ export const useGameStore = create<GameState & GameActions>()(
           peakSoundwaves: new Decimal(0),
           encorePoints: state.encorePoints + gain,
           lifetimeEncorePoints: state.lifetimeEncorePoints + gain,
+          applausePoints: state.applausePoints + getApplauseGain(gain),
           encoreCount: newEncoreCount,
           layer1WallReached: state.layer1WallReached || newEncoreCount >= ENCORE_WALL_COUNT,
           silentEncoresCompleted: state.silentEncoresCompleted + (silentRun ? 1 : 0),
@@ -837,7 +878,7 @@ export const useGameStore = create<GameState & GameActions>()(
       partialize: (state): GameState => {
         const {
           tick, buyTier, buyMaxTier, buyTempo, buyMaxTempo, setBuyAmount,
-          toggleAutobuyer, setAutobuyerBulk, buyEncoreUpgrade, buyOpusUpgrade, checkAchievements, checkChallengeCompletion,
+          toggleAutobuyer, setAutobuyerBulk, unlockWithApplause, buyEncoreUpgrade, buyOpusUpgrade, checkAchievements, checkChallengeCompletion,
           startChallenge, abandonChallenge,
           performEncore, performMagnumOpus, performGrandFinale,
           buyComponent, buyKeepAutobuyers, graduateVenue, performTour, unlockWorldTour, bankVenueAcclaim,
@@ -863,6 +904,7 @@ export const useGameStore = create<GameState & GameActions>()(
           if (state.encorePoints === undefined) state.encorePoints = 0
           if (state.lifetimeEncorePoints === undefined) state.lifetimeEncorePoints = 0
           if (state.encoreCount === undefined) state.encoreCount = 0
+          if (state.applausePoints === undefined) state.applausePoints = 0
           if (state.opusPoints === undefined) state.opusPoints = 0
           if (state.opusCount === undefined) state.opusCount = 0
           if (!state.opusUpgrades) state.opusUpgrades = {}
@@ -924,6 +966,7 @@ export const useGameStore = create<GameState & GameActions>()(
               encorePoints: state.encorePoints,
               lifetimeEncorePoints: state.lifetimeEncorePoints,
               encoreCount: state.encoreCount,
+              applausePoints: state.applausePoints,
               layer1WallReached: state.layer1WallReached,
               opusPoints: state.opusPoints,
               opusCount: state.opusCount,

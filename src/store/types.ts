@@ -60,6 +60,11 @@ export interface GameState {
   lifetimeEncorePoints: number
   encoreCount: number
 
+  // Layer-1 automation currency: Applause Points. Earned per Encore (alongside EP); spent to unlock
+  // autobuyers (tiers 1-7, tempo, auto-encore, auto-MO). MO upgrades raise automation power.
+  // number (not Decimal) — matches EP/OP/records; pre-L4 magnitudes stay well within range. Persists across resets.
+  applausePoints: number
+
   // Cliffhanger gate: layers 2-6 stay locked until the Layer-1 wall is reached.
   layer1WallReached: boolean
 
@@ -129,6 +134,7 @@ export interface GameActions {
   setBuyAmount: (amount: BuyAmount) => void
   toggleAutobuyer: (key: string) => void
   setAutobuyerBulk: (key: string, bulk: number | 'max') => void
+  unlockWithApplause: (key: 'encore' | 'autoMO') => void
   buyEncoreUpgrade: (id: string) => void
   buyOpusUpgrade: (id: string) => void
   checkAchievements: () => void
