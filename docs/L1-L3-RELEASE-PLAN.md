@@ -21,6 +21,9 @@ A **free web playtest** of the full **L1 → L3** arc:
 - **Tiers stay on the OP-tree path** (no AP early-unlock). **Tempo autobuyer stays challenge-gated** (Acoustic reward — it's the strongest exponential lever, kept earned/special).
 - **Auto-tour:** full-auto (auto-collect + auto-advance venues), unlocked as a **capstone near circuit end**, AP-gated.
 - **Idle = tab-open only** (offline accrues production, does NOT auto-prestige — AD-normal).
+- **Crescendo in idle:** the **auto-conduct** OP upgrade maintains crescendo while idle, but **capped at ×2.5**; active conducting can exceed it (toward the full ×3+ ceiling). So idle works *and* active stays more rewarding — a deliberate active-vs-idle incentive.
+- **Post-circuit finale:** cheesy L4 tease — *"Get ready to choose your Signature…"* — not a plain "coming soon" (+ feedback/Ko-fi). Game keeps idling after.
+- **Audio:** **deferred until ALL of L3 is built + frozen**, then ONE pure audio pass (no content changes after it) — audio as a clean final layer.
 - **Challenge rewards:** **separate, bigger power axis** than achievements (achievements cap ~×2.5–3; challenges can exceed it, with a sane cap so pacing holds). All rewards **dynamic/scaling**, one-time (no grind). Table in §4.3.
 - **Filler achievements:** cleaned up for release (real markers, keep the drip, ≤ +150–200% global-mult budget).
 - **Idle verification bar:** AFK from ~MO#3 (automation unlocked) reaches **Platinum AND completes the circuit hands-free** (any duration).
@@ -48,6 +51,7 @@ Reviewed by ultracode 4-lens + Codex + Claude balance; all confirmed findings fi
 ### 4.2 Idle/AFK verification sim (#12)
 - New scenario: play to ~MO#3 (unlock auto-encore + auto-MO), then **zero manual input** — only autobuyers (OP-path tiers) + auto-encore + auto-MO fire on ticks.
 - **Acceptance (the idle promise):** reaches **Platinum AND completes the circuit hands-free**, any duration. Report idle-time-to-Platinum vs the ~22h active figure. (Tempo stays baseline — idle is slow-but-hands-free by design until the Acoustic challenge grants tempo automation.)
+- Model **auto-conduct crescendo capped at ×2.5** in the idle scenario (active can exceed); confirm idle still reaches the goal at that capped crescendo.
 - If idle stalls → diagnose (likely tempo/production gating) and surface before proceeding.
 
 ### 4.3 Challenge full-reward redesign (#9) — the headline content
@@ -81,11 +85,16 @@ Reviewed by ultracode 4-lens + Codex + Claude balance; all confirmed findings fi
 - **Filler-achievement cleanup:** replace ~100 `ach_play_*`/`ach_active_*` time-fillers with meaningful markers; keep the unlock drip; stay ≤ +150–200% global-mult budget. (Redo properly — the reverted Cursor attempt is the cautionary tale.)
 - **Sound of Silence:** add a **restraint-playstyle sim seed** proving reachability (it's reachable; the sim just never plays restraint-style).
 - **Onboarding:** light intro + tooltips at the key beats (first Encore, the wall/MO, World Tour, buying AP automation).
-- **Ko-fi:** non-intrusive donation link/button.
-- **L4 tease:** "Signature — coming soon" lock at circuit completion.
+- **Ko-fi + Feedback:** non-intrusive donation link + an in-game **Feedback** link (Discord/form) beside it.
+- **Crescendo cap:** implement the ×2.5 auto-conduct cap (idle) vs active exceeding it.
+- **Post-circuit finale card:** cheesy *"Get ready to choose your Signature…"* tease + feedback/Ko-fi; keep-idling after.
+- **Audio: NOT in this phase** — deferred to a single pure pass after all L3 content is frozen (§4.6.1).
 
 ### 4.6 Ship
 - Full gate: tsc + all unit + all 4 sims green + idle-sim passes. Merge `feat/layer3` → master. **Vince plays end-to-end → approves → public.**
+
+### 4.6.1 Audio (FINAL pass, after content freeze)
+All L3 content/mechanics complete + frozen FIRST; then a single dedicated audio pass so audio work never gets invalidated by content changes. Done after §4.6 (may be its own post-playtest or pre-public step per Vince).
 
 ## 5. Risks / watch-items
 - **Idle pacing unverified** until §4.2 — the headline ~22h-mostly-idle claim rides on it. Highest risk; verified first.
