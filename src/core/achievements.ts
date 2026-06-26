@@ -2230,25 +2230,6 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     reward: { perk: 'perk-second-wind' },
     rewardDescription: 'PERK: one free Encore per Magnum Opus cycle',
   },
-  {
-    id: 'ach_perk_encore_resonance',
-    name: 'Resonance',
-    description: 'Perform 25 Encores in total',
-    icon: '\u{1F30A}',
-    check: (s) => (s.lifetimeEncoreCount ?? 0) >= 25,
-    reward: { perk: 'perk-encore-resonance' },
-    rewardDescription: 'PERK: Encore no longer resets your Soundwaves',
-  },
-  {
-    id: 'ach_perk_opus_memory',
-    name: 'Total Recall',
-    description: 'Perform 10 Magnum Opuses after going Platinum',
-    icon: '\u{1F9E0}',
-    check: (s) => (s.postPlatinumMoCount ?? 0) >= 10,
-    reward: { perk: 'perk-opus-memory' },
-    rewardDescription: 'PERK: Magnum Opus no longer resets the layers below it',
-    hidden: true,
-  },
 
   // === Row 10: Late Layer 2 ===
   {

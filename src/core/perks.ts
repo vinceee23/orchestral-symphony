@@ -9,8 +9,6 @@ export type PerkId =
   | 'perk-bulk-unlock'
   | 'perk-second-wind'
   | 'perk-platinum-press'
-  | 'perk-encore-resonance'
-  | 'perk-opus-memory'
 
 export interface PerkConfig {
   id: PerkId
@@ -79,18 +77,6 @@ export const PERKS: PerkConfig[] = [
     achievementId: 'ach_a_side',
     name: 'Platinum Press',
     blurb: 'Records sell 50% faster',
-  },
-  {
-    id: 'perk-encore-resonance',
-    achievementId: 'ach_perk_encore_resonance',
-    name: 'Encore Resonance',
-    blurb: 'Encore no longer resets your Soundwaves',
-  },
-  {
-    id: 'perk-opus-memory',
-    achievementId: 'ach_perk_opus_memory',
-    name: 'Opus Memory',
-    blurb: 'Magnum Opus no longer resets the layers below it',
   },
 ]
 

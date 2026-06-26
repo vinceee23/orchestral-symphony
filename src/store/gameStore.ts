@@ -653,12 +653,6 @@ export const useGameStore = create<GameState & GameActions>()(
         if (headExp > 0 && state.peakSoundwaves.gt(1)) {
           reset.soundwaves = Decimal.max(reset.soundwaves ?? STARTING_SOUNDWAVES, state.peakSoundwaves.pow(headExp))
         }
-        // perk-encore-resonance (Break phase, @25 lifetime Encores): Encore stops resetting Soundwaves —
-        // carry the full current SW through the reset (tiers still reset). ⚠️ resim flag: peak still resets,
-        // so EP gain (peak-based) is unaffected this reset but the next climb is trivial.
-        if (hasPerk(new Set(state.achievements), 'perk-encore-resonance') && state.soundwaves.gt(reset.soundwaves ?? STARTING_SOUNDWAVES)) {
-          reset.soundwaves = state.soundwaves
-        }
 
         const newEncoreCount = state.encoreCount + 1
         const runActiveMs = Date.now() - state.currentRunStartTime
@@ -737,25 +731,19 @@ export const useGameStore = create<GameState & GameActions>()(
         const skipWall = hasPerk(achSet, 'perk-skip-wall')
         const keepEncoreUpgrades = hasPerk(achSet, 'perk-keep-encore-upgrades')
         const wasPlatinum = state.platinum || state.recordsSold >= PLATINUM_THRESHOLD
-        // perk-opus-memory (Break phase, @10 post-Plat MOs): MO stops resetting the layers below it —
-        // keep tiers/SW/peakSW + the whole Encore layer intact. Only the MO-layer crescendo re-seeds.
-        // ⚠️ resim flag: this removes the L1 re-climb entirely post-unlock; intended deep QoL reward.
-        const opusMemory = hasPerk(achSet, 'perk-opus-memory')
         const crescendoSeed = hasPerk(achSet, 'perk-crescendo-headstart') ? CRESCENDO_HEADSTART : 0
-        const resetPatch: Partial<GameState> = opusMemory
-          ? { crescendo: crescendoSeed, peakCrescendoMult: 1 }
-          : {
-              ...resetTiersAndSW(state.achievements),
-              peakSoundwaves: new Decimal(0),
-              encorePoints: 0,
-              lifetimeEncorePoints: 0,
-              encoreCount: 0,
-              encoreUpgrades: keepEncoreUpgrades ? state.encoreUpgrades : {},
-              layer1WallReached: skipWall,
-              // honor perk-crescendo-headstart (resetTiersAndSW's value is overridden by this explicit key)
-              crescendo: crescendoSeed,
-              peakCrescendoMult: 1,
-            }
+        const resetPatch: Partial<GameState> = {
+          ...resetTiersAndSW(state.achievements),
+          peakSoundwaves: new Decimal(0),
+          encorePoints: 0,
+          lifetimeEncorePoints: 0,
+          encoreCount: 0,
+          encoreUpgrades: keepEncoreUpgrades ? state.encoreUpgrades : {},
+          layer1WallReached: skipWall,
+          // honor perk-crescendo-headstart (resetTiersAndSW's value is overridden by this explicit key)
+          crescendo: crescendoSeed,
+          peakCrescendoMult: 1,
+        }
         set({
           ...resetPatch,
           opusPoints: state.opusPoints + gain,
