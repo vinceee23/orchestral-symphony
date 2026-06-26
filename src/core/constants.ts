@@ -141,12 +141,11 @@ export function getAutoEncoreInterval(opusCount: number): number {
   return Math.max(2000, AUTO_ENCORE_BASE_INTERVAL / (1 + Math.max(0, opusCount - 1) * 0.55))
 }
 
-// AP unlock costs + gates for the prestige automations. Auto-encore opens after the 1st manual MO
-// (so the first 8-encore climb is hand-played once); auto-MO lags to ~MO#3 so L2's prestige decision
-// is learned before it automates. Costs are starting guesses — TUNED in the resim vs AP accrual.
-export const AP_UNLOCK: Record<'encore' | 'autoMO', { cost: number; minOpusCount: number }> = {
+// AP unlock costs + gates for prestige automations. Auto-encore opens after the 1st manual MO
+// (so the first 8-encore climb is hand-played once). Costs are starting guesses — TUNED in the resim vs AP accrual.
+// Auto-MO is an earned L3 venue component (City Theatre), not an AP purchase.
+export const AP_UNLOCK: Record<'encore', { cost: number; minOpusCount: number }> = {
   encore: { cost: 5, minOpusCount: 1 },
-  autoMO: { cost: 75, minOpusCount: 3 }, // 75 (not 25) so the cost actually binds ~MO#3 instead of being decorative (balance review)
 }
 
 /** L4-only — not in AP_UNLOCK until L4_UNLOCKED. Also gated on worldTourUnlocked in unlockWithApplause. */

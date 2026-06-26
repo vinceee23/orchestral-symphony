@@ -104,12 +104,29 @@ delivered by auto-encore/auto-MO automation, not stat carry-forward.
   Fame + these perks; otherwise prune).
 - Gate green, commit: "L3 reconcile: cut Encore Resonance + Opus Memory perks (QoL-only rule)".
 
+## Deferred sim work (re-enable in the final resim phase)
+
+These were skipped/gated during the reconcile because Auto-MO moved from a pre-Platinum AP
+unlock to a post-Platinum L3 venue component (City Theatre, V2). They are test-only, marked
+`RESIM:` in code:
+- `sim/human-pacing.test.ts` — `it.skip` "AFK idle: a fully-automated player…" and
+  `it.skip` "early-AFK probe: going hands-free at MO3…". Both assumed pre-Platinum auto-MO.
+  Re-conceive: pre-Platinum automation is auto-Encore only; auto-MO kicks in once in L3.
+- `sim/l3-pacing.test.ts` — `RESIM_AUTOMO_RECLIMB=false` gates the Tour-8 / Tour-12
+  near-instant re-climb asserts. The tour loop tours from V1 and never reaches V2, so auto-MO
+  is unreachable. Re-model: graduate venues in the tour loop + buy autoMO at City Theatre,
+  then set the flag true.
+- Pre-existing budget blocker (NOT from the reconcile): `era-pacing.test.ts:~1089` (Platinum
+  not reached in MAX_STEPS) and `human-pacing.test.ts:~1142` (2 mid-game achievements
+  stranded). Extend sim budgets (test-only — ~22h Platinum is intended) and/or re-pace.
+
 ## AFTER all 4 tasks
 
 - Full gate: `tsc -b`, vite build, all unit tests, `l3-pacing` sim (reaches Platinum ~22h),
   achievement-pacing. era/human-pacing sim budgets: extend if still short (test-only — the
-  ~22h Platinum is intended). Confirm NO Fame/auto-tour/reset-perk references remain
-  (grep `fame`, `autoTour`, `encoreResonance`, `opusMemory`, `AUTO_TOUR`).
+  ~22h Platinum is intended). Re-enable all the deferred sim asserts above. Confirm NO
+  Fame/auto-tour/reset-perk references remain (grep `fame`, `autoTour`, `encoreResonance`,
+  `opusMemory`, `AUTO_TOUR`).
 - Update `docs/LAYER3-SPEC.md` + `HANDOFF.md` to re-lock the reconciled design so the next
   session can't re-diverge.
 - Resim pacing with the surviving systems modeled together.

@@ -427,9 +427,9 @@ export const useGameStore = create<GameState & GameActions>()(
         })
       },
 
-      // Spend Applause Points to unlock a prestige automation in L2 (auto-encore / auto-MO).
+      // Spend Applause Points to unlock a prestige automation in L2 (auto-encore).
       // Gated by opusCount so the first climb (and a few MO decisions) are hand-played first.
-      unlockWithApplause: (key: 'encore' | 'autoMO' | 'autoTour') => {
+      unlockWithApplause: (key: 'encore' | 'autoTour') => {
         set((state) => {
           if (key === 'autoTour') {
             if (!L4_UNLOCKED || state.autoTour || !state.worldTourUnlocked) return state
@@ -439,10 +439,6 @@ export const useGameStore = create<GameState & GameActions>()(
           }
           const cfg = AP_UNLOCK[key]
           if (!cfg || state.opusCount < cfg.minOpusCount || state.applausePoints < cfg.cost) return state
-          if (key === 'autoMO') {
-            if (state.autoMO) return state
-            return { applausePoints: state.applausePoints - cfg.cost, autoMO: true, autoMOEnabled: true }
-          }
           if (state.autobuyers['encore']?.unlocked) return state
           return {
             applausePoints: state.applausePoints - cfg.cost,

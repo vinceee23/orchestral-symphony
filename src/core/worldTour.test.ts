@@ -111,7 +111,7 @@ describe('worldTour helpers', () => {
     expect(VENUES).toHaveLength(6)
     expect(getVenue(0).componentIds).toEqual(['lighting', 'roof', 'instruments'])
     expect(getVenue(1).componentIds).toContain('keepAutobuyers')
-    expect(getVenue(2).componentIds).toEqual(['lighting', 'roof', 'crowd', 'acoustics'])
+    expect(getVenue(2).componentIds).toEqual(['lighting', 'roof', 'crowd', 'acoustics', 'autoMO'])
     expect(getVenue(5).componentIds).toContain('autoGraduate')
     expect(getVenue(5).componentIds).toHaveLength(8)
   })

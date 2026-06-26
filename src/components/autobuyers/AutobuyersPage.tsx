@@ -42,7 +42,6 @@ export function AutobuyersPage() {
   const setAutobuyerBulk = useGameStore((s) => s.setAutobuyerBulk)
   const applausePoints = useGameStore((s) => s.applausePoints)
   const opusCount = useGameStore((s) => s.opusCount)
-  const autoMO = useGameStore((s) => s.autoMO)
   const unlockWithApplause = useGameStore((s) => s.unlockWithApplause)
 
   const bulkCap = hasPerk(new Set(achievements), 'perk-bulk-unlock') ? 'max' : getAutomatorBulk(opusUpgrades)
@@ -85,26 +84,6 @@ export function AutobuyersPage() {
               size="sm"
             >
               Unlock ({AP_UNLOCK.encore.cost} AP)
-            </Button>
-          </div>
-        )}
-
-        {!autoMO && (
-          <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
-            <div>
-              <div className="text-sm font-semibold text-text-primary">Auto Magnum Opus</div>
-              <div className="text-xs text-text-muted">
-                Performs Magnum Opus automatically when the wall is ready.
-                {opusCount < AP_UNLOCK.autoMO.minOpusCount && ` Unlocks at ${AP_UNLOCK.autoMO.minOpusCount} Magnum Opuses.`}
-              </div>
-            </div>
-            <Button
-              onClick={() => unlockWithApplause('autoMO')}
-              disabled={opusCount < AP_UNLOCK.autoMO.minOpusCount || applausePoints < AP_UNLOCK.autoMO.cost}
-              variant="purple"
-              size="sm"
-            >
-              Unlock ({AP_UNLOCK.autoMO.cost} AP)
             </Button>
           </div>
         )}

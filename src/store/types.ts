@@ -147,7 +147,7 @@ export interface GameActions {
   setBuyAmount: (amount: BuyAmount) => void
   toggleAutobuyer: (key: string) => void
   setAutobuyerBulk: (key: string, bulk: number | 'max') => void
-  unlockWithApplause: (key: 'encore' | 'autoMO' | 'autoTour') => void
+  unlockWithApplause: (key: 'encore' | 'autoTour') => void
   setAutoTourEnabled: (enabled: boolean) => void
   buyEncoreUpgrade: (id: string) => void
   buyOpusUpgrade: (id: string) => void

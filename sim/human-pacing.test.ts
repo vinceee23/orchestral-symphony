@@ -708,10 +708,7 @@ function runHumanSeed(seed: number, setClock: (t: number) => void): RunResult {
         state.applausePoints -= AP_UNLOCK.encore.cost
         state.autobuyers = { ...state.autobuyers, encore: { unlocked: true, enabled: true, interval: AUTOBUYER_DEFAULT_INTERVAL, bulk: 1, lastTick: 0 } }
       }
-      if (!state.autoMO && state.opusCount >= AP_UNLOCK.autoMO.minOpusCount && (state.applausePoints ?? 0) >= AP_UNLOCK.autoMO.cost) {
-        state.applausePoints -= AP_UNLOCK.autoMO.cost
-        state.autoMO = true
-      }
+      // RESIM: auto-MO is now an L3 venue component, not an AP unlock — orchestrator re-models timing
 
       if (!rng.chance(0.12)) {
         humanBuyDecision(state, rng)
@@ -1151,7 +1148,10 @@ describe('human pacing instrument', () => {
   // Idle/AFK verify (#12): once the idle machine is fully built (auto-MO + all tier autobuyers +
   // auto-conduct), a player who WALKS AWAY (no manual buys, not conducting) keeps progressing hands-free.
   // Verifies the L2->Platinum idle promise; the L3-circuit-hands-free part waits on auto-tour (Break phase).
-  it('AFK idle: a fully-automated player keeps cycling Magnum Opuses hands-free (slog -> idle)', () => {
+  // RESIM: this probe assumes auto-MO is AP-unlockable pre-Platinum (fullyAutomated() requires it).
+  // Auto-MO is now an L3 venue component (post-Platinum, City Theatre). Re-conceive as auto-Encore-only
+  // pre-Platinum + L3 auto-MO once in World Tour. Tracked in docs/RECONCILE-PLAN.md (final resim phase).
+  it.skip('AFK idle: a fully-automated player keeps cycling Magnum Opuses hands-free (slog -> idle)', () => {
     const setClock = (globalThis as { __setSimClock?: (t: number) => void }).__setSimClock!
     const rng = new SeededRng(99_001)
     let simMs = 0
@@ -1176,10 +1176,7 @@ describe('human pacing instrument', () => {
         state.applausePoints -= AP_UNLOCK.encore.cost
         state.autobuyers = { ...state.autobuyers, encore: { unlocked: true, enabled: true, interval: AUTOBUYER_DEFAULT_INTERVAL, bulk: 1, lastTick: 0 } }
       }
-      if (!state.autoMO && state.opusCount >= AP_UNLOCK.autoMO.minOpusCount && state.applausePoints >= AP_UNLOCK.autoMO.cost) {
-        state.applausePoints -= AP_UNLOCK.autoMO.cost
-        state.autoMO = true
-      }
+      // RESIM: auto-MO is now an L3 venue component, not an AP unlock — orchestrator re-models timing
     }
     const buyGateTier = () => {
       const gate = state.layer1WallReached ? getMagnumOpusCost(state.opusCount) : getEncoreCost(state.encoreCount)
@@ -1235,7 +1232,10 @@ describe('human pacing instrument', () => {
   // Early-AFK probe (#12): go hands-free at the EARLIEST automation point (auto-MO unlock, ~MO3) with only
   // PARTIAL automation, and report how far it gets — quantifies the MO3→full-auto "mostly-idle" window.
   // Reporting test (lenient assert): the finding is the logged outcome, not a hard pass/fail.
-  it('early-AFK probe: going hands-free at MO3 (partial automation) — how far?', () => {
+  // RESIM: this probe goes hands-free "at the auto-MO unlock (~MO3)" — but auto-MO is now an L3 venue
+  // component (post-Platinum), not an AP unlock at MO3, so the partial-automation window it measured no
+  // longer exists pre-Platinum. Re-conceive for the corrected design. Tracked in docs/RECONCILE-PLAN.md.
+  it.skip('early-AFK probe: going hands-free at MO3 (partial automation) — how far?', () => {
     const setClock = (globalThis as { __setSimClock?: (t: number) => void }).__setSimClock!
     const rng = new SeededRng(99_002)
     let simMs = 0
@@ -1258,10 +1258,7 @@ describe('human pacing instrument', () => {
         state.applausePoints -= AP_UNLOCK.encore.cost
         state.autobuyers = { ...state.autobuyers, encore: { unlocked: true, enabled: true, interval: AUTOBUYER_DEFAULT_INTERVAL, bulk: 1, lastTick: 0 } }
       }
-      if (!state.autoMO && state.opusCount >= AP_UNLOCK.autoMO.minOpusCount && state.applausePoints >= AP_UNLOCK.autoMO.cost) {
-        state.applausePoints -= AP_UNLOCK.autoMO.cost
-        state.autoMO = true
-      }
+      // RESIM: auto-MO is now an L3 venue component, not an AP unlock — orchestrator re-models timing
     }
     const buyGateTier = () => {
       const gate = state.layer1WallReached ? getMagnumOpusCost(state.opusCount) : getEncoreCost(state.encoreCount)
