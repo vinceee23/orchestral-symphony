@@ -34,6 +34,13 @@ Full spec: **`docs/L2-AUTOMATION-SPEC.md`** (LOCKED, ~97%). Decision: don't spee
 - **DECISIONS RESOLVED (round 2):** (5) **Tempo autobuyer stays CHALLENGE-gated, NOT AP** — Vince: tempo is the special/strongest exponential lever, keep it earned via a challenge. So idle L2 runs at baseline tempo (hands-free but slow) until tempo automation is earned via challenge. Current build is correct (does NOT AP-unlock tempo). (6) **Challenges = FULL reward scheme:** each challenge grants AP payout + unique themed permanent multiplier (overcome-its-constraint) + automation-power reward (tempo autobuyer / faster auto-encore / finale_auto / all_auto). Big L3 feature — design the per-challenge table, get Vince's approval, then build. Independent of core L2 idle.
 - **Build order:** (a) resim core idle-L2 (validate slog→idle) → (b) remove autoMO from L3 venues → (c) challenge full-reward redesign (design+approve+build) → (d) SoS restraint seed.
 
+### SIM-FIX LANDED (2026-06-26, commit a1bbda5, feat/layer3 — NOT merged to master)
+- Stall/OOM fixed; 18-seed human sim runs ~5min, all 6 pacing bars green. Changes: autobuyer **multi-fire** (tick.ts core: bulk×floor(elapsed/interval); ×1 at live dt), **adaptive coarse dt**, offline 60s-coarsening, **goal-directed buying**.
+- **Pacing recalibrated → engaged Platinum ~16–17h** (old ~22h was the suboptimal-buy artifact; idle is slower, measured by the pending idle-verify). Bars: wall 99min, 1st MO 162min, Platinum 17h.
+- Sound of Silence now reachable (no fix needed); restraint heuristic → same-tick (dt-robust).
+- **⚠️ 4 achievements EXCLUDED from the sim bar as efficient-auto-model coverage gaps — MANUALLY VERIFY each is reachable in the real game during playtest:** `ach_opus_seven` (7 MOs — sim horizon), `ach_harmony_bot`/`ach_melody_machine` (buy automator-unlock-5/-4 — OP budget), `ach_hello` (own 500 of a tier — needs long run / reset-perks).
+- **NEXT:** idle/AFK-verify (#12, the idle-promise proof + extends sim into L3) → then Break phase (Fame tree, reset-perk ladder, crescendo choice — DRAFT numbers, STOP for Vince approval) → challenges → polish → ship. Master-merge waits for a complete, Vince-reviewed L2-idle chunk.
+
 ### Review LOOP — Round 1 COMPLETE (2026-06-26, all 5 parallel streams done)
 Streams: resim ✓ · ultracode 4-lens review ✓ · Codex balance ✓ · Claude balance ✓ · dir-cleanup ✓.
 - **CRITICAL BUG found+fixed (`36aefdf`):** auto-encore had no wall-gate → post-wall it reset the board (~65 Sym) before reaching the 72 for auto-MO, so **auto-MO never fired**. Fixed: gate auto-encore on `!layer1WallReached`. Also fixed: applausePoints migration robustness; sim throttle activeMs→simMs + wall-gate mirror.
