@@ -39,15 +39,21 @@ Full spec: **`docs/L2-AUTOMATION-SPEC.md`** (LOCKED, ~97%). Decision: don't spee
 - **Pacing recalibrated → engaged Platinum ~16–17h** (old ~22h was the suboptimal-buy artifact; idle is slower, measured by the pending idle-verify). Bars: wall 99min, 1st MO 162min, Platinum 17h.
 - Sound of Silence now reachable (no fix needed); restraint heuristic → same-tick (dt-robust).
 - **⚠️ 4 achievements EXCLUDED from the sim bar as efficient-auto-model coverage gaps — MANUALLY VERIFY each is reachable in the real game during playtest:** `ach_opus_seven` (7 MOs — sim horizon), `ach_harmony_bot`/`ach_melody_machine` (buy automator-unlock-5/-4 — OP budget), `ach_hello` (own 500 of a tier — needs long run / reset-perks).
-- **NEXT:** idle/AFK-verify (#12, the idle-promise proof + extends sim into L3) → then Break phase (Fame tree, reset-perk ladder, crescendo choice — DRAFT numbers, STOP for Vince approval) → challenges → polish → ship. Master-merge waits for a complete, Vince-reviewed L2-idle chunk.
+- **NEXT:** Break-phase BULK (#13) — Fame currency + 6-node tree + UI, reset-perk ladder (3 new perks), auto-tour capstone, WT-reset persistence → then L3-circuit idle-verify → challenges (#9) → polish → ship. Master-merge waits for a complete, Vince-reviewed chunk.
 
-### RESUME POINT for idle-verify (#12) — scoped, fresh-context effort
-Build in **sim/l3-pacing.test.ts** (already models full L1→L3 incl. World Tour). Mirror the human-pacing sim-fix:
-1. **Port goal-directed buying** into Phase A/B buy spots (after humanBuyDecision/humanSpendMeta) — build toward the next prestige gate's tier; else l3-pacing will stall post-skip-wall like human-pacing did.
-2. Expect this to **shift l3-pacing's pacing** (faster, like 22h→16h) → **recalibrate its assertions** (Venue-1 graduate, re-tour cadence, L3-unlock bounds) to the faithful model.
-3. Add an **AFK-after-automation** scenario: once auto-encore + auto-MO unlocked (~MO3), stop manual buys; only autobuyers (multi-fire) + auto-encore + auto-MO drive. **Acceptance:** reaches Platinum AND completes the circuit hands-free (any duration); report idle-time-to-Platinum + circuit vs the ~16h engaged figure.
-4. Gate (tsc + the 4 sims + unit), commit.
-- Break-phase DRAFT numbers are in docs/L1-L3-RELEASE-PLAN.md §3b-numbers — AWAITING Vince approve/tweak before that build.
+### idle/AFK-verify (#12) — ✅ DONE (committed)
+- AFK test in **sim/human-pacing.test.ts** ("AFK idle: fully-automated player keeps cycling MOs hands-free") PASSES (+4 MOs hands-free); early-AFK probe shows opus-3 production-limited stall (acceptable AD-style ramp, full automation ~opus 27).
+- **Slog-fix completed (`507c76d`):** auto-prestige builds its own gate tier in the tick-driver (Symphony autobuyer is OP-gated to opus 27, so auto-prestige was stalling at the gate without it).
+- **Crescendo (`0236918`):** idle/auto-conduct AUTO_CONDUCT_FRACTION 0.5→0.7 (active holding = 100%; Standing Ovation Fame node will raise the active ceiling later).
+
+### RESUME POINT for Break-phase bulk (#13) — biggest build in the plan; do fresh, build incrementally
+DRAFT numbers (Fame tree / reset-perks / crescendo) are APPROVED in **docs/L1-L3-RELEASE-PLAN.md §3b-numbers**. Build each sub-feature → gate (tsc + 45 unit + AFK sims) → commit:
+1. **Fame currency** — spendable + lifetime passive mult. Gain ≈ `floor(1 + log10(recordsSold/1e6))` per post-Platinum MO. Add field/init/migration to gameStore; grant in performMagnumOpus when post-Platinum; spendable balance separate from the existing FAME_PER passive mult.
+2. **Fame Tree** — 6 nodes (Limelight, Standing Ovation [raises crescendo active ceiling ×3→×5], Sold-Out Shows, Tour Buzz, Encore Magnetism, Diamond Status) + UI page. Magnitudes in §3b-numbers.
+3. **Reset-perk ladder** — 3 new perks (Encore Resonance @25 encores, Opus Memory @10 post-plat MOs, Legacy @1st challenge); touch the reset functions (resetTiersAndSW / performMagnumOpus / challenge-time).
+4. **Auto-tour capstone** — AP-gated near circuit end.
+5. **WT-reset persistence** — AP + Fame persist across World Tour reset; automations reset unless Roadies.
+6. Then **L3-circuit idle-verify** in sim/l3-pacing.test.ts (port goal-directed buying into Phase A/B; recalibrate assertions; AFK-after-automation scenario reaching Platinum + circuit hands-free).
 
 ### Review LOOP — Round 1 COMPLETE (2026-06-26, all 5 parallel streams done)
 Streams: resim ✓ · ultracode 4-lens review ✓ · Codex balance ✓ · Claude balance ✓ · dir-cleanup ✓.
