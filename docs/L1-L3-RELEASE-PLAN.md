@@ -41,7 +41,16 @@ A **free web playtest** of the full **L1 → L3** arc:
 
 Reviewed by ultracode 4-lens + Codex + Claude balance; all confirmed findings fixed. Fast gate green (tsc + 45/45 unit). **Known broken:** the human-pacing resim crashes (OOM) under the auto-fire model — a sim-scale issue, fixed first in §4.1.
 
-## 4. Work breakdown — build order: **sim-fix → idle-verify → challenges → polish → ship**
+## 3b. Post-Platinum "BREAK" phase (added 2026-06-26 — was too thin; now a distinct payoff)
+Platinum is a **Break Infinity-style event**, not the start of dead idle. The road Platinum → World Tour is real progression:
+- **Sublinear MO growth** post-Platinum (the "break"; OP_PLAT formula already does this).
+- **Crescendo choice:** idle/auto-conduct ×2.5 vs **×3 when actively holding** — active is rewarded. **Standing Ovation** (Fame node) raises this ceiling (lift TBD in resim, e.g. +0.5×/level active, idle ~83% of it).
+- **Fame Tree (LOCKED):** Fame becomes spendable post-Platinum (like EP: spend on the tree + a lifetime passive mult). Nodes: **Limelight** (lifetime-Fame passive prod/OP mult) · **Standing Ovation** (crescendo ceiling) · **Sold-Out Shows** (records sell-rate) · **Tour Buzz** (lowers WT unlock gate) · **Encore Magnetism** (auto-encore speed + AP gain) · **Diamond Status** (Fame-gain mult). Distinct from the OP tree. Magnitudes resim-tuned.
+- **Reset-Softening Perk Ladder (LOCKED):** achievements that progressively break the reset grind —
+  Sight-Reading (partial SW carry, exists) → **★Encore Resonance** (Encore stops resetting SW) → Keep Encore Upgrades (exists) → Skip the Wall (~Platinum, exists) → **★Opus Memory** (MO stops resetting layers below) → Roadies (=keepAutobuyers, WT spares autobuyers) → **★Legacy** (challenge-time persists across all resets). ★=new.
+- **World Tour reset (LOCKED):** deep reset incl. **autobuyers** (a real sacrifice) unless Roadies/keep-autobuyers is owned; challenge-time always persists (Legacy).
+
+## 4. Work breakdown — build order: **sim-fix → idle-verify → Break phase → challenges → polish → ship**
 
 ### 4.1 Fix + harden the sim (FIRST — it's the verification backbone)
 - The resim crashes (OOM, ~48min) simulating the fully-automated post-Platinum loop. Treat as **sim-scale**: add step caps + **coarse dt post-Platinum** (the autobuyer-throughput rule from L2-SPEC §9 — fine dt only where it matters), bound total work per seed. If it still blows up → escalate to a possible game degenerate-loop.
