@@ -1,19 +1,34 @@
 import Decimal from 'break_infinity.js'
-import { PLATINUM_THRESHOLD } from './constants'
+import { PLATINUM_THRESHOLD, L4_UNLOCKED, getMagnumOpusCost } from './constants'
 import type { GameState } from '../store/types'
+
+export type ComponentTarget =
+  | 'fillSpeed'
+  | 'capacity'
+  | 'acclaimRate'
+  | 'autoCollect'
+  | 'keepAutobuyers'
+  | 'autoMO'
+  | 'autoGraduate'
+
+export interface ComponentDef {
+  label: string
+  role: 'multiplier' | 'unlock'
+  maxLevel: number
+  costBase: number
+  costGrowth: number
+  visual: boolean
+  target: ComponentTarget
+  /** Per-level boost for multiplier components. */
+  perLevel?: number
+}
 
 /** Tuned L3 constants — ported from sim/l3-pacing.test.ts (single source of truth). */
 export const L3 = {
-  ACCLAIM_BASE: 0.168,
+  ACCLAIM_BASE: 0.163,
   CAT_EXP: 0.62,
-  INSTR_PER: 0.2,
   CAP_BASE: 88,
-  ROOF_PER: 0.48,
-  LIGHT_FILL_PER: 0.24,
   CONDUCT_FILL_MULT: 1.75,
-  MAX_COMPONENT_TIER: 5,
-  GRADUATE_MIN_TIER: 3,
-  GRADUATE_TOTAL_LEVELS: 9,
   CATALOGUE_OPUS_W: 1.15,
   CATALOGUE_RECORDS_W: 2.2,
   MULT_FORM: 'capped-log' as const,
@@ -24,74 +39,350 @@ export const L3 = {
   MULT_CAP: 48,
   GATE_POST_PLAT_MO: 2,
   GATE_MIN_PEAK_SW_LOG10: 0,
-  KEEP_AUTOBUYERS_COST: 165,
-  AUTO_MO_FROM_TOUR: 2,
   LEGACY_RECORDS_FRACTION: 0.12,
+  // Auto-Tour capstone: re-tour when the LIVE catalogue has regrown to this multiple of the frozen
+  // touring snapshot. Calibrated in sim/l3-pacing.test.ts (AFK circuit) — 1.12 completes the full circuit
+  // hands-free in ~24h over ~6 auto-tours with a lengthening, never-stalling cadence. TUNED in resim.
+  AUTO_TOUR_CAT_RATIO: 1.12,
   COMPONENTS: {
-    roof: { costBase: 215, costGrowth: 2.34, label: 'Roof', effect: 'capacity' },
-    lighting: { costBase: 185, costGrowth: 2.28, label: 'Lighting', effect: 'fill speed' },
-    instruments: { costBase: 235, costGrowth: 2.4, label: 'Instruments', effect: 'Acclaim rate' },
-  } as const,
+    lighting: {
+      label: 'Lighting',
+      role: 'multiplier',
+      maxLevel: 3,
+      costBase: 185,
+      costGrowth: 2.28,
+      visual: true,
+      target: 'fillSpeed',
+      perLevel: 0.24,
+    },
+    roof: {
+      label: 'Roof',
+      role: 'multiplier',
+      maxLevel: 3,
+      costBase: 215,
+      costGrowth: 2.34,
+      visual: true,
+      target: 'capacity',
+      perLevel: 0.48,
+    },
+    instruments: {
+      label: 'Instruments',
+      role: 'unlock',
+      maxLevel: 1,
+      costBase: 235,
+      costGrowth: 2.4,
+      visual: true,
+      target: 'autoCollect',
+    },
+    crowd: {
+      label: 'Crowd',
+      role: 'multiplier',
+      maxLevel: 3,
+      costBase: 275,
+      costGrowth: 2.38,
+      visual: true,
+      target: 'acclaimRate',
+      perLevel: 0.18,
+    },
+    keepAutobuyers: {
+      label: 'Keep Autobuyers',
+      role: 'unlock',
+      maxLevel: 1,
+      costBase: 165,
+      costGrowth: 1,
+      visual: false,
+      target: 'keepAutobuyers',
+    },
+    acoustics: {
+      label: 'Acoustics',
+      role: 'multiplier',
+      maxLevel: 3,
+      costBase: 310,
+      costGrowth: 2.18,
+      visual: false,
+      target: 'fillSpeed',
+      perLevel: 0.14,
+    },
+    autoMO: {
+      label: 'Auto-Magnum Opus',
+      role: 'unlock',
+      maxLevel: 1,
+      costBase: 340, // TUNE in resim
+      costGrowth: 1,
+      visual: false,
+      target: 'autoMO',
+    },
+    marketing: {
+      label: 'Marketing',
+      role: 'multiplier',
+      maxLevel: 4,
+      costBase: 295,
+      costGrowth: 2.22,
+      visual: false,
+      target: 'acclaimRate',
+      perLevel: 0.15,
+    },
+    backstage: {
+      label: 'Backstage',
+      role: 'multiplier',
+      maxLevel: 3,
+      costBase: 330,
+      costGrowth: 2.26,
+      visual: false,
+      target: 'capacity',
+      perLevel: 0.22,
+    },
+    premiere: {
+      label: 'Premiere',
+      role: 'multiplier',
+      maxLevel: 3,
+      costBase: 395,
+      costGrowth: 2.48,
+      visual: false,
+      target: 'acclaimRate',
+      perLevel: 0.1,
+    },
+    autoGraduate: {
+      label: 'Auto-Graduate',
+      role: 'unlock',
+      maxLevel: 1,
+      costBase: 520,
+      costGrowth: 1,
+      visual: false,
+      target: 'autoGraduate',
+    },
+  } satisfies Record<string, ComponentDef>,
 } as const
 
 export type ComponentId = keyof typeof L3.COMPONENTS
 
-export const VENUE_1 = {
-  id: 0,
-  name: 'The Old House',
-  componentIds: ['roof', 'lighting', 'instruments'] as ComponentId[],
-} as const
+export interface VenueConfig {
+  id: number
+  name: string
+  componentIds: ComponentId[]
+  costScale: number
+  capScale: number
+}
+
+/** Linear venue ladder — Old House through World Stage. */
+export const VENUES: readonly VenueConfig[] = [
+  {
+    id: 0,
+    name: 'The Old House',
+    componentIds: ['lighting', 'roof', 'instruments'],
+    costScale: 1,
+    capScale: 1,
+  },
+  {
+    id: 1,
+    name: 'Local Hall',
+    componentIds: ['lighting', 'roof', 'crowd', 'keepAutobuyers'],
+    costScale: 1.38,
+    capScale: 1.18,
+  },
+  {
+    id: 2,
+    name: 'City Theatre',
+    componentIds: ['lighting', 'roof', 'crowd', 'acoustics', 'autoMO'],
+    costScale: 1.82,
+    capScale: 1.38,
+  },
+  {
+    id: 3,
+    name: 'Concert Hall',
+    componentIds: ['lighting', 'roof', 'crowd', 'acoustics', 'marketing'],
+    costScale: 2.4,
+    capScale: 1.62,
+  },
+  {
+    id: 4,
+    name: 'Opera House',
+    componentIds: ['lighting', 'roof', 'crowd', 'acoustics', 'marketing', 'backstage'],
+    costScale: 3.1,
+    capScale: 1.9,
+  },
+  {
+    id: 5,
+    name: 'World Stage',
+    componentIds: ['lighting', 'roof', 'crowd', 'acoustics', 'marketing', 'backstage', 'premiere', 'autoGraduate'],
+    costScale: 4,
+    capScale: 2.25,
+  },
+] as const
+
+export const LAST_VENUE_ID = VENUES.length - 1
+
+/** @deprecated Use getVenue(0) — kept for imports that reference V1 slice. */
+export const VENUE_1 = VENUES[0]
+
+export function getVenue(venueId: number): VenueConfig {
+  return VENUES[Math.max(0, Math.min(venueId, LAST_VENUE_ID))]
+}
+
+export function getComponentDef(componentId: string): ComponentDef | undefined {
+  return L3.COMPONENTS[componentId as ComponentId]
+}
+
+export function getComponentMaxTier(componentId: string): number {
+  return getComponentDef(componentId)?.maxLevel ?? 1
+}
+
+export function isComponentMaxed(componentId: string, level: number): boolean {
+  return level >= getComponentMaxTier(componentId)
+}
+
+function multiplierBoost(components: Record<string, number>, target: ComponentTarget): number {
+  let boost = 1
+  for (const [id, lvl] of Object.entries(components)) {
+    if (lvl <= 0) continue
+    const cfg = getComponentDef(id)
+    if (!cfg || cfg.role !== 'multiplier' || cfg.target !== target || !cfg.perLevel) continue
+    boost *= 1 + lvl * cfg.perLevel
+  }
+  return boost
+}
+
+/** Flags set when an unlock component is purchased. */
+export function getUnlockFlagsFromComponent(
+  componentId: string,
+): Partial<Pick<GameState, 'autoCollect' | 'keepAutobuyers' | 'autoMO' | 'autoGraduate'>> {
+  const cfg = getComponentDef(componentId)
+  if (!cfg || cfg.role !== 'unlock') return {}
+  switch (cfg.target) {
+    case 'autoCollect':
+      return { autoCollect: true }
+    case 'keepAutobuyers':
+      return { keepAutobuyers: true }
+    case 'autoMO':
+      return { autoMO: true }
+    case 'autoGraduate':
+      return { autoGraduate: true }
+    default:
+      return {}
+  }
+}
 
 export function getCatalogueSnapshot(opusCount: number, recordsSold: number): number {
   const recordsNorm = recordsSold / PLATINUM_THRESHOLD
   return Math.max(1, L3.CATALOGUE_OPUS_W * opusCount + L3.CATALOGUE_RECORDS_W * recordsNorm)
 }
 
-export function getVenueCapacity(components: Record<string, number>): number {
-  const roofLvl = components.roof ?? 0
-  return L3.CAP_BASE * (1 + roofLvl * L3.ROOF_PER)
+/** Live catalogue for post-circuit break; frozen snapshot otherwise. */
+export function getEffectiveCatalogue(
+  state: Pick<GameState, 'circuitComplete' | 'catalogueSnapshot' | 'opusCount' | 'recordsSold'>,
+): number {
+  if (state.circuitComplete) {
+    return getCatalogueSnapshot(state.opusCount, state.recordsSold)
+  }
+  const snap = state.catalogueSnapshot instanceof Decimal
+    ? state.catalogueSnapshot.toNumber()
+    : state.catalogueSnapshot
+  return Math.max(1, snap ?? 1)
+}
+
+export function getVenueCapacity(
+  components: Record<string, number>,
+  venueId = 0,
+): number {
+  const venue = getVenue(venueId)
+  const structure = multiplierBoost(components, 'capacity')
+  return L3.CAP_BASE * venue.capScale * structure
 }
 
 export function getAcclaimRate(
-  catalogueSnapshot: Decimal | number,
+  catalogue: Decimal | number,
   components: Record<string, number>,
+  venueId = 0,
 ): number {
-  const snapshot = catalogueSnapshot instanceof Decimal
-    ? catalogueSnapshot.toNumber()
-    : catalogueSnapshot
-  const instrumentsLvl = components.instruments ?? 0
+  const snapshot = catalogue instanceof Decimal ? catalogue.toNumber() : catalogue
   const cat = Math.pow(Math.max(1, snapshot), L3.CAT_EXP)
-  const instr = 1 + instrumentsLvl * L3.INSTR_PER
-  const raw = L3.ACCLAIM_BASE * cat * instr
+  const quality = multiplierBoost(components, 'acclaimRate')
+  const venue = getVenue(venueId)
+  const raw = L3.ACCLAIM_BASE * cat * quality / Math.pow(venue.costScale, 0.35)
   return Number.isFinite(raw) && raw > 0 ? raw : 0
 }
 
 export function getFillSpeed(
-  catalogueSnapshot: Decimal | number,
+  catalogue: Decimal | number,
   components: Record<string, number>,
   conducting: boolean,
+  venueId = 0,
 ): number {
-  const rate = getAcclaimRate(catalogueSnapshot, components)
-  const lightingLvl = components.lighting ?? 0
-  const light = 1 + lightingLvl * L3.LIGHT_FILL_PER
+  const rate = getAcclaimRate(catalogue, components, venueId)
+  const light = multiplierBoost(components, 'fillSpeed')
   const conduct = conducting ? L3.CONDUCT_FILL_MULT : 1
   return rate * light * conduct
 }
 
-export function getComponentCost(componentId: string, level: number): number {
-  const cfg = L3.COMPONENTS[componentId as ComponentId]
+export function getComponentCost(
+  componentId: string,
+  level: number,
+  venueId = 0,
+  discountFactor = 1,
+): number {
+  const cfg = getComponentDef(componentId)
   if (!cfg) return Infinity
-  const raw = cfg.costBase * Math.pow(cfg.costGrowth, level)
+  const venue = getVenue(venueId)
+  const raw = cfg.costBase * venue.costScale * Math.pow(cfg.costGrowth, level) * discountFactor
   return Number.isFinite(raw) ? raw : Infinity
 }
 
-export function isVenueGraduatable(components: Record<string, number>): boolean {
-  const ids = VENUE_1.componentIds
-  if (L3.GRADUATE_MIN_TIER > 0) {
-    return ids.every((id) => (components[id] ?? 0) >= L3.GRADUATE_MIN_TIER)
+export function isVenueGraduatable(
+  components: Record<string, number>,
+  venueId = 0,
+): boolean {
+  const ids = getVenue(venueId).componentIds
+  return ids.every((id) => isComponentMaxed(id, components[id] ?? 0))
+}
+
+/** Build state patch for graduating the current venue (manual or auto). */
+export function buildVenueGraduationPatch(
+  state: Pick<GameState, 'currentVenue' | 'autoMO' | 'autoMOEnabled' | 'circuitComplete'>,
+): Partial<GameState> | null {
+  if (state.circuitComplete) return null
+
+  const base: Partial<GameState> = {
+    components: {},
+    venueBuffer: new Decimal(0),
+    venueSoldOut: false,
+    autoMOEnabled: state.autoMOEnabled ?? true,
   }
-  const total = ids.reduce((s, id) => s + (components[id] ?? 0), 0)
-  return total >= L3.GRADUATE_TOTAL_LEVELS
+
+  if (state.currentVenue >= LAST_VENUE_ID) {
+    return { ...base, circuitComplete: true }
+  }
+
+  return { ...base, currentVenue: state.currentVenue + 1 }
+}
+
+export function isAutoMOUnlocked(state: Pick<GameState, 'autoMO'>): boolean {
+  return !!state.autoMO
+}
+
+/**
+ * Auto-Tour (Break-phase capstone): fire performTour() when the live catalogue has regrown to
+ * AUTO_TOUR_CAT_RATIO× the frozen touring snapshot. Pre-circuit only — once the circuit is complete the
+ * snapshot is moot (Acclaim uses the live catalogue) and re-touring would just reset L1/L2 for nothing.
+ */
+export function canAutoPerformTour(state: GameState): boolean {
+  if (!L4_UNLOCKED) return false
+  if (!state.autoTour || !state.autoTourEnabled) return false
+  if (!state.worldTourUnlocked || state.circuitComplete) return false
+  if (state.activeChallenge) return false
+  const live = getCatalogueSnapshot(state.opusCount, state.recordsSold)
+  const snap = state.catalogueSnapshot instanceof Decimal
+    ? state.catalogueSnapshot.toNumber()
+    : (state.catalogueSnapshot ?? 1)
+  return live >= Math.max(1, snap) * L3.AUTO_TOUR_CAT_RATIO
+}
+
+export function canAutoPerformMagnumOpus(state: GameState): boolean {
+  if (!state.autoMO || !state.autoMOEnabled) return false
+  if (!state.layer1WallReached) return false
+  if (state.activeChallenge) return false
+  const moCost = getMagnumOpusCost(state.opusCount)
+  const moPurchased = state.tiers[moCost.tierIndex]?.purchased ?? 0
+  return moPurchased >= moCost.amount
 }
 
 export function getAcclaimMultiplier(lifetimeAcclaim: Decimal | number): number {
@@ -121,12 +412,13 @@ export function canUnlockWorldTour(state: GameState): boolean {
   return true
 }
 
-/** Venue buffer fill + auto-bank on cap (anti-AFK: stops after one buffer until player acts). */
+/** Venue buffer fill; auto-banks on cap when autoCollect is owned. */
 export function calculateWorldTourTick(
   state: Pick<
     GameState,
     'worldTourUnlocked' | 'catalogueSnapshot' | 'components' | 'venueBuffer' | 'venueSoldOut'
-    | 'acclaim' | 'lifetimeAcclaim'
+    | 'acclaim' | 'lifetimeAcclaim' | 'currentVenue' | 'circuitComplete' | 'opusCount' | 'recordsSold'
+    | 'autoCollect'
   >,
   deltaMs: number,
   conducting: boolean,
@@ -145,16 +437,20 @@ export function calculateWorldTourTick(
     : new Decimal(state.lifetimeAcclaim ?? 0)
   let venueSoldOut = state.venueSoldOut ?? false
 
-  const cap = getVenueCapacity(state.components)
+  const venueId = state.currentVenue ?? 0
+  const catalogue = getEffectiveCatalogue(state)
+  const cap = getVenueCapacity(state.components, venueId)
 
   if (!venueSoldOut) {
-    const speed = getFillSpeed(state.catalogueSnapshot, state.components, conducting)
+    const speed = getFillSpeed(catalogue, state.components, conducting, venueId)
     venueBuffer = Decimal.min(new Decimal(cap), venueBuffer.plus(speed * dtSec))
     if (venueBuffer.gte(cap - 1e-9)) {
       venueBuffer = new Decimal(cap)
-      acclaim = acclaim.plus(venueBuffer)
-      lifetimeAcclaim = lifetimeAcclaim.plus(venueBuffer)
-      venueBuffer = new Decimal(0)
+      if (state.autoCollect) {
+        acclaim = acclaim.plus(venueBuffer)
+        lifetimeAcclaim = lifetimeAcclaim.plus(venueBuffer)
+        venueBuffer = new Decimal(0)
+      }
       venueSoldOut = true
     }
   }

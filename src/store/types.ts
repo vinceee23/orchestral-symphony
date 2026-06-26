@@ -41,6 +41,7 @@ export interface GameState {
   tempo: TempoState
   buyAmount: BuyAmount
   achievements: string[]
+  /** L3 challenge clears — TODO(L4): reset on Signature ascension (LAYER3-SPEC §2.8). */
   completedChallenges: string[]
 
   // Layer 1 Encore shop — id -> level (spends encorePoints)
@@ -58,6 +59,13 @@ export interface GameState {
   encorePoints: number
   lifetimeEncorePoints: number
   encoreCount: number
+  /** Monotonic total Encores ever performed (encoreCount resets each MO; this never does). Gates deep perks. */
+  lifetimeEncoreCount: number
+
+  // Layer-1 automation currency: Applause Points. Earned per Encore (alongside EP); spent to unlock
+  // autobuyers (tiers 1-7, tempo, auto-encore, auto-MO). MO upgrades raise automation power.
+  // number (not Decimal) — matches EP/OP/records; pre-L4 magnitudes stay well within range. Persists across resets.
+  applausePoints: number
 
   // Cliffhanger gate: layers 2-6 stay locked until the Layer-1 wall is reached.
   layer1WallReached: boolean
@@ -82,7 +90,21 @@ export interface GameState {
   components: Record<string, number>
   catalogueSnapshot: Decimal
   worldTourUnlocked: boolean
+  /** V1 Instruments unlock — venue auto-banks buffer into Acclaim on sell-out. */
+  autoCollect: boolean
   keepAutobuyers: boolean
+  /** Mid-ladder unlock — auto-performs Magnum Opus when profitable. */
+  autoMO: boolean
+  /** Toggle for Auto-MO (defaults on when unlocked). */
+  autoMOEnabled: boolean
+  /** Late-ladder unlock — graduates a venue once all components are maxed. */
+  autoGraduate: boolean
+  /** Break-phase capstone (AP-bought) — auto-performs the World Tour when the catalogue has regrown. */
+  autoTour: boolean
+  /** Toggle for Auto-Tour (defaults on when unlocked). */
+  autoTourEnabled: boolean
+  /** Full venue circuit graduated — Acclaim rate uses live catalogue. */
+  circuitComplete: boolean
   /** MOs performed after Platinum — drives the hybrid L3 unlock gate. */
   postPlatinumMoCount: number
 
@@ -118,6 +140,8 @@ export interface GameActions {
   setBuyAmount: (amount: BuyAmount) => void
   toggleAutobuyer: (key: string) => void
   setAutobuyerBulk: (key: string, bulk: number | 'max') => void
+  unlockWithApplause: (key: 'encore' | 'autoTour') => void
+  setAutoTourEnabled: (enabled: boolean) => void
   buyEncoreUpgrade: (id: string) => void
   buyOpusUpgrade: (id: string) => void
   checkAchievements: () => void
@@ -133,5 +157,6 @@ export interface GameActions {
   performTour: () => void
   unlockWorldTour: () => void
   bankVenueAcclaim: () => void
+  setAutoMOEnabled: (enabled: boolean) => void
   hardReset: () => void
 }

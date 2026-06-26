@@ -11,7 +11,11 @@ export function getRecordsPerSec(
   crescendoMult: number,
   levels: Record<string, number>,
 ): number {
-  return getEffectiveRecordsK(levels) * Math.pow(opusCount, RECORDS_OPUS_EXP) * crescendoMult
+  return (
+    getEffectiveRecordsK(levels) *
+    Math.pow(opusCount, RECORDS_OPUS_EXP) *
+    crescendoMult
+  )
 }
 
 /** Accrue records over dtSec. */

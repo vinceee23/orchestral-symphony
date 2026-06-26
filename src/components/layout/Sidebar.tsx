@@ -12,7 +12,6 @@ const BASE_TABS: { id: string; label: string; icon: IconName }[] = [
   { id: 'prestige', label: 'Prestige', icon: 'sparkle' },
   { id: 'achievements', label: 'Achievements', icon: 'medal' },
   { id: 'stats', label: 'Stats', icon: 'bars' },
-  // Challenges hidden until Layer 5 (Virtuoso) — they ARE that layer's voluntary-difficulty content.
 ]
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
@@ -20,7 +19,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const worldTourUnlocked = useGameStore((s) => s.worldTourUnlocked)
   const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const finalePoints = useGameStore((s) => s.finalePoints)
-  const era = getEra(lifetimeEncorePoints, opusCount, finalePoints)
+  const era = getEra(lifetimeEncorePoints, opusCount, finalePoints, worldTourUnlocked)
   let tabs = opusCount > 0
     ? [
         BASE_TABS[0],
@@ -35,6 +34,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     tabs = [
       ...tabs.slice(0, insertAt),
       { id: 'worldtour', label: 'World Tour', icon: 'sparkle' as IconName },
+      { id: 'challenges', label: 'Challenges', icon: 'metronome' as IconName },
       ...tabs.slice(insertAt),
     ]
   }

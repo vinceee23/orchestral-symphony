@@ -1,5 +1,5 @@
 import { useGameStore } from '../../store/gameStore'
-import { TIER_CONFIGS, AUTOBUYER_BULK_TIERS, AUTOBUYER_DEFAULT_INTERVAL } from '../../core/constants'
+import { TIER_CONFIGS, AUTOBUYER_BULK_TIERS, AUTOBUYER_DEFAULT_INTERVAL, AP_UNLOCK } from '../../core/constants'
 import {
   getAutomatorInterval,
   getAutomatorBulk,
@@ -25,10 +25,11 @@ function formatAutobuyerRate(intervalMs: number): string {
 }
 
 const TIER_KEYS = TIER_CONFIGS.map((c) => `tier_${c.id}`)
-const ALL_KEYS = [...TIER_KEYS, 'tempo'] as const
+const ALL_KEYS = [...TIER_KEYS, 'tempo', 'encore'] as const
 
 function getAutobuyerLabel(key: string): string {
   if (key === 'tempo') return 'Tempo'
+  if (key === 'encore') return 'Auto-Encore'
   const tierId = Number(key.replace('tier_', ''))
   return TIER_CONFIGS[tierId - 1]?.name ?? key
 }
@@ -39,6 +40,9 @@ export function AutobuyersPage() {
   const achievements = useGameStore((s) => s.achievements)
   const toggleAutobuyer = useGameStore((s) => s.toggleAutobuyer)
   const setAutobuyerBulk = useGameStore((s) => s.setAutobuyerBulk)
+  const applausePoints = useGameStore((s) => s.applausePoints)
+  const opusCount = useGameStore((s) => s.opusCount)
+  const unlockWithApplause = useGameStore((s) => s.unlockWithApplause)
 
   const bulkCap = hasPerk(new Set(achievements), 'perk-bulk-unlock') ? 'max' : getAutomatorBulk(opusUpgrades)
   const capIdx = AUTOBUYER_BULK_TIERS.indexOf(bulkCap)
@@ -56,6 +60,34 @@ export function AutobuyersPage() {
           Opus upgrades raise the speed &amp; bulk caps; configure each section here.
         </p>
       </header>
+
+      <section className="rounded-xl border border-accent-purple/40 bg-bg-secondary/40 p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-display font-semibold text-accent-purple">Applause Points</h2>
+          <span className="text-sm font-mono text-text-primary">{Math.floor(applausePoints).toLocaleString()} AP</span>
+        </div>
+        <p className="text-xs text-text-muted">Earned each Encore. Spend to automate prestige — so the long stretches run themselves.</p>
+
+        {!autobuyers['encore']?.unlocked && (
+          <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
+            <div>
+              <div className="text-sm font-semibold text-text-primary">Auto-Encore</div>
+              <div className="text-xs text-text-muted">
+                Performs Encores automatically when ready (weak at first; faster with each Magnum Opus).
+                {opusCount < AP_UNLOCK.encore.minOpusCount && ' Unlocks after your first Magnum Opus.'}
+              </div>
+            </div>
+            <Button
+              onClick={() => unlockWithApplause('encore')}
+              disabled={opusCount < AP_UNLOCK.encore.minOpusCount || applausePoints < AP_UNLOCK.encore.cost}
+              variant="purple"
+              size="sm"
+            >
+              Unlock ({AP_UNLOCK.encore.cost} AP)
+            </Button>
+          </div>
+        )}
+      </section>
 
       {unlocked.length === 0 ? (
         <p className="text-sm text-text-muted text-center">No autobuyers unlocked yet.</p>

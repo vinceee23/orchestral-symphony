@@ -28,7 +28,8 @@ export function AppShell() {
   const opusCount = useGameStore((s) => s.opusCount)
   const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const finalePoints = useGameStore((s) => s.finalePoints)
-  const era = getEra(lifetimeEncorePoints, opusCount, finalePoints)
+  const worldTourUnlocked = useGameStore((s) => s.worldTourUnlocked)
+  const era = getEra(lifetimeEncorePoints, opusCount, finalePoints, worldTourUnlocked)
   useEffect(() => {
     if (opusCount <= 0) return
     const { setSpaceHeld, releaseConduct } = useUiStore.getState()

@@ -38,7 +38,10 @@ export function advanceCrescendo(
 }
 
 /** Map 0..1 crescendo level to a 1..ceiling production multiplier. At 0 -> 1.0. */
-export function getCrescendoMultiplier(level01: number, levels: Record<string, number>): number {
+export function getCrescendoMultiplier(
+  level01: number,
+  levels: Record<string, number>,
+): number {
   const ceiling = getCrescendoCeiling(levels)
   const clamped = Math.max(0, Math.min(1, level01))
   return 1 + clamped * (ceiling - 1)

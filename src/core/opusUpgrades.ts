@@ -138,7 +138,7 @@ export const OPUS_UPGRADES: OpusUpgradeConfig[] = [
   {
     id: 'crescendo-op-bonus',
     track: 'CRESCENDO',
-    name: 'Standing Ovation',
+    name: 'Rave Reviews',
     description: '+0.25 crescendo OP bonus factor per level.',
     baseCost: 5,
     costGrowth: 2,

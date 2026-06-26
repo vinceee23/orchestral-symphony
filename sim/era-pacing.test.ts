@@ -48,7 +48,7 @@ import {
   getAchievementHeadStartBoost,
   getAchievementGlobalMultiplier,
 } from '../src/core/achievements'
-import { CHALLENGES, getChallengeById, getActiveChallengeModifiers } from '../src/core/challenges'
+import { CHALLENGES, getChallengeById, getActiveChallengeModifiers, isChallengeUnlocked } from '../src/core/challenges'
 import type { GameState, AutobuyerState } from '../src/store/types'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -278,6 +278,34 @@ function greedyBuyCheapest(state: GameState): void {
     if (buyTempoNext) buyTempo(state)
     else buyTier(state, bestTier + 1, 1)
   }
+}
+
+/** Buy toward the next prestige gate tier (encore pre-wall, MO post-wall). Greedy-cheapest alone
+ *  never accumulates enough of the expensive top tier (Symphonies), stalling repeated MOs. */
+function buyTowardGateTier(state: GameState, tierIndex: number, amount: number): void {
+  for (let i = tierIndex; i >= 0; i--) {
+    const tier = state.tiers[i]
+    if (!tier?.unlocked) {
+      if (i > 0) buyTowardGateTier(state, i - 1, 1)
+      return
+    }
+    if (i === tierIndex) {
+      const shortfall = amount - tier.purchased
+      if (shortfall > 0) buyTier(state, tierIndex + 1, shortfall)
+      return
+    }
+    if (tier.purchased < 1) {
+      buyTier(state, i + 1, 1)
+      return
+    }
+  }
+}
+
+function buyPrestigeGateTier(state: GameState): void {
+  const gate = state.layer1WallReached
+    ? getMagnumOpusCost(state.opusCount)
+    : getEncoreCost(state.encoreCount)
+  buyTowardGateTier(state, gate.tierIndex, gate.amount)
 }
 
 function greedyBuyEncoreUpgrades(state: GameState): void {
@@ -553,7 +581,7 @@ function tryStartNextChallenge(state: GameState, simTime: number): void {
   if (state.activeChallenge || state.opusCount === 0) return
   for (const ch of CHALLENGES) {
     if (state.completedChallenges.includes(ch.id)) continue
-    if (state.finaleCount < ch.unlockAt) continue
+    if (!isChallengeUnlocked(state, ch)) continue
     if (startChallenge(state, ch.id, simTime)) return
   }
 }
@@ -599,6 +627,12 @@ function chooseDt(state: GameState): number {
   if (canEncoreNow(state) || canMoNow(state)) return DT_FINE_MS
 
   if (state.opusCount > 0) {
+    // Re-climb / MO-gate build takes priority over idle records grind — another MO compounds records rate.
+    if (!state.layer1WallReached) return DT_FINE_MS
+    const moGate = getMagnumOpusCost(state.opusCount)
+    const moPurchased = state.tiers[moGate.tierIndex]?.purchased ?? 0
+    if (!state.platinum && moPurchased < moGate.amount) return DT_FINE_MS
+
     const crescMult = getCrescendoMultiplier(state.crescendo, state.opusUpgrades)
     const rate = getRecordsPerSec(state.opusCount, crescMult, state.opusUpgrades)
     if (!state.platinum && rate > 0) {
@@ -855,10 +889,10 @@ describe('full-era pacing instrument', () => {
     let lastPrestigeMs = 0
     const restraintCollisions: { id: string; ms: number; sincePrestigeMs: number }[] = []
 
-    const challengeUnlockable = CHALLENGES.some((ch) => ch.unlockAt === 0)
+    const challengeUnlockable = CHALLENGES.some((ch) => isChallengeUnlocked(state, ch))
     if (!challengeUnlockable) {
       wiringNeeded.push(
-        'challenges — all challenges require finaleCount >= unlockAt (min 1), but Grand Finale needs soundwaves >= 1.79e308; cannot exercise challenge runs within L1+L2 sim horizon',
+        'challenges — gated on worldTourUnlocked + per-challenge thresholds; L1+L2 sim never opens World Tour so challenge runs are not exercised here',
       )
     }
 
@@ -870,6 +904,7 @@ describe('full-era pacing instrument', () => {
       steps++
 
       if (!state.activeChallenge) {
+        buyPrestigeGateTier(state)
         greedyBuyCheapest(state)
         greedyBuyEncoreUpgrades(state)
         greedyBuyOpusUpgrades(state)
@@ -947,9 +982,8 @@ describe('full-era pacing instrument', () => {
       }
     }
 
-    expect(state.opusCount).toBeGreaterThanOrEqual(1)
-    expect(state.platinum || state.recordsSold >= PLATINUM_THRESHOLD).toBe(true)
-
+    // NOTE: Platinum/opusCount assertions moved to AFTER the report block below, so the full
+    // pacing report (incl. L1 encore cadence) prints even when an assertion fails.
     const deadZones = findAchievementDeadZones(unlockedAt, unlockedPhase, simMs)
     const topDeadZones = deadZones.slice(0, 10)
 
@@ -1040,6 +1074,19 @@ describe('full-era pacing instrument', () => {
       console.log(`  MO→MO: ${worstMo.gapMin.toFixed(1)} min`)
     }
 
+    console.log('\n--- L1 Encore cadence (PERFECT player, per-encore time) ---')
+    {
+      let prevE = 0
+      for (const [i, t] of encoreTimes.slice(0, 12).entries()) {
+        const dMin = (t - prevE) / 60000
+        console.log(`  Encore ${String(i + 1).padStart(2)}: +${dMin.toFixed(1).padStart(6)} min   (cumulative ${(t / 60000).toFixed(1)} min)`)
+        prevE = t
+      }
+      if (moTimes.length > 0) {
+        console.log(`  → 1st Magnum Opus at ${(moTimes[0] / 60000).toFixed(1)} min (wall→MO: +${((moTimes[0] - (encoreTimes[encoreTimes.length - 1] ?? 0)) / 60000).toFixed(1)} min)`)
+      }
+    }
+
     console.log('\n--- Per-Era Summary ---')
     console.log('  era            | span (min) | achievements | longest internal dead-zone (min)')
     for (const es of eraSummaries) {
@@ -1073,6 +1120,8 @@ describe('full-era pacing instrument', () => {
 
     console.log(`\nCSV written to: ${CSV_PATH}`)
 
+    expect(state.opusCount).toBeGreaterThanOrEqual(1)
+    expect(state.platinum || state.recordsSold >= PLATINUM_THRESHOLD).toBe(true)
     expect(restraintCollisions, 'restraint achievements must not auto-unlock from head-start').toHaveLength(0)
     if (moEraSummary) {
       expect(moEraSummary.longestDeadZoneMin).toBeLessThan(25)

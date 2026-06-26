@@ -1,4 +1,5 @@
 import Decimal from 'break_infinity.js'
+import type { GameState } from '../store/types'
 
 export type ChallengeConstraint =
   | { type: 'singleTier'; tierId: number }
@@ -14,6 +15,13 @@ export type ChallengeConstraint =
   | { type: 'reversedProduction' }
   | { type: 'noPrestige' }
 
+/** Per-challenge gate once World Tour (L3) is unlocked — spread across L3 progression. */
+export interface ChallengeUnlockThreshold {
+  peakSoundwaves?: number | string
+  encoreCount?: number
+  opusCount?: number
+}
+
 export interface ChallengeConfig {
   id: string
   name: string
@@ -22,7 +30,19 @@ export interface ChallengeConfig {
   targetSoundwaves: Decimal
   constraint: ChallengeConstraint
   unlocksAutobuyer: string
-  unlockAt: number  // Grand Finale count needed to reveal this challenge
+  unlockThreshold: ChallengeUnlockThreshold
+}
+
+export function isChallengeUnlocked(
+  state: Pick<GameState, 'worldTourUnlocked' | 'peakSoundwaves' | 'encoreCount' | 'opusCount'>,
+  challenge: ChallengeConfig,
+): boolean {
+  if (!state.worldTourUnlocked) return false
+  const t = challenge.unlockThreshold
+  if (t.peakSoundwaves !== undefined && !state.peakSoundwaves.gte(t.peakSoundwaves)) return false
+  if (t.encoreCount !== undefined && state.encoreCount < t.encoreCount) return false
+  if (t.opusCount !== undefined && state.opusCount < t.opusCount) return false
+  return true
 }
 
 export interface ChallengeModifiers {
@@ -104,6 +124,7 @@ export function getActiveChallengeModifiers(challenge: ChallengeConfig | null): 
   return mods
 }
 
+// TODO(L4): completedChallenges resets on Signature ascension — LAYER3-SPEC §2.8.
 export const CHALLENGES: ChallengeConfig[] = [
   {
     id: 'ch_solo',
@@ -113,7 +134,7 @@ export const CHALLENGES: ChallengeConfig[] = [
     targetSoundwaves: new Decimal(1e6),
     constraint: { type: 'singleTier', tierId: 1 },
     unlocksAutobuyer: 'tier_1',
-    unlockAt: 1,
+    unlockThreshold: {},
   },
   {
     id: 'ch_duet',
@@ -123,7 +144,7 @@ export const CHALLENGES: ChallengeConfig[] = [
     targetSoundwaves: new Decimal(1e8),
     constraint: { type: 'maxTiers', count: 2 },
     unlocksAutobuyer: 'tier_2',
-    unlockAt: 1,
+    unlockThreshold: { opusCount: 4 },
   },
   {
     id: 'ch_adagio',
@@ -133,7 +154,7 @@ export const CHALLENGES: ChallengeConfig[] = [
     targetSoundwaves: new Decimal(1e10),
     constraint: { type: 'nerfedTickspeed', factor: 10 },
     unlocksAutobuyer: 'tier_3',
-    unlockAt: 2,
+    unlockThreshold: { encoreCount: 8 },
   },
   {
     id: 'ch_inflation',
@@ -143,7 +164,7 @@ export const CHALLENGES: ChallengeConfig[] = [
     targetSoundwaves: new Decimal(1e8),
     constraint: { type: 'inflatedCosts', factor: 10 },
     unlocksAutobuyer: 'tier_4',
-    unlockAt: 2,
+    unlockThreshold: { opusCount: 5 },
   },
   {
     id: 'ch_one_hit',
@@ -153,7 +174,7 @@ export const CHALLENGES: ChallengeConfig[] = [
     targetSoundwaves: new Decimal(1e6),
     constraint: { type: 'maxPerTier', limit: 10 },
     unlocksAutobuyer: 'tier_5',
-    unlockAt: 3,
+    unlockThreshold: { peakSoundwaves: '1e65' },
   },
   {
     id: 'ch_acoustic',
@@ -163,7 +184,7 @@ export const CHALLENGES: ChallengeConfig[] = [
     targetSoundwaves: new Decimal(1e12),
     constraint: { type: 'noTempo' },
     unlocksAutobuyer: 'tier_6',
-    unlockAt: 3,
+    unlockThreshold: { encoreCount: 10 },
   },
   {
     id: 'ch_diminuendo',
@@ -173,7 +194,7 @@ export const CHALLENGES: ChallengeConfig[] = [
     targetSoundwaves: new Decimal(1e8),
     constraint: { type: 'nerfedProduction', factor: 100 },
     unlocksAutobuyer: 'tier_7',
-    unlockAt: 4,
+    unlockThreshold: { opusCount: 6 },
   },
   {
     id: 'ch_flat',
@@ -183,7 +204,7 @@ export const CHALLENGES: ChallengeConfig[] = [
     targetSoundwaves: new Decimal(1e10),
     constraint: { type: 'noMilestones' },
     unlocksAutobuyer: 'tempo',
-    unlockAt: 5,
+    unlockThreshold: { peakSoundwaves: '1e68' },
   },
   {
     id: 'ch_leaky',
@@ -193,7 +214,7 @@ export const CHALLENGES: ChallengeConfig[] = [
     targetSoundwaves: new Decimal(1e8),
     constraint: { type: 'swDecay', percentPerTick: 2 },
     unlocksAutobuyer: 'encore',
-    unlockAt: 6,
+    unlockThreshold: { encoreCount: 12 },
   },
   {
     id: 'ch_opening',
@@ -203,7 +224,7 @@ export const CHALLENGES: ChallengeConfig[] = [
     targetSoundwaves: new Decimal(1e10),
     constraint: { type: 'risingCosts', ratePerSec: 1.01 },
     unlocksAutobuyer: 'mo_auto',
-    unlockAt: 8,
+    unlockThreshold: { opusCount: 7 },
   },
   {
     id: 'ch_reverse',
@@ -213,7 +234,7 @@ export const CHALLENGES: ChallengeConfig[] = [
     targetSoundwaves: new Decimal(1e6),
     constraint: { type: 'reversedProduction' },
     unlocksAutobuyer: 'finale_auto',
-    unlockAt: 10,
+    unlockThreshold: { peakSoundwaves: '1e72' },
   },
   {
     id: 'ch_unplugged',
@@ -223,7 +244,7 @@ export const CHALLENGES: ChallengeConfig[] = [
     targetSoundwaves: new Decimal(1e15),
     constraint: { type: 'noPrestige' },
     unlocksAutobuyer: 'all_auto',
-    unlockAt: 15,
+    unlockThreshold: { opusCount: 8, encoreCount: 15 },
   },
 ]
 

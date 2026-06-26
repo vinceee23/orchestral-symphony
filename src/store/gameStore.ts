@@ -5,8 +5,10 @@ import type { GameState, GameActions, AutobuyerState } from './types'
 import type { BuyAmount } from '../core/constants'
 import {
   TIER_CONFIGS, STARTING_SOUNDWAVES, MAX_OFFLINE_MS,
-  getEncoreCost, getMagnumOpusCost,
+  getEncoreCost, getMagnumOpusCost, getApplauseGain, getAutoEncoreInterval,
+  AP_UNLOCK, AP_UNLOCK_AUTO_TOUR, L4_UNLOCKED,
   GRAND_FINALE_SW_THRESHOLD,
+  ENCORE_EP_THRESHOLD,
   AUTOBUYER_DEFAULT_INTERVAL,
   ENCORE_WALL_COUNT,
   PLATINUM_THRESHOLD,
@@ -30,12 +32,13 @@ import {
   getEncoreGain,
 } from '../core/formulas'
 import { ACHIEVEMENTS, getAchievementStartingSW, getAchievementCostReduction, getAchievementTierCostReduction, getAchievementHeadStartBoost } from '../core/achievements'
-import { getChallengeById, getActiveChallengeModifiers } from '../core/challenges'
+import { getChallengeById, getActiveChallengeModifiers, isChallengeUnlocked } from '../core/challenges'
 import { createDecimalStorage } from '../core/save'
 import { useUiStore } from './uiStore'
 import {
   L3, getCatalogueSnapshot, getComponentCost, isVenueGraduatable,
-  canUnlockWorldTour, VENUE_1,
+  canUnlockWorldTour, getVenue, getComponentMaxTier,
+  canAutoPerformMagnumOpus, canAutoPerformTour, getUnlockFlagsFromComponent, buildVenueGraduationPatch,
 } from '../core/worldTour'
 
 function createDefaultAutobuyer(): AutobuyerState {
@@ -74,6 +77,8 @@ function createInitialState(): GameState {
     encorePoints: 0,
     lifetimeEncorePoints: 0,
     encoreCount: 0,
+    lifetimeEncoreCount: 0,
+    applausePoints: 0,
     layer1WallReached: false,
     opusPoints: 0,
     opusCount: 0,
@@ -91,7 +96,14 @@ function createInitialState(): GameState {
     components: {},
     catalogueSnapshot: new Decimal(1),
     worldTourUnlocked: false,
+    autoCollect: false,
     keepAutobuyers: false,
+    autoMO: false,
+    autoMOEnabled: true,
+    autoGraduate: false,
+    autoTour: false,
+    autoTourEnabled: true,
+    circuitComplete: false,
     postPlatinumMoCount: 0,
     finalePoints: 0,
     finaleCount: 0,
@@ -181,8 +193,66 @@ export const useGameStore = create<GameState & GameActions>()(
         const updates = calculateTick(state, deltaMs, conducting)
         set({ ...updates, activeTimePlayed: state.activeTimePlayed + deltaMs })
         const after = get()
+
+        // Auto-prestige self-sufficiency: when auto-encore OR auto-MO is active, build toward the CURRENT
+        // prestige gate tier (encore gate pre-wall, Magnum Opus gate — Symphonies — post-wall). Without this
+        // the automations are dead weight, because nothing auto-buys the gate tier until that tier's own
+        // autobuyer unlocks (OP-gated, ~opus 27) — so auto-MO could never fire hands-free. Targeted: only the
+        // gate tier, only while automating; buyTier is affordability-checked so it just converts production.
+        const autoPrestigeActive =
+          (after.autobuyers['encore']?.unlocked && after.autobuyers['encore']?.enabled) ||
+          (after.autoMO && after.autoMOEnabled)
+        if (autoPrestigeActive && !after.activeChallenge) {
+          const gate = after.layer1WallReached
+            ? getMagnumOpusCost(after.opusCount)
+            : getEncoreCost(after.encoreCount)
+          const gt = after.tiers[gate.tierIndex]
+          if (gt?.unlocked && gt.purchased < gate.amount) {
+            get().buyTier(gate.tierIndex + 1, gate.amount - gt.purchased)
+          }
+        }
+
+        // Auto-encore (L1 automation): the `encore` autobuyer, throttled + MO-upgraded. Fires the SAME
+        // performEncore() the player would — only when unlocked, enabled, not in a challenge, and an
+        // encore would yield ≥1 EP (peak past the threshold) so it never auto-prestiges a net-loss.
+        // performEncore() itself still gates on the tier-cost, so a premature fire just no-ops.
+        const enc = after.autobuyers['encore']
+        // Auto-encore re-climbs TO the 8-encore wall, then yields: gate on !layer1WallReached so it can't
+        // keep resetting the board past the wall and starve auto-MO (which needs 72 Symphonies). After an
+        // auto-MO the wall flag clears, so the next re-climb resumes. Also stops it from wiping a board the
+        // player is hand-saving for a Magnum Opus.
+        // .gt (not .gte): getEncoreGain returns 0 at peak == threshold (formulas.ts), so equality would auto-reset for 0 EP.
+        if (enc?.unlocked && enc.enabled && !after.activeChallenge && !after.layer1WallReached && after.peakSoundwaves.gt(ENCORE_EP_THRESHOLD)) {
+          const now = Date.now()
+          const autoEncoreInterval = getAutoEncoreInterval(after.opusCount)
+          if (now - (enc.lastTick ?? 0) >= autoEncoreInterval) {
+            get().performEncore()
+            set((st) => ({
+              autobuyers: { ...st.autobuyers, encore: { ...(st.autobuyers['encore'] ?? enc), lastTick: now } },
+            }))
+          }
+        }
+
         if (!after.worldTourUnlocked && canUnlockWorldTour(after)) {
           get().unlockWorldTour()
+        }
+        if (
+          after.worldTourUnlocked &&
+          after.autoGraduate &&
+          !after.circuitComplete &&
+          isVenueGraduatable(after.components, after.currentVenue)
+        ) {
+          const gradPatch = buildVenueGraduationPatch(after)
+          if (gradPatch) set(gradPatch)
+        }
+        const postGrad = get()
+        if (canAutoPerformMagnumOpus(postGrad)) {
+          get().performMagnumOpus()
+        }
+        // Auto-Tour capstone: once the catalogue has regrown past the ratio, re-tour hands-free. Checked
+        // after auto-MO so the freshly-minted opus/records growth counts toward this tour's snapshot.
+        if (canAutoPerformTour(get())) {
+          get().performTour()
         }
       },
 
@@ -349,6 +419,29 @@ export const useGameStore = create<GameState & GameActions>()(
         })
       },
 
+      // Spend Applause Points to unlock a prestige automation in L2 (auto-encore).
+      // Gated by opusCount so the first climb (and a few MO decisions) are hand-played first.
+      unlockWithApplause: (key: 'encore' | 'autoTour') => {
+        set((state) => {
+          if (key === 'autoTour') {
+            if (!L4_UNLOCKED || state.autoTour || !state.worldTourUnlocked) return state
+            const cfg = AP_UNLOCK_AUTO_TOUR
+            if (state.opusCount < cfg.minOpusCount || state.applausePoints < cfg.cost) return state
+            return { applausePoints: state.applausePoints - cfg.cost, autoTour: true, autoTourEnabled: true }
+          }
+          const cfg = AP_UNLOCK[key]
+          if (!cfg || state.opusCount < cfg.minOpusCount || state.applausePoints < cfg.cost) return state
+          if (state.autobuyers['encore']?.unlocked) return state
+          return {
+            applausePoints: state.applausePoints - cfg.cost,
+            autobuyers: {
+              ...state.autobuyers,
+              encore: { unlocked: true, enabled: true, interval: AUTOBUYER_DEFAULT_INTERVAL, bulk: 1, lastTick: 0 },
+            },
+          }
+        })
+      },
+
       buyEncoreUpgrade: (id: string) => {
         set((state) => {
           const config = ENCORE_UPGRADE_MAP[id]
@@ -471,6 +564,7 @@ export const useGameStore = create<GameState & GameActions>()(
 
         const challenge = getChallengeById(id)
         if (!challenge) return
+        if (!isChallengeUnlocked(state, challenge)) return
 
         // Snapshot current state
         const snapshot = {
@@ -574,7 +668,9 @@ export const useGameStore = create<GameState & GameActions>()(
           peakSoundwaves: new Decimal(0),
           encorePoints: state.encorePoints + gain,
           lifetimeEncorePoints: state.lifetimeEncorePoints + gain,
+          applausePoints: state.applausePoints + Math.floor(getApplauseGain(gain)),
           encoreCount: newEncoreCount,
+          lifetimeEncoreCount: (state.lifetimeEncoreCount ?? 0) + 1,
           layer1WallReached: state.layer1WallReached || newEncoreCount >= ENCORE_WALL_COUNT,
           silentEncoresCompleted: state.silentEncoresCompleted + (silentRun ? 1 : 0),
           wallReachedWithoutTempo: state.wallReachedWithoutTempo || qualifiedPatron,
@@ -635,7 +731,8 @@ export const useGameStore = create<GameState & GameActions>()(
         const skipWall = hasPerk(achSet, 'perk-skip-wall')
         const keepEncoreUpgrades = hasPerk(achSet, 'perk-keep-encore-upgrades')
         const wasPlatinum = state.platinum || state.recordsSold >= PLATINUM_THRESHOLD
-        set({
+        const crescendoSeed = hasPerk(achSet, 'perk-crescendo-headstart') ? CRESCENDO_HEADSTART : 0
+        const resetPatch: Partial<GameState> = {
           ...resetTiersAndSW(state.achievements),
           peakSoundwaves: new Decimal(0),
           encorePoints: 0,
@@ -643,11 +740,14 @@ export const useGameStore = create<GameState & GameActions>()(
           encoreCount: 0,
           encoreUpgrades: keepEncoreUpgrades ? state.encoreUpgrades : {},
           layer1WallReached: skipWall,
+          // honor perk-crescendo-headstart (resetTiersAndSW's value is overridden by this explicit key)
+          crescendo: crescendoSeed,
+          peakCrescendoMult: 1,
+        }
+        set({
+          ...resetPatch,
           opusPoints: state.opusPoints + gain,
           opusCount: newOpusCount,
-          // honor perk-crescendo-headstart (resetTiersAndSW's value is overridden by this explicit key)
-          crescendo: hasPerk(achSet, 'perk-crescendo-headstart') ? CRESCENDO_HEADSTART : 0,
-          peakCrescendoMult: 1,
           autobuyers,
           postPlatinumMoCount: wasPlatinum ? state.postPlatinumMoCount + 1 : state.postPlatinumMoCount,
         })
@@ -670,43 +770,64 @@ export const useGameStore = create<GameState & GameActions>()(
 
       buyComponent: (componentId: string) => {
         set((state) => {
-          if (!state.worldTourUnlocked || state.currentVenue !== VENUE_1.id) return state
+          if (!state.worldTourUnlocked) return state
+          const venue = getVenue(state.currentVenue)
+          if (!venue.componentIds.includes(componentId as typeof venue.componentIds[number])) return state
           if (!(componentId in L3.COMPONENTS)) return state
           const level = state.components[componentId] ?? 0
-          if (level >= L3.MAX_COMPONENT_TIER) return state
-          const cost = getComponentCost(componentId, level)
+          if (level >= getComponentMaxTier(componentId)) return state
+          const cost = getComponentCost(componentId, level, state.currentVenue)
           const acclaim = state.acclaim instanceof Decimal ? state.acclaim : new Decimal(state.acclaim ?? 0)
           if (acclaim.lt(cost)) return state
-          return {
+          const nextComponents = { ...state.components, [componentId]: level + 1 }
+          const unlockFlags = getUnlockFlagsFromComponent(componentId)
+          const patch: Partial<GameState> = {
             acclaim: acclaim.minus(cost),
-            components: { ...state.components, [componentId]: level + 1 },
+            components: nextComponents,
             venueSoldOut: false,
+            ...unlockFlags,
           }
+          if (
+            state.autoGraduate &&
+            !state.circuitComplete &&
+            isVenueGraduatable(nextComponents, state.currentVenue)
+          ) {
+            const gradPatch = buildVenueGraduationPatch(state)
+            if (gradPatch) Object.assign(patch, gradPatch)
+          }
+          return patch
         })
       },
 
       buyKeepAutobuyers: () => {
-        set((state) => {
-          if (!state.worldTourUnlocked || state.keepAutobuyers) return state
-          const acclaim = state.acclaim instanceof Decimal ? state.acclaim : new Decimal(state.acclaim ?? 0)
-          if (acclaim.lt(L3.KEEP_AUTOBUYERS_COST)) return state
-          return {
-            acclaim: acclaim.minus(L3.KEEP_AUTOBUYERS_COST),
-            keepAutobuyers: true,
-          }
-        })
+        const state = get()
+        if (!state.worldTourUnlocked || state.keepAutobuyers) return
+        const venue = getVenue(state.currentVenue)
+        if (venue.componentIds.includes('keepAutobuyers')) {
+          get().buyComponent('keepAutobuyers')
+        }
       },
 
       graduateVenue: () => {
         set((state) => {
-          if (!state.worldTourUnlocked || state.currentVenue !== VENUE_1.id) return state
-          if (!isVenueGraduatable(state.components)) return state
-          return {
-            currentVenue: 1,
-            components: {},
-            venueBuffer: new Decimal(0),
-            venueSoldOut: false,
-          }
+          if (!state.worldTourUnlocked) return state
+          if (!isVenueGraduatable(state.components, state.currentVenue)) return state
+          const patch = buildVenueGraduationPatch(state)
+          return patch ?? state
+        })
+      },
+
+      setAutoMOEnabled: (enabled: boolean) => {
+        set((state) => {
+          if (!state.autoMO) return state
+          return { autoMOEnabled: enabled }
+        })
+      },
+
+      setAutoTourEnabled: (enabled: boolean) => {
+        set((state) => {
+          if (!state.autoTour) return state
+          return { autoTourEnabled: enabled }
         })
       },
 
@@ -737,6 +858,7 @@ export const useGameStore = create<GameState & GameActions>()(
         const keepEncoreUpgrades = hasPerk(achSet, 'perk-keep-encore-upgrades')
         const opusCount = state.opusCount
         const keptAutobuyers = state.keepAutobuyers ? { ...state.autobuyers } : {}
+        const newTourCount = state.tourCount + 1
 
         set({
           ...resetTiersAndSW(state.achievements),
@@ -754,7 +876,16 @@ export const useGameStore = create<GameState & GameActions>()(
           recordsSold: carriedRecords,
           platinum: carriedRecords >= PLATINUM_THRESHOLD,
           autobuyers: keptAutobuyers,
-          tourCount: state.tourCount + 1,
+          // Automations reset unless Roadies (keepAutobuyers) — re-buy with persisted AP. auto-MO is a
+          // separate boolean (not in the autobuyers map), so it needs the same reset as auto-encore above.
+          // (AP, lifetimeEncoreCount, opusCount + the venue ladder/Acclaim all persist by omission.)
+          autoMO: state.keepAutobuyers ? state.autoMO : false,
+          autoMOEnabled: state.keepAutobuyers ? state.autoMOEnabled : true,
+          // Auto-Tour resets unless Roadies too — symmetric with auto-MO/auto-encore. Without Roadies the
+          // player re-buys it from persisted AP after each tour.
+          autoTour: state.keepAutobuyers ? state.autoTour : false,
+          autoTourEnabled: state.keepAutobuyers ? state.autoTourEnabled : true,
+          tourCount: newTourCount,
           catalogueSnapshot: new Decimal(getCatalogueSnapshot(opusCount, carriedRecords)),
           venueBuffer: new Decimal(0),
           venueSoldOut: false,
@@ -802,10 +933,11 @@ export const useGameStore = create<GameState & GameActions>()(
       partialize: (state): GameState => {
         const {
           tick, buyTier, buyMaxTier, buyTempo, buyMaxTempo, setBuyAmount,
-          toggleAutobuyer, setAutobuyerBulk, buyEncoreUpgrade, buyOpusUpgrade, checkAchievements, checkChallengeCompletion,
+          toggleAutobuyer, setAutobuyerBulk, unlockWithApplause, buyEncoreUpgrade, buyOpusUpgrade, checkAchievements, checkChallengeCompletion,
           startChallenge, abandonChallenge,
           performEncore, performMagnumOpus, performGrandFinale,
           buyComponent, buyKeepAutobuyers, graduateVenue, performTour, unlockWorldTour, bankVenueAcclaim,
+          setAutoMOEnabled, setAutoTourEnabled,
           hardReset,
           ...data
         } = state
@@ -827,6 +959,8 @@ export const useGameStore = create<GameState & GameActions>()(
           if (state.encorePoints === undefined) state.encorePoints = 0
           if (state.lifetimeEncorePoints === undefined) state.lifetimeEncorePoints = 0
           if (state.encoreCount === undefined) state.encoreCount = 0
+          if (typeof state.lifetimeEncoreCount !== 'number' || !isFinite(state.lifetimeEncoreCount)) state.lifetimeEncoreCount = 0
+          if (typeof state.applausePoints !== 'number' || !isFinite(state.applausePoints)) state.applausePoints = 0
           if (state.opusPoints === undefined) state.opusPoints = 0
           if (state.opusCount === undefined) state.opusCount = 0
           if (!state.opusUpgrades) state.opusUpgrades = {}
@@ -847,7 +981,14 @@ export const useGameStore = create<GameState & GameActions>()(
           if (state.catalogueSnapshot === undefined) state.catalogueSnapshot = new Decimal(1)
           else state.catalogueSnapshot = state.catalogueSnapshot instanceof Decimal ? state.catalogueSnapshot : new Decimal(state.catalogueSnapshot ?? 1)
           if (state.worldTourUnlocked === undefined) state.worldTourUnlocked = false
+          if (state.autoCollect === undefined) state.autoCollect = false
           if (state.keepAutobuyers === undefined) state.keepAutobuyers = false
+          if (state.autoMO === undefined) state.autoMO = false
+          if (state.autoMOEnabled === undefined) state.autoMOEnabled = true
+          if (state.autoGraduate === undefined) state.autoGraduate = false
+          if (state.autoTour === undefined) state.autoTour = false
+          if (state.autoTourEnabled === undefined) state.autoTourEnabled = true
+          if (state.circuitComplete === undefined) state.circuitComplete = false
           if (state.postPlatinumMoCount === undefined) state.postPlatinumMoCount = 0
           if (state.finalePoints === undefined) state.finalePoints = 0
           if (state.finaleCount === undefined) state.finaleCount = 0
@@ -883,6 +1024,8 @@ export const useGameStore = create<GameState & GameActions>()(
               encorePoints: state.encorePoints,
               lifetimeEncorePoints: state.lifetimeEncorePoints,
               encoreCount: state.encoreCount,
+              lifetimeEncoreCount: state.lifetimeEncoreCount,
+              applausePoints: state.applausePoints,
               layer1WallReached: state.layer1WallReached,
               opusPoints: state.opusPoints,
               opusCount: state.opusCount,
@@ -900,7 +1043,14 @@ export const useGameStore = create<GameState & GameActions>()(
               components: state.components,
               catalogueSnapshot: state.catalogueSnapshot,
               worldTourUnlocked: state.worldTourUnlocked,
+              autoCollect: state.autoCollect,
               keepAutobuyers: state.keepAutobuyers,
+              autoMO: state.autoMO,
+              autoMOEnabled: state.autoMOEnabled,
+              autoGraduate: state.autoGraduate,
+              autoTour: state.autoTour,
+              autoTourEnabled: state.autoTourEnabled,
+              circuitComplete: state.circuitComplete,
               postPlatinumMoCount: state.postPlatinumMoCount,
               finalePoints: state.finalePoints,
               finaleCount: state.finaleCount,

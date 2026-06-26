@@ -1,5 +1,8 @@
 import Decimal from 'break_infinity.js'
 
+/** Layer 4 gate — auto-tour and other L4 rewards stay disabled until this flips. */
+export const L4_UNLOCKED = false
+
 export const TIER_COUNT = 7
 
 export interface TierConfig {
@@ -119,6 +122,35 @@ export function getEncoreCost(encoreCount: number): PrestigeCost {
   return { tierIndex: 6, amount: 55 + (encoreCount - 7) * 10, tierName: 'Symphonies' }
 }
 
+// === Applause Points (L1 automation currency) ===
+// Earned per Encore alongside EP. apGained = floor(AP_BASE * encoreGain^AP_EXP).
+// Starting values — TUNED in the resim (sim/era + human) against the §4.1 accrual targets:
+//   ~1st autobuyer affordable by Encore 4-5; full tier_1-7 + auto-encore by Encore 8 / first MO.
+export const AP_BASE = 1
+export const AP_EXP = 1.0
+export function getApplauseGain(encoreGain: number): number {
+  return Math.floor(AP_BASE * Math.pow(Math.max(0, encoreGain), AP_EXP))
+}
+
+// Auto-encore (the `encore` autobuyer): WEAK at first, faster with each Magnum Opus (MO-upgraded).
+// Interval = base shortened by opusCount, floored so it never goes instant. Curve TUNED in resim.
+export const AUTO_ENCORE_BASE_INTERVAL = 60_000
+export function getAutoEncoreInterval(opusCount: number): number {
+  // opusCount-1 so the FIRST automated cycle (auto-encore unlocks at opusCount>=1) is the full 60s
+  // ("weak at first"), then shortens: MO#1=60s, MO#3≈29s, MO#10≈10s. (balance review)
+  return Math.max(2000, AUTO_ENCORE_BASE_INTERVAL / (1 + Math.max(0, opusCount - 1) * 0.55))
+}
+
+// AP unlock costs + gates for prestige automations. Auto-encore opens after the 1st manual MO
+// (so the first 8-encore climb is hand-played once). Costs are starting guesses — TUNED in the resim vs AP accrual.
+// Auto-MO is an earned L3 venue component (City Theatre), not an AP purchase.
+export const AP_UNLOCK: Record<'encore', { cost: number; minOpusCount: number }> = {
+  encore: { cost: 5, minOpusCount: 1 },
+}
+
+/** L4-only — not in AP_UNLOCK until L4_UNLOCKED. Also gated on worldTourUnlocked in unlockWithApplause. */
+export const AP_UNLOCK_AUTO_TOUR = { cost: 200, minOpusCount: 5 }
+
 // Magnum Opus gate: gentle escalation — 72 Symphonies + floor(opusCount/3)
 export function getMagnumOpusCost(opusCount: number): PrestigeCost {
   const amount = 72 + Math.floor(opusCount / 3)
@@ -141,7 +173,7 @@ export const CRESCENDO_BASE_MAX = 3                     // base ceiling multipli
 export const CRESCENDO_MAX_CEILING = 6                  // hard cap after upgrades
 export const CRESCENDO_BUILD_SEC = 12                   // seconds of holding Conduct to reach ceiling
 export const CRESCENDO_DECAY_SEC = 25                   // seconds to decay ceiling -> x1 when released
-export const AUTO_CONDUCT_FRACTION = 0.5                // auto-conduct sustains this fraction of ceiling AFK
+export const AUTO_CONDUCT_FRACTION = 0.7                // idle/auto-conduct sustains 70% of the crescendo ceiling; active holding = 100% (Break-phase decision: active > idle)
 export const TEMPO_OP_MULT_PER_LEVEL = 1.5              // each Tempo OP-node = x1.5 global tempo/production
 export const RECORDS_PROD_K = 5                         // legacy v0 constant (superseded by RECORDS_ALBUM_K)
 export const RECORDS_ALBUM_K = 0.58                       // recordsPerSec = K * opusCount^EXP * crescendoMult * chartClimber

@@ -4,6 +4,25 @@ Status: **proposal for Vince's sign-off.** Self-iterated for loopholes (see §7)
 
 ---
 
+## ⭐ RECONCILED & LOCKED (2026-06-27) — implementation on `feat/layer3` now matches this spec
+
+A later "Break phase" session diverged from this spec; an audit + reconcile (see `docs/RECONCILE-PLAN.md`)
+brought the code back in line. Final locked state:
+- **Auto-Tour = an L4 reward, NOT L3** (§1.5 automation arc: each layer automates the one below). The code
+  exists but is hard-gated behind `L4_UNLOCKED=false` and is unreachable in L3.
+- **Auto-MO = an earned L3 venue component on venue id 2 "City Theatre"** (single-level UNLOCK), NOT an
+  Applause-Points purchase. Resolves §5 open item 4.
+- **NO Fame currency / Fame tree.** Proposed by the divergent session, CUT as out-of-scope. (The unrelated
+  pre-existing `FAME_PER` records "Fame ×" multiplier stays.) Do not re-add without a fresh design pass.
+- **NO reset-perks "Encore Resonance" / "Opus Memory."** CUT — they carried raw power, violating the
+  perks = QoL-only rule.
+- **KEPT** (spec-aligned): challenge re-gating to reachable L3 thresholds, the Applause-Points automation
+  plumbing, auto-encore execution, multi-fire autobuyers.
+- **Sims:** full suite green. era-pacing's player model fixed (repeated MOs); auto-MO re-climb snowball
+  modeled (46→21→2 min as the ladder graduates to City Theatre).
+
+---
+
 ## 1. The problem to resolve first: how many layers, and is "Grand Finale" the end?
 
 **What exists today (code reality):**
@@ -61,9 +80,12 @@ A difficulty threshold (high SW / precursor) tuned to land naturally well after 
 
 ### 2.4 Venue components — the heart of L3 (a *living build*)
 Each venue is a mini-build you improve by pouring Acclaim into **components**, each a multiplier that **visibly changes the venue's art** (functional-first; art layered after — §3).
-- **Escalating depth:** **Venue 1 has 3 components**; each higher venue **unlocks more** (V1: Roof/Lighting/Instruments → later venues add Crowd, Acoustics, Marketing, Backstage…). `[PROPOSAL]` +1 component per venue (V1=3 … V7=9).
+- **HETEROGENEOUS COMPONENTS — LOCKED (Vince, 2026-06-26):** each component is EITHER a **multi-level multiplier** (~2–4 levels, scaling boost you grind) OR a **single-level UNLOCK** (one purchase = a feature/automation). A venue **graduates when ALL its components are maxed** (each to its own cap). This makes each venue a *build with decisions* (what to max, what's a one-and-done unlock), not a flat "level everything" chore.
+  - **Old House (V1) = 3 components:** **Lighting** (3 levels, fill-speed mult) · **Roof** (3 levels, capacity mult) · **Instruments** (1-level UNLOCK = **auto-collect**: the venue auto-banks Acclaim).
+  - **Automation unlocks** (single-level UNLOCK components) up the ladder: **auto-collect (V1) · Keep-Autobuyers (early venue) · Auto-MO (mid venue) · Auto-graduate (late venue)**. Auto-tour stays an **L4** reward.
+  - **Escalating depth:** later venues have MORE components (mix of multipliers + the automation unlocks). V1=3; grow from there.
 - **Granularity is per-component:** the **visual** components (Lighting/Instruments/Roof/Crowd) have **few discrete tiers (~5)**, each a distinct art state (dark→dim→lit→bright→dazzling); **pure-number** components (Acoustics/Marketing…) can have many small levels. Art only needs to render the visual ones' tiers.
-- **Graduate = a threshold, NOT full-max:** advance once you've invested "enough" (`[PROPOSAL]` every component to a minimum tier, or a total-level bar) — so the 8–9-component late venues don't drag. Extra component levels past the threshold are optional power. On graduate, **components reset to 0 on the new venue** (a fresh, bigger grind); the **multiplier gains already banked** into `lifetimeAcclaim` stay.
+- **Graduate = ALL components maxed** (superseded the earlier threshold idea — Vince 2026-06-26). Since each component has its own (small, varied) cap, maxing all is the gate; later venues stay reasonable because not every component is multi-level (some are 1-level unlocks). On graduate, **components reset on the new venue**; the **multiplier gains already banked** into `lifetimeAcclaim` stay.
 
 | Component | Effect (lever) | Visible change |
 |---|---|---|
@@ -169,6 +191,8 @@ autoMO: boolean               // mid-venue special upgrade — auto-performs a M
 - `src/core/tick.ts` — Acclaim accrual (parallel track).
 - `src/core/formulas.ts` — fold the **Acclaim** (`lifetimeAcclaim`) production mult into `getCoreProductionMultiplier`.
 - `src/components/` — a **dedicated "World Tour" tab** (sidebar reveals it at L3, same pattern as Opus/Autobuyers appearing post-MO): the venue ladder + per-venue component upgrades + the **living-venue art** (old house → grand hall) live here, NOT on the Compose stage. Compose keeps only the lighter era-3 ambient nod (§11). Don't let the tour UI coincide with Compose.
+
+**Living-venue art — approach LOCKED (Vince, 2026-06-26):** **layered web overlays**, NOT per-state AI images. ONE base venue image per venue (the Gemini concept drafts in `drafts/l3-venues/`, painterly/warm/Art-Deco — Vince approved the ladder-1 Old House style) with **browser-composited layers driven by component levels** (same technique as the Compose stage's StageLife motes/audience): Lighting → glows/lamps brighten; Instruments → instrument sprites appear + multiply; Crowd → audience silhouettes fade in; + a camera pull-back as the venue grows. Each component's level drives its layer's intensity/count, so the SAME house visibly transforms in place. (The 4 independent AI "upgrade-state" drafts were scrapped — inconsistent rooms.) **Timing:** a polish pass AFTER the L3 mechanics batch deploys (functional-first).
 - `sim/` — an L3 pacing sim (new) BEFORE tuning any numbers.
 
 ## 5. Decisions — status
@@ -184,7 +208,7 @@ autoMO: boolean               // mid-venue special upgrade — auto-performs a M
 1. `lifetimeAcclaim` → production-mult shape (additive `1+n·k` vs capped-log) + magnitude.
 2. The hybrid gate's difficulty threshold value + target first-tour re-climb minutes.
 3. Per-venue component counts/costs + capacity/rate curves; effects of the later components (Acoustics/Marketing/Backstage) — `[PROPOSAL]` in §2.4.
-4. Where exactly Auto-MO sits (which mid venue) + its trigger condition.
+4. ~~Where exactly Auto-MO sits (which mid venue)~~ **RESOLVED: venue id 2 "City Theatre"** (single-level unlock component; see the RECONCILED banner). Trigger: auto-performs an MO when profitable, with a toggle.
 
 ## 6. Build order (once signed off)
 1. Sync `sim/` to live `constants.ts` (see ACHIEVEMENTS-V2 §7) + sim the L3 gate + Acclaim curve. 2. Add L3 state (§3.5) + migration. 3. Wire `performTour()` reset + the Acclaim multiplier (minimal) → playable L3. 4. Add the tour/venues tree (capacity-bounded). 5. Add the stage section + era-3 visuals + era-formula ladder. 6. Re-sim full L1→L3 pacing.
