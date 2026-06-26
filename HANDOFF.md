@@ -53,12 +53,15 @@ Full spec: **`docs/L2-AUTOMATION-SPEC.md`** (LOCKED, ~97%). Decision: don't spee
 - **Flag fixes (committed):** Tour Buzz repurposed → **−8%/lvl venue component costs** (relevant the whole circuit, not just the one-time WT-unlock gate). OP-tree "Standing Ovation" renamed → **"Rave Reviews"** (so the Fame "Standing Ovation" name is unique).
 - ⚠️ **STILL OPEN for resim:** Fame node cost **growth=1.5** is a placeholder (wasn't in the approved §3b table) — tune in resim.
 
+### Reset-perk ladder (#13) — ✅ DONE (committed e98a3b3)
+- **Encore Resonance** (@25 lifetime Encores, new `lifetimeEncoreCount`) — Encore carries SW (literal, resim-flagged). **Opus Memory** (@10 post-plat MOs) — MO keeps the layers below it (literal, resim-flagged). Both store-tested (src/store/breakPerks.test.ts).
+- **Legacy DROPPED** — no-op mechanic + all redrafts double-dipped with #9/Roadies; Opus Memory is the real capstone. Breadcrumb left in plan §3b to revisit at L4.
+
 ### RESUME POINT — remaining Break-phase pieces (#13 cont.)
 Build each → gate (tsc + unit + AFK sims) → commit. DRAFT magnitudes in **docs/L1-L3-RELEASE-PLAN.md §3b-numbers**:
-1. **Reset-perk ladder** — 3 new perks (Encore Resonance @25 encores → Encore stops resetting SW; Opus Memory @10 post-plat MOs → MO stops resetting below; Legacy @1st challenge → challenge-time persists). Touch resetTiersAndSW / performMagnumOpus / challenge-time. (Perk plumbing pattern: src/core/perks.ts + achievements gating.)
-2. **Auto-tour capstone** — AP-gated near circuit end.
-3. **WT-reset persistence** — AP + Fame persist across World Tour reset (Fame already persists via meta; verify performTour doesn't wipe it); automations reset unless Roadies.
-4. Then **L3-circuit idle-verify** in sim/l3-pacing.test.ts (port goal-directed buying into Phase A/B; recalibrate assertions; AFK-after-automation reaching Platinum + circuit hands-free).
+1. **Auto-tour capstone** — AP-gated near circuit end (auto-performs the World Tour like auto-MO does the MO).
+2. **WT-reset persistence** — AP + Fame persist across World Tour reset (Fame already persists via meta; **verify performTour doesn't wipe spendableFame/lifetimeFame/fameUpgrades/lifetimeEncoreCount**); automations reset unless Roadies (keepAutobuyers).
+3. Then **L3-circuit idle-verify** in sim/l3-pacing.test.ts (port goal-directed buying into Phase A/B; recalibrate assertions; AFK-after-automation reaching Platinum + circuit hands-free).
 
 ### Review LOOP — Round 1 COMPLETE (2026-06-26, all 5 parallel streams done)
 Streams: resim ✓ · ultracode 4-lens review ✓ · Codex balance ✓ · Claude balance ✓ · dir-cleanup ✓.
