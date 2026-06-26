@@ -1,14 +1,19 @@
-# HANDOFF — Orchestral Symphony (resume point, 2026-06-26)
+# HANDOFF — Orchestral Symphony (resume point, 2026-06-27)
 
-**Read this FIRST on resume.** Context was cleared at 99%. Everything below is committed/pushed unless noted.
+**Read this FIRST on resume.** Everything below is committed + pushed to `feat/layer3` unless noted. Sections are newest-on-top; older dated blocks are historical context (still accurate but superseded by anything above them).
 
-## Where we are RIGHT NOW
+## ⭐ WHERE WE LEFT OFF (2026-06-27) — START HERE
+- **Branch `feat/layer3`, HEAD `e9f549f`** (all pushed). **NOT merged to master** — master-merge waits for a complete, Vince-reviewed chunk. `master` is still the older deployed playtest build (Venue-1 slice).
+- **This session built almost the entire post-Platinum "Break" phase (#13):** ✅ crescendo idle→70% (`0236918`) · ✅ **Fame currency + 6-node tree + dedicated UI tab** (`b0e1efc`/`c4a3e50`/`b031d3f`) · ✅ flag fixes — Tour Buzz repurposed to venue-cost discount + OP "Standing Ovation"→"Rave Reviews" (`476ae8a`) · ✅ reset perks **Encore Resonance** + **Opus Memory** (`e98a3b3`, Legacy dropped → L4) · ✅ **World Tour reset persistence** (`85a3d48`). All gated: tsc + 57 unit (Fame/perk/persistence tests added) + AFK idle sim + vite build.
+- **➡️ NEXT ACTION (2 interlocked pieces, IN THIS ORDER):** see the "RESUME POINT — final two Break-phase pieces" section below. (1) **L3-circuit idle-verify sim** (models the re-tour economy), THEN (2) **auto-tour capstone** built off that sim's heuristic. After those: Break phase COMPLETE → #9 challenge rewards → polish → ship the L1→L3 playtest.
+- **Open for Vince:** playtest the Fame tab (post-Platinum) for *feel* — sims confirm the math, not the spend experience. Resim-flagged items (non-blocking): Fame node cost growth=1.5 placeholder; Encore Resonance/Opus Memory are literal interpretations that remove re-climb friction post-unlock (intended, tune in resim).
+
+## Where we are RIGHT NOW (older — pre-Break-phase context)
 - **`master`** = the deployed playtest build: pacing-v2 balance (wall ~3h, Platinum ~22h, steady drip) + the **Venue-1 World Tour slice**. Testable: `https://vinceee23.github.io/orchestral-symphony/?l3` (or `?fresh&l3` clean). `?fresh` works in prod.
-- **`feat/layer3`** (pushed, HEAD `c5c2929`) = the **FULL Layer 3**, built overnight, NOT yet merged/deployed:
+- **`feat/layer3`** = the **FULL Layer 3** + the L2-idle rework + the Break phase (above). Built incrementally:
   - Heterogeneous venue components (multi-level **multiplier** OR single-level **unlock**; graduate = all maxed). V1 Old House = Lighting(3 fill-speed) / Roof(3 capacity) / Instruments(1-unlock = auto-collect).
-  - Automation unlocks up the ladder: **auto-collect(V1) · Keep-Autobuyers · Auto-MO · Auto-graduate**; auto-tour stays L4.
+  - Automation unlocks up the ladder: **auto-collect(V1) · Keep-Autobuyers · Auto-MO · Auto-graduate**; auto-tour = the remaining Break-phase piece.
   - Venue ladder 2–7 + circuit break, **challenges-at-L3** (re-gated off finaleCount → reachable), **era-3 app theming**.
-  - Game logic **verified-good**: tsc clean · 45/45 unit · `sim/l3-pacing` reaches Platinum (~25h) · `sim/achievement-pacing` pass.
 
 ## ⭐ ACTIVE PLAN (2026-06-26) — L2 idle rework, supersedes "just merge L3"
 Full spec: **`docs/L2-AUTOMATION-SPEC.md`** (LOCKED, ~97%). Decision: don't speed records; make L1/L2 **idle** AD-style instead of an active 13h slog.
