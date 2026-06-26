@@ -1,0 +1,97 @@
+# L1→L3 PUBLIC PLAYTEST — Release Plan
+
+_The comprehensive plan for the first public playtest (web, free). Mode: **plan → Vince approves → build**.
+Companion to `docs/L2-AUTOMATION-SPEC.md` (AP/idle mechanics) and `docs/LAYER3-SPEC.md` (L3 design)._
+_Status: AWAITING VINCE APPROVAL. Nothing new gets built until this is signed off._
+
+---
+
+## 1. What we're shipping
+A **free web playtest** of the full **L1 → L3** arc:
+- **Arc:** L1 Encore → 8-Encore wall → Magnum Opus → Platinum → World Tour (L3) → **complete the circuit (all 6 venues graduated)** = content finale. **L4 (Signature) teased/locked** ("coming soon").
+- **Length:** ~**20–30h** (active + idle; a week of casual check-ins). Platinum ~22h is most of it; L3 adds a few hours.
+- **Monetization:** pure free, **Ko-fi link baked in** (non-intrusive donation). No ads/IAP.
+- **Onboarding:** light — brief intro + self-explanatory UI; teach-by-doing.
+- **Release gate:** **Vince plays the full build end-to-end and approves** before it goes public.
+- **Goal of the playtest:** validate the fun + pacing of the L1→L3 loop and the new idle automation, before investing in L4+ and living-venue art.
+
+## 2. Locked design (decided in regroup 2026-06-26)
+- **Core L2 idle = FOUNDATION (built, locked):** auto-encore + auto-MO unlock via **Applause Points (AP)**.
+- **AP = earned per Encore** (applause) + challenge payouts. Sinks: auto-encore (5) → auto-MO (75) → **auto-tour** (capstone, AP-gated near circuit end). _Future L4:_ AP becomes a small multiplier to a metric.
+- **Tiers stay on the OP-tree path** (no AP early-unlock). **Tempo autobuyer stays challenge-gated** (Acoustic reward — it's the strongest exponential lever, kept earned/special).
+- **Auto-tour:** full-auto (auto-collect + auto-advance venues), unlocked as a **capstone near circuit end**, AP-gated.
+- **Idle = tab-open only** (offline accrues production, does NOT auto-prestige — AD-normal).
+- **Challenge rewards:** **separate, bigger power axis** than achievements (achievements cap ~×2.5–3; challenges can exceed it, with a sane cap so pacing holds). All rewards **dynamic/scaling**, one-time (no grind). Table in §4.3.
+- **Filler achievements:** cleaned up for release (real markers, keep the drip, ≤ +150–200% global-mult budget).
+- **Idle verification bar:** AFK from ~MO#3 (automation unlocked) reaches **Platinum AND completes the circuit hands-free** (any duration).
+
+## 3. Current state (built + committed + pushed, branch `feat/layer3`)
+| Done | Commit |
+|---|---|
+| AP currency (earned/Encore, persists, migrated) | fb97744 |
+| Auto-encore execution + auto-MO/auto-encore AP-unlock + UI | fb97744 |
+| Auto-encore 0-EP boundary fix (Codex) | 2320719 |
+| Critical: auto-encore wall-gate (was starving auto-MO) + migration robustness + sim-fidelity | 36aefdf |
+| Balance tuning: autoMO cost 25→75, auto-encore interval weak-on-first-use | 3f7533d |
+| autoMO removed from L3 venues (decision #4) | bd736e2 |
+| Per-encore sim cadence reporting; directory cleanup | (various) |
+
+Reviewed by ultracode 4-lens + Codex + Claude balance; all confirmed findings fixed. Fast gate green (tsc + 45/45 unit). **Known broken:** the human-pacing resim crashes (OOM) under the auto-fire model — a sim-scale issue, fixed first in §4.1.
+
+## 4. Work breakdown — build order: **sim-fix → idle-verify → challenges → polish → ship**
+
+### 4.1 Fix + harden the sim (FIRST — it's the verification backbone)
+- The resim crashes (OOM, ~48min) simulating the fully-automated post-Platinum loop. Treat as **sim-scale**: add step caps + **coarse dt post-Platinum** (the autobuyer-throughput rule from L2-SPEC §9 — fine dt only where it matters), bound total work per seed. If it still blows up → escalate to a possible game degenerate-loop.
+- Mirror the live model exactly: auto-encore wall-gate (`!layer1WallReached`), wall-clock throttle (simMs), AP accrual, AP-unlock purchases.
+- **Acceptance:** human-pacing sim completes all seeds without crashing.
+
+### 4.2 Idle/AFK verification sim (#12)
+- New scenario: play to ~MO#3 (unlock auto-encore + auto-MO), then **zero manual input** — only autobuyers (OP-path tiers) + auto-encore + auto-MO fire on ticks.
+- **Acceptance (the idle promise):** reaches **Platinum AND completes the circuit hands-free**, any duration. Report idle-time-to-Platinum vs the ~22h active figure. (Tempo stays baseline — idle is slow-but-hands-free by design until the Acoustic challenge grants tempo automation.)
+- If idle stalls → diagnose (likely tempo/production gating) and surface before proceeding.
+
+### 4.3 Challenge full-reward redesign (#9) — the headline content
+**LOCKED table** (magnitudes tuned in resim; rewards all dynamic, themed):
+
+| # | Challenge (constraint) | Gate | Dynamic reward | Automation-power |
+|---|---|---|---|---|
+| 1 | Solo — only Notes | early | Notes prod **× current SW** | — |
+| 2 | Duet — 2 tiers | opus 4 | bottom-2-tier prod **× per achievement** | — |
+| 3 | Adagio — tick ÷10 | encore 8 | global prod-speed **× current SW** | faster auto-encore |
+| 4 | Inflation — 10× cost | opus 5 | cost reduction **deepens per achievement** | — |
+| 5 | One-Hit — ≤10/tier | peak 1e65 | value-per-purchase **× current SW** | autobuyer **bulk** tier |
+| 6 | Acoustic — no tempo | encore 10 | tempo effectiveness **× per achievement** | **🎵 Tempo autobuyer** |
+| 7 | Diminuendo — prod ÷100 | opus 6 | global prod **× current SW** | — |
+| 8 | Playing It Flat — no milestones | peak 1e68 | milestone-mult strength **× per achievement** | — |
+| 9 | Leaky — SW decay | encore 12 | **AP-gain × encore time** | autobuyer **speed** tier |
+| 10 | Opening Night — rising cost | opus 7 | cost-growth reduction **× current SW** | — |
+| 11 | Reverse — reversed prod | peak 1e72 | lower-tier prod **× current SW** | — |
+| 12 | Unplugged — no prestige bonus | opus 8 + encore 15 | **META: global all-layer mult × total challenge time** | finale_auto (post-L3) |
+
+- Each also pays a one-time **AP payout** (~50→600, scaling with difficulty).
+- **Build:** extend `ChallengeConfig` reward shape; reward-application in `checkChallengeCompletion`; a new **dynamic-multiplier subsystem** wired into `formulas` (each reward reads live state — SW / achievement count / encore time / cumulative challenge time); persist challenge-reward state; `ChallengesPage` UI shows rewards; drop the vestigial `mo_auto` mapping; tests.
+- **Power budget:** separate axis, bigger than achievements, with a cap that keeps Platinum ~22h / the idle arc intact (validated in resim).
+- Tempo autobuyer becomes the **Acoustic** reward (challenge-gated, per decision #5).
+
+### 4.4 Auto-tour capstone
+- Full-auto (auto-collect + auto-advance venues) unlocked **near circuit end**, **AP-purchased**. Reuses existing `performTour()`; add an auto-trigger in the tick-driver (like autoMO) gated on the capstone unlock.
+- **Acceptance:** with it on, the remaining venues tour + graduate hands-free.
+
+### 4.5 Polish for release
+- **Filler-achievement cleanup:** replace ~100 `ach_play_*`/`ach_active_*` time-fillers with meaningful markers; keep the unlock drip; stay ≤ +150–200% global-mult budget. (Redo properly — the reverted Cursor attempt is the cautionary tale.)
+- **Sound of Silence:** add a **restraint-playstyle sim seed** proving reachability (it's reachable; the sim just never plays restraint-style).
+- **Onboarding:** light intro + tooltips at the key beats (first Encore, the wall/MO, World Tour, buying AP automation).
+- **Ko-fi:** non-intrusive donation link/button.
+- **L4 tease:** "Signature — coming soon" lock at circuit completion.
+
+### 4.6 Ship
+- Full gate: tsc + all unit + all 4 sims green + idle-sim passes. Merge `feat/layer3` → master. **Vince plays end-to-end → approves → public.**
+
+## 5. Risks / watch-items
+- **Idle pacing unverified** until §4.2 — the headline ~22h-mostly-idle claim rides on it. Highest risk; verified first.
+- **Challenge power creep** — the bigger-axis dynamic rewards could trivialize pacing; cap + resim-validate.
+- **Filler cleanup global-mult budget** — easy to overshoot; measure against achievement-pacing sim.
+- **Living-venue art deferred** — playtest ships with simple visuals; first-impression risk accepted in exchange for validating fun first.
+
+## 6. Out of scope (this release)
+Living-venue art (post-playtest), L4+ build (light direction only), mobile/Steam monetization, offline auto-prestige.
