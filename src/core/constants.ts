@@ -141,9 +141,12 @@ export function getAutoEncoreInterval(opusCount: number): number {
 // AP unlock costs + gates for the prestige automations. Auto-encore opens after the 1st manual MO
 // (so the first 8-encore climb is hand-played once); auto-MO lags to ~MO#3 so L2's prestige decision
 // is learned before it automates. Costs are starting guesses — TUNED in the resim vs AP accrual.
-export const AP_UNLOCK: Record<'encore' | 'autoMO', { cost: number; minOpusCount: number }> = {
+export const AP_UNLOCK: Record<'encore' | 'autoMO' | 'autoTour', { cost: number; minOpusCount: number }> = {
   encore: { cost: 5, minOpusCount: 1 },
   autoMO: { cost: 75, minOpusCount: 3 }, // 75 (not 25) so the cost actually binds ~MO#3 instead of being decorative (balance review)
+  // Break-phase capstone — also gated on worldTourUnlocked in the action. minOpusCount loose; the real
+  // gate is being in L3. Cost is the dearest AP sink (it automates the whole tour loop). TUNED in resim.
+  autoTour: { cost: 200, minOpusCount: 5 },
 }
 
 // Magnum Opus gate: gentle escalation — 72 Symphonies + floor(opusCount/3)

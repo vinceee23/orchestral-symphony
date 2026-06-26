@@ -42,7 +42,7 @@ import { useUiStore } from './uiStore'
 import {
   L3, getCatalogueSnapshot, getComponentCost, isVenueGraduatable,
   canUnlockWorldTour, getVenue, getComponentMaxTier,
-  canAutoPerformMagnumOpus, getUnlockFlagsFromComponent, buildVenueGraduationPatch,
+  canAutoPerformMagnumOpus, canAutoPerformTour, getUnlockFlagsFromComponent, buildVenueGraduationPatch,
 } from '../core/worldTour'
 
 function createDefaultAutobuyer(): AutobuyerState {
@@ -105,6 +105,8 @@ function createInitialState(): GameState {
     autoMO: false,
     autoMOEnabled: true,
     autoGraduate: false,
+    autoTour: false,
+    autoTourEnabled: true,
     circuitComplete: false,
     postPlatinumMoCount: 0,
     spendableFame: 0,
@@ -254,6 +256,11 @@ export const useGameStore = create<GameState & GameActions>()(
         const postGrad = get()
         if (canAutoPerformMagnumOpus(postGrad)) {
           get().performMagnumOpus()
+        }
+        // Auto-Tour capstone: once the catalogue has regrown past the ratio, re-tour hands-free. Checked
+        // after auto-MO so the freshly-minted opus/records growth counts toward this tour's snapshot.
+        if (canAutoPerformTour(get())) {
+          get().performTour()
         }
       },
 
@@ -422,10 +429,14 @@ export const useGameStore = create<GameState & GameActions>()(
 
       // Spend Applause Points to unlock a prestige automation in L2 (auto-encore / auto-MO).
       // Gated by opusCount so the first climb (and a few MO decisions) are hand-played first.
-      unlockWithApplause: (key: 'encore' | 'autoMO') => {
+      unlockWithApplause: (key: 'encore' | 'autoMO' | 'autoTour') => {
         set((state) => {
           const cfg = AP_UNLOCK[key]
           if (!cfg || state.opusCount < cfg.minOpusCount || state.applausePoints < cfg.cost) return state
+          if (key === 'autoTour') {
+            if (state.autoTour || !state.worldTourUnlocked) return state
+            return { applausePoints: state.applausePoints - cfg.cost, autoTour: true, autoTourEnabled: true }
+          }
           if (key === 'autoMO') {
             if (state.autoMO) return state
             return { applausePoints: state.applausePoints - cfg.cost, autoMO: true, autoMOEnabled: true }
@@ -857,6 +868,13 @@ export const useGameStore = create<GameState & GameActions>()(
         })
       },
 
+      setAutoTourEnabled: (enabled: boolean) => {
+        set((state) => {
+          if (!state.autoTour) return state
+          return { autoTourEnabled: enabled }
+        })
+      },
+
       bankVenueAcclaim: () => {
         set((state) => {
           if (!state.worldTourUnlocked) return state
@@ -907,6 +925,10 @@ export const useGameStore = create<GameState & GameActions>()(
           // (Fame, AP, lifetimeEncoreCount, opusCount + the venue ladder/Acclaim all persist by omission.)
           autoMO: state.keepAutobuyers ? state.autoMO : false,
           autoMOEnabled: state.keepAutobuyers ? state.autoMOEnabled : true,
+          // Auto-Tour resets unless Roadies too — symmetric with auto-MO/auto-encore. Without Roadies the
+          // player re-buys it from persisted AP after each tour.
+          autoTour: state.keepAutobuyers ? state.autoTour : false,
+          autoTourEnabled: state.keepAutobuyers ? state.autoTourEnabled : true,
           tourCount: newTourCount,
           catalogueSnapshot: new Decimal(getCatalogueSnapshot(opusCount, carriedRecords)),
           venueBuffer: new Decimal(0),
@@ -959,7 +981,7 @@ export const useGameStore = create<GameState & GameActions>()(
           startChallenge, abandonChallenge,
           performEncore, performMagnumOpus, performGrandFinale,
           buyComponent, buyKeepAutobuyers, graduateVenue, performTour, unlockWorldTour, bankVenueAcclaim,
-          setAutoMOEnabled,
+          setAutoMOEnabled, setAutoTourEnabled,
           hardReset,
           ...data
         } = state
@@ -1008,6 +1030,8 @@ export const useGameStore = create<GameState & GameActions>()(
           if (state.autoMO === undefined) state.autoMO = false
           if (state.autoMOEnabled === undefined) state.autoMOEnabled = true
           if (state.autoGraduate === undefined) state.autoGraduate = false
+          if (state.autoTour === undefined) state.autoTour = false
+          if (state.autoTourEnabled === undefined) state.autoTourEnabled = true
           if (state.circuitComplete === undefined) state.circuitComplete = false
           if (state.postPlatinumMoCount === undefined) state.postPlatinumMoCount = 0
           if (typeof state.spendableFame !== 'number' || !isFinite(state.spendableFame)) state.spendableFame = 0
@@ -1071,6 +1095,8 @@ export const useGameStore = create<GameState & GameActions>()(
               autoMO: state.autoMO,
               autoMOEnabled: state.autoMOEnabled,
               autoGraduate: state.autoGraduate,
+              autoTour: state.autoTour,
+              autoTourEnabled: state.autoTourEnabled,
               circuitComplete: state.circuitComplete,
               postPlatinumMoCount: state.postPlatinumMoCount,
               spendableFame: state.spendableFame,

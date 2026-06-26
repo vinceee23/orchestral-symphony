@@ -43,6 +43,8 @@ export function AutobuyersPage() {
   const applausePoints = useGameStore((s) => s.applausePoints)
   const opusCount = useGameStore((s) => s.opusCount)
   const autoMO = useGameStore((s) => s.autoMO)
+  const autoTour = useGameStore((s) => s.autoTour)
+  const worldTourUnlocked = useGameStore((s) => s.worldTourUnlocked)
   const unlockWithApplause = useGameStore((s) => s.unlockWithApplause)
 
   const bulkCap = hasPerk(new Set(achievements), 'perk-bulk-unlock') ? 'max' : getAutomatorBulk(opusUpgrades)
@@ -105,6 +107,26 @@ export function AutobuyersPage() {
               size="sm"
             >
               Unlock ({AP_UNLOCK.autoMO.cost} AP)
+            </Button>
+          </div>
+        )}
+
+        {worldTourUnlocked && !autoTour && (
+          <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
+            <div>
+              <div className="text-sm font-semibold text-text-primary">Auto World Tour</div>
+              <div className="text-xs text-text-muted">
+                Re-performs the World Tour automatically once your catalogue has regrown — runs the whole venue circuit hands-free.
+                {opusCount < AP_UNLOCK.autoTour.minOpusCount && ` Unlocks at ${AP_UNLOCK.autoTour.minOpusCount} Magnum Opuses.`}
+              </div>
+            </div>
+            <Button
+              onClick={() => unlockWithApplause('autoTour')}
+              disabled={opusCount < AP_UNLOCK.autoTour.minOpusCount || applausePoints < AP_UNLOCK.autoTour.cost}
+              variant="purple"
+              size="sm"
+            >
+              Unlock ({AP_UNLOCK.autoTour.cost} AP)
             </Button>
           </div>
         )}

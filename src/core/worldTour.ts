@@ -40,6 +40,10 @@ export const L3 = {
   GATE_POST_PLAT_MO: 2,
   GATE_MIN_PEAK_SW_LOG10: 0,
   LEGACY_RECORDS_FRACTION: 0.12,
+  // Auto-Tour capstone: re-tour when the LIVE catalogue has regrown to this multiple of the frozen
+  // touring snapshot. Calibrated in sim/l3-pacing.test.ts (AFK circuit) — 1.12 completes the full circuit
+  // hands-free in ~24h over ~6 auto-tours with a lengthening, never-stalling cadence. TUNED in resim.
+  AUTO_TOUR_CAT_RATIO: 1.12,
   COMPONENTS: {
     lighting: {
       label: 'Lighting',
@@ -342,6 +346,22 @@ export function buildVenueGraduationPatch(
 
 export function isAutoMOUnlocked(state: Pick<GameState, 'autoMO'>): boolean {
   return !!state.autoMO
+}
+
+/**
+ * Auto-Tour (Break-phase capstone): fire performTour() when the live catalogue has regrown to
+ * AUTO_TOUR_CAT_RATIO× the frozen touring snapshot. Pre-circuit only — once the circuit is complete the
+ * snapshot is moot (Acclaim uses the live catalogue) and re-touring would just reset L1/L2 for nothing.
+ */
+export function canAutoPerformTour(state: GameState): boolean {
+  if (!state.autoTour || !state.autoTourEnabled) return false
+  if (!state.worldTourUnlocked || state.circuitComplete) return false
+  if (state.activeChallenge) return false
+  const live = getCatalogueSnapshot(state.opusCount, state.recordsSold)
+  const snap = state.catalogueSnapshot instanceof Decimal
+    ? state.catalogueSnapshot.toNumber()
+    : (state.catalogueSnapshot ?? 1)
+  return live >= Math.max(1, snap) * L3.AUTO_TOUR_CAT_RATIO
 }
 
 export function canAutoPerformMagnumOpus(state: GameState): boolean {

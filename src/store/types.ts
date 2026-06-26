@@ -99,6 +99,10 @@ export interface GameState {
   autoMOEnabled: boolean
   /** Late-ladder unlock — graduates a venue once all components are maxed. */
   autoGraduate: boolean
+  /** Break-phase capstone (AP-bought) — auto-performs the World Tour when the catalogue has regrown. */
+  autoTour: boolean
+  /** Toggle for Auto-Tour (defaults on when unlocked). */
+  autoTourEnabled: boolean
   /** Full venue circuit graduated — Acclaim rate uses live catalogue. */
   circuitComplete: boolean
   /** MOs performed after Platinum — drives the hybrid L3 unlock gate. */
@@ -143,7 +147,8 @@ export interface GameActions {
   setBuyAmount: (amount: BuyAmount) => void
   toggleAutobuyer: (key: string) => void
   setAutobuyerBulk: (key: string, bulk: number | 'max') => void
-  unlockWithApplause: (key: 'encore' | 'autoMO') => void
+  unlockWithApplause: (key: 'encore' | 'autoMO' | 'autoTour') => void
+  setAutoTourEnabled: (enabled: boolean) => void
   buyEncoreUpgrade: (id: string) => void
   buyOpusUpgrade: (id: string) => void
   buyFameUpgrade: (id: string) => void

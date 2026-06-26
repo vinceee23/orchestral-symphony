@@ -60,6 +60,8 @@ function minimalState(overrides: Partial<GameState> = {}): GameState {
     autoMO: false,
     autoMOEnabled: true,
     autoGraduate: false,
+    autoTour: false,
+    autoTourEnabled: true,
     circuitComplete: false,
     postPlatinumMoCount: 2,
     spendableFame: 0, lifetimeFame: 0, fameUpgrades: {},
