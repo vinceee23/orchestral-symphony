@@ -2,7 +2,13 @@
 
 _The comprehensive plan for the first public playtest (web, free). Mode: **plan → Vince approves → build**.
 Companion to `docs/L2-AUTOMATION-SPEC.md` (AP/idle mechanics) and `docs/LAYER3-SPEC.md` (L3 design)._
-_Status: AWAITING VINCE APPROVAL. Nothing new gets built until this is signed off._
+_Status: **APPROVED (2026-06-26)** — building per the §4 order (next: idle-verify)._
+
+> ⚠️ **RECONCILIATION (these supersede any older wording below):**
+> 1. **Engaged Platinum ≈ 16–17h**, not ~22h (the old figure was a suboptimal-sim artifact). Idle is slower — pinned by the pending idle-verify. (Affects §1, §4.2, §5.)
+> 2. **Idle/auto-conduct crescendo = 70% of active power (flat); active = 100%.** This replaces every "×2.5 auto-conduct cap / 83%" mention (§2, §3b, §4.2, §4.5). See §3b-numbers for the authoritative curve.
+> 3. **The sim-fix is DONE** (commit a1bbda5): stall fixed, all 6 pacing bars green, 4 achievements excluded+flagged. §3's "known broken" and §4.1 are **complete**.
+> 4. World Tour reset persistence is now LOCKED (§3b): AP + Fame/tree + challenge-time persist; tiers/autobuyers (incl. auto-encore/auto-MO) reset unless Roadies.
 
 ---
 
@@ -50,7 +56,9 @@ Platinum is a **Break Infinity-style event**, not the start of dead idle. The ro
 - **Fame Tree (LOCKED):** Fame becomes spendable post-Platinum (like EP: spend on the tree + a lifetime passive mult). Nodes: **Limelight** (lifetime-Fame passive prod/OP mult) · **Standing Ovation** (crescendo ceiling) · **Sold-Out Shows** (records sell-rate) · **Tour Buzz** (lowers WT unlock gate) · **Encore Magnetism** (auto-encore speed + AP gain) · **Diamond Status** (Fame-gain mult). Distinct from the OP tree. Magnitudes resim-tuned.
 - **Reset-Softening Perk Ladder (LOCKED):** achievements that progressively break the reset grind —
   Sight-Reading (partial SW carry, exists) → **★Encore Resonance** (Encore stops resetting SW) → Keep Encore Upgrades (exists) → Skip the Wall (~Platinum, exists) → **★Opus Memory** (MO stops resetting layers below) → Roadies (=keepAutobuyers, WT spares autobuyers) → **★Legacy** (challenge-time persists across all resets). ★=new.
-- **World Tour reset (LOCKED):** deep reset incl. **autobuyers** (a real sacrifice) unless Roadies/keep-autobuyers is owned; challenge-time always persists (Legacy).
+- **World Tour reset (LOCKED) — what persists vs resets:**
+  - **PERSIST:** Applause Points (re-deploy automations) · Fame + Fame tree · challenge-time (Legacy) · all meta (EP/OP/lifetime mults/achievements).
+  - **RESET:** tiers/SW/tempo/crescendo/encoreCount/MO-progress · **autobuyer UNLOCKS incl. auto-encore & auto-MO** (re-buy with your persisted AP) — UNLESS **Roadies/keep-autobuyers** is owned (then they survive). The deep reset is a real sacrifice; Roadies is the payoff.
 
 ### 3b-numbers. Break-phase DRAFT magnitudes (proposed — resim-tuned, AWAITING VINCE APPROVE/TWEAK)
 **Fame Tree** — Fame earned per post-Platinum MO ≈ `floor(1 + log10(records/1M))`; spendable + lifetime passive mult:
