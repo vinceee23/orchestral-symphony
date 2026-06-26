@@ -67,7 +67,7 @@ Platinum is a **Break Infinity-style event**, not the start of dead idle. The ro
 | Limelight | +15% prod & OP (lifetime-Fame-scaled) | 3 Fame | 8 |
 | Standing Ovation | +0.5× crescendo ceiling (active) | 5 | 4 |
 | Sold-Out Shows | +20% records sell-rate | 4 | 6 |
-| Tour Buzz | −8% World Tour unlock gate | 6 | 5 |
+| Tour Buzz | −8% World Tour venue component costs | 6 | 5 |
 | Encore Magnetism | −10% auto-encore interval, +10% AP | 4 | 6 |
 | Diamond Status | +25% Fame gain | 8 | 5 |
 

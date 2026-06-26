@@ -20,7 +20,7 @@ import {
 import { OPUS_UPGRADES, OPUS_UPGRADE_MAP, getOpusUpgradeCost } from '../core/opusUpgrades'
 import {
   FAME_NODE_MAP, FAME_NODES, getFameNodeCost, getFameGain,
-  getFameAutoEncoreFactor, getFameApMult,
+  getFameAutoEncoreFactor, getFameApMult, getFameVenueCostFactor,
 } from '../core/fameTree'
 import { hasPerk, WARMUP_TIERS, WARMUP_BONUS_SW, TEMPO_HEADSTART_LEVEL, CRESCENDO_HEADSTART, ENCORE_UPGRADE_DISCOUNT } from '../core/perks'
 import { getOpusGain } from '../core/records'
@@ -791,7 +791,7 @@ export const useGameStore = create<GameState & GameActions>()(
           if (!(componentId in L3.COMPONENTS)) return state
           const level = state.components[componentId] ?? 0
           if (level >= getComponentMaxTier(componentId)) return state
-          const cost = getComponentCost(componentId, level, state.currentVenue)
+          const cost = getComponentCost(componentId, level, state.currentVenue, getFameVenueCostFactor(state.fameUpgrades))
           const acclaim = state.acclaim instanceof Decimal ? state.acclaim : new Decimal(state.acclaim ?? 0)
           if (acclaim.lt(cost)) return state
           const nextComponents = { ...state.components, [componentId]: level + 1 }

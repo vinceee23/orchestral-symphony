@@ -6,6 +6,7 @@ import {
   getComponentCost, isVenueGraduatable, getAcclaimMultiplier, getEffectiveCatalogue,
   getComponentMaxTier, getComponentDef,
 } from '../../core/worldTour'
+import { getFameVenueCostFactor } from '../../core/fameTree'
 import { Button } from '../shared/Button'
 import { playBuySound } from '../../core/audio'
 
@@ -37,6 +38,7 @@ export function WorldTourPage() {
   const venueBuffer = useGameStore((s) => s.venueBuffer)
   const venueSoldOut = useGameStore((s) => s.venueSoldOut)
   const currentVenue = useGameStore((s) => s.currentVenue)
+  const fameUpgrades = useGameStore((s) => s.fameUpgrades)
   const tourCount = useGameStore((s) => s.tourCount)
   const autoCollect = useGameStore((s) => s.autoCollect)
   const autoMO = useGameStore((s) => s.autoMO)
@@ -181,7 +183,7 @@ export function WorldTourPage() {
             const maxTier = getComponentMaxTier(id)
             const maxed = level >= maxTier
             const isUnlock = cfg.role === 'unlock'
-            const cost = getComponentCost(id, level, currentVenue)
+            const cost = getComponentCost(id, level, currentVenue, getFameVenueCostFactor(fameUpgrades))
             const affordable = acclaimNum >= cost
             const buy = () => {
               if (!maxed && affordable) {

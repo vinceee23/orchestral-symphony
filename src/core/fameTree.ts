@@ -44,7 +44,7 @@ export const FAME_NODES: FameNodeConfig[] = [
   {
     id: 'tour-buzz',
     name: 'Tour Buzz',
-    description: '−8% to the World Tour unlock requirement per level.',
+    description: '−8% World Tour venue component costs per level.',
     baseCost: 6,
     costGrowth: 1.5,
     maxLevel: 5,
@@ -110,8 +110,8 @@ export function getFameRecordsMult(levels: Record<string, number>): number {
   return 1 + 0.2 * lvl(levels, 'sold-out-shows')
 }
 
-/** Tour Buzz: −8%/lvl (multiplicative) to the World Tour unlock requirement. */
-export function getFameWtGateFactor(levels: Record<string, number>): number {
+/** Tour Buzz: −8%/lvl (multiplicative) to World Tour venue component costs (relevant the whole circuit). */
+export function getFameVenueCostFactor(levels: Record<string, number>): number {
   return Math.pow(0.92, lvl(levels, 'tour-buzz'))
 }
 

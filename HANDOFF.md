@@ -50,7 +50,8 @@ Full spec: **`docs/L2-AUTOMATION-SPEC.md`** (LOCKED, ~97%). Decision: don't spee
 - **A (b0e1efc):** Fame currency — `spendableFame`/`lifetimeFame`/`fameUpgrades` state (+init/migration/offline-literal); minted per post-Plat MO = `floor(1+log10(records/1M))×DiamondStatus` in performMagnumOpus; `buyFameUpgrade` action; **src/core/fameTree.ts** = 6-node config + pure getters. Persists across all resets (meta).
 - **B (c4a3e50):** all 6 effects wired — Limelight (+15%/lvl prod & OP), Standing Ovation (+0.5/lvl active crescendo ceiling), Sold-Out Shows (+20%/lvl records/sec), Tour Buzz (lowers WT MO-gate), Encore Magnetism (−10%/lvl auto-encore interval +10%/lvl AP), Diamond Status (Fame gain). `fameUpgrades` threaded as optional params (default {}) → sims/tests inert unless nodes bought; AFK idle still green.
 - **C (b031d3f):** **src/components/fame/FamePage.tsx** dedicated tab (mirrors OpusPage); Sidebar shows "Fame" tab once `platinum`.
-- ⚠️ **RESIM/DESIGN flags for next pass:** (1) Fame node cost **growth=1.5** is a placeholder (wasn't in the approved §3b table) — tune in resim. (2) **Tour Buzz** only affects the FIRST WT unlock (where Fame is scarce) — consider repurposing (re-tour / venue-cost reduction). (3) Name collision: Fame "Standing Ovation" vs the existing OP-tree "Standing Ovation" (`crescendo-op-bonus`) — both touch crescendo; rename one if it reads confusing in playtest.
+- **Flag fixes (committed):** Tour Buzz repurposed → **−8%/lvl venue component costs** (relevant the whole circuit, not just the one-time WT-unlock gate). OP-tree "Standing Ovation" renamed → **"Rave Reviews"** (so the Fame "Standing Ovation" name is unique).
+- ⚠️ **STILL OPEN for resim:** Fame node cost **growth=1.5** is a placeholder (wasn't in the approved §3b table) — tune in resim.
 
 ### RESUME POINT — remaining Break-phase pieces (#13 cont.)
 Build each → gate (tsc + unit + AFK sims) → commit. DRAFT magnitudes in **docs/L1-L3-RELEASE-PLAN.md §3b-numbers**:

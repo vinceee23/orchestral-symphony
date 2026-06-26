@@ -1,7 +1,6 @@
 import Decimal from 'break_infinity.js'
 import { PLATINUM_THRESHOLD } from './constants'
 import { getMagnumOpusCost } from './constants'
-import { getFameWtGateFactor } from './fameTree'
 import type { GameState } from '../store/types'
 
 export type ComponentTarget =
@@ -300,11 +299,16 @@ export function getFillSpeed(
   return rate * light * conduct
 }
 
-export function getComponentCost(componentId: string, level: number, venueId = 0): number {
+export function getComponentCost(
+  componentId: string,
+  level: number,
+  venueId = 0,
+  discountFactor = 1, // Tour Buzz (Fame tree) — getFameVenueCostFactor(fameUpgrades); 1 = no discount
+): number {
   const cfg = getComponentDef(componentId)
   if (!cfg) return Infinity
   const venue = getVenue(venueId)
-  const raw = cfg.costBase * venue.costScale * Math.pow(cfg.costGrowth, level)
+  const raw = cfg.costBase * venue.costScale * Math.pow(cfg.costGrowth, level) * discountFactor
   return Number.isFinite(raw) ? raw : Infinity
 }
 
@@ -368,10 +372,7 @@ export function getAcclaimMultiplier(lifetimeAcclaim: Decimal | number): number 
 export function canUnlockWorldTour(state: GameState): boolean {
   const platinum = state.platinum || state.recordsSold >= PLATINUM_THRESHOLD
   if (!platinum) return false
-  // Tour Buzz (Fame tree) lowers the post-Platinum-MO requirement. ponytail: only the FIRST unlock is
-  // gated here, where Fame is still scarce — flagged for resim (may repurpose to re-tour/venue costs).
-  const moGate = Math.ceil(L3.GATE_POST_PLAT_MO * getFameWtGateFactor(state.fameUpgrades))
-  if ((state.postPlatinumMoCount ?? 0) < moGate) return false
+  if ((state.postPlatinumMoCount ?? 0) < L3.GATE_POST_PLAT_MO) return false
   if (L3.GATE_MIN_PEAK_SW_LOG10 > 0) {
     const l10 = state.peakSoundwaves.log10()
     if (!isFinite(l10) || l10 < L3.GATE_MIN_PEAK_SW_LOG10) return false
