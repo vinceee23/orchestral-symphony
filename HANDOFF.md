@@ -17,6 +17,17 @@ Full spec: **`docs/L2-AUTOMATION-SPEC.md`** (LOCKED, ~97%). Decision: don't spee
 - **Only genuinely new code:** Applause Points currency, the AP→unlock purchase path, and **auto-encore execution** (the `encore` autobuyer key was never wired; trigger it in the gameStore tick-driver beside the `autoMO` trigger at gameStore.ts:204). Everything else = re-gating + tuning.
 - **Sequence:** (1) ship **P2** (soften Encore 6–8 costs) now; (2) build L2 rework; (3) **resim** (sims must drive autobuyers off SIM time, not Date.now()); (4) reconcile L3, re-pace the 2 held sims on the new idler baseline; (5) merge → deploy.
 
+### Autonomous-run progress (2026-06-26, Vince away)
+- **P2 SKIPPED** (data-driven): baseline sim shows W1 spike already gone — human L1 worst-gap 15.4 min, 0% runs >20 min; perfect player's per-encore times *decrease* (2.9→0.3 min). Pacing-v2 already fixed it. Confirmed, not assumed.
+- **DONE + committed (`fb97744`, pushed to vinceee23):** Applause Points currency (earned/Encore, persists, migrated) · auto-encore execution (wires the dead `encore` autobuyer in the tick-driver; weak→MO-upgraded; net-loss-guarded) · AP-unlock action + UI for auto-encore (opusCount≥1) & auto-MO (opusCount≥3) · per-encore cadence reporting in era+human sims. Gate: tsc clean, 45/45 unit.
+- **KEY CODE FINDING:** tier autobuyers already unlock via the OP tree (`automator-unlock-N`), NOT only L3 challenges. So the real slog cause = auto-encore + auto-MO being L3-gated. Took the lazy-correct default: AP unlocks the *prestige* automations; tier autobuyers stay on the OP path (no OP-economy surgery).
+- **⏸ FLAGGED for Vince (deferred — touch tuned OP/L3 economy, didn't guess):**
+  1. Tier-autobuyer **AP-early-unlock** in the first L1 climb (your "buy at Encore 4-5") — optional; OP tree already gives tiers post-MO1. Want it anyway?
+  2. **Challenges repurpose** → AP + automation-power (D1). Minimal version = flat AP payout per challenge; richer "automation-power" rewards = new subsystem, deferred.
+  3. **autoMO venue-component removal** from L3 (worldTour.ts) — auto-MO now also unlocks via L2 AP; the L3 component is redundant. Removal touches built L3 + tests.
+- **NEW BUG (baseline):** Sound of Silence (`ach_perk_patron`) unreachable across 18 human seeds — investigating (task #6).
+- **Remaining:** resim+tune AP costs/auto-encore interval to §10 acceptance; re-pace held sims; then the flagged items per Vince.
+
 ## OLD BLOCKER (now folded into the plan above) — why L3 isn't deployed yet
 Two HEAVY pacing-sim INSTRUMENTS fail: **`sim/era-pacing.test.ts` + `sim/human-pacing.test.ts`** — assertion `expect(platinum || recordsSold >= PLATINUM_THRESHOLD).toBe(true)` fails (their modeled player doesn't reach 1M records within `MAX_STEPS=250_000`).
 - **NOT a game regression:** `l3-pacing` reaches Platinum; `calculateWorldTourTick` no-ops when L3 locked (worldTour.ts:391 `if(!worldTourUnlocked) return {}`); gameStore MO/records path unchanged. Cause = pacing-v2 **intentionally** slowed records (RECORDS_ALBUM_K 1→0.58, RECORDS_OPUS_EXP 1.15→1.08, Platinum ~22h) so these sims' step budget / under-conducting player no longer reaches Platinum.

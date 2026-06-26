@@ -196,7 +196,8 @@ export const useGameStore = create<GameState & GameActions>()(
         // encore would yield ≥1 EP (peak past the threshold) so it never auto-prestiges a net-loss.
         // performEncore() itself still gates on the tier-cost, so a premature fire just no-ops.
         const enc = after.autobuyers['encore']
-        if (enc?.unlocked && enc.enabled && !after.activeChallenge && after.peakSoundwaves.gte(ENCORE_EP_THRESHOLD)) {
+        // .gt (not .gte): getEncoreGain returns 0 at peak == threshold (formulas.ts), so equality would auto-reset for 0 EP.
+        if (enc?.unlocked && enc.enabled && !after.activeChallenge && after.peakSoundwaves.gt(ENCORE_EP_THRESHOLD)) {
           const now = Date.now()
           if (now - (enc.lastTick ?? 0) >= getAutoEncoreInterval(after.opusCount)) {
             get().performEncore()
