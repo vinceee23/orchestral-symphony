@@ -41,7 +41,7 @@ import {
   getOvertureGainMultiplier,
   getRehearsalCostReduction,
 } from '../src/core/encoreUpgrades'
-import { OPUS_UPGRADES, OPUS_UPGRADE_MAP, getOpusUpgradeCost } from '../src/core/opusUpgrades'
+import { OPUS_UPGRADES, OPUS_UPGRADE_MAP, getOpusUpgradeCost, hasAutoConduct } from '../src/core/opusUpgrades'
 import {
   hasPerk,
   WARMUP_TIERS,
@@ -1147,4 +1147,87 @@ describe('human pacing instrument', () => {
     expect(median(globalAtPlat), 'global mult at Platinum').toBeGreaterThanOrEqual(2.4)
     expect(median(globalAtPlat), 'global mult at Platinum').toBeLessThanOrEqual(3.3)
   }, 600_000)
+
+  // Idle/AFK verify (#12): once the idle machine is fully built (auto-MO + all tier autobuyers +
+  // auto-conduct), a player who WALKS AWAY (no manual buys, not conducting) keeps progressing hands-free.
+  // Verifies the L2->Platinum idle promise; the L3-circuit-hands-free part waits on auto-tour (Break phase).
+  it('AFK idle: a fully-automated player keeps cycling Magnum Opuses hands-free (slog -> idle)', () => {
+    const setClock = (globalThis as { __setSimClock?: (t: number) => void }).__setSimClock!
+    const rng = new SeededRng(99_001)
+    let simMs = 0
+    let activeMs = 0
+    let steps = 0
+    const state = createInitialState(simMs)
+    setClock(simMs)
+    let lastAutoEncoreMs = -Infinity
+
+    const allTiersAuto = () => TIER_CONFIGS.every((c) => state.autobuyers[`tier_${c.id}`]?.unlocked)
+    const fullyAutomated = () => state.autoMO && hasAutoConduct(state.opusUpgrades) && allTiersAuto()
+    const buyAutomationOP = () => {
+      for (const c of OPUS_UPGRADES) {
+        const isAuto = c.id.startsWith('automator-unlock-') || c.id === 'auto-conduct' || c.id === 'automator-bulk' || c.id === 'automator-speed'
+        if (!isAuto) continue
+        const lv = state.opusUpgrades[c.id] ?? 0
+        if (lv < c.maxLevel && state.opusPoints >= getOpusUpgradeCost(c, lv)) buyOpusUpgrade(state, c.id)
+      }
+    }
+    const tryUnlockAP = () => {
+      if (!state.autobuyers['encore']?.unlocked && state.opusCount >= AP_UNLOCK.encore.minOpusCount && state.applausePoints >= AP_UNLOCK.encore.cost) {
+        state.applausePoints -= AP_UNLOCK.encore.cost
+        state.autobuyers = { ...state.autobuyers, encore: { unlocked: true, enabled: true, interval: AUTOBUYER_DEFAULT_INTERVAL, bulk: 1, lastTick: 0 } }
+      }
+      if (!state.autoMO && state.opusCount >= AP_UNLOCK.autoMO.minOpusCount && state.applausePoints >= AP_UNLOCK.autoMO.cost) {
+        state.applausePoints -= AP_UNLOCK.autoMO.cost
+        state.autoMO = true
+      }
+    }
+    const buyGateTier = () => {
+      const gate = state.layer1WallReached ? getMagnumOpusCost(state.opusCount) : getEncoreCost(state.encoreCount)
+      const gt = state.tiers[gate.tierIndex]
+      if (gt?.unlocked && (gt.purchased ?? 0) < gate.amount) buyTier(state, gate.tierIndex + 1, gate.amount - gt.purchased)
+    }
+
+    // SETUP: active play (conducting) until the idle machine is fully built.
+    const SETUP_CAP = 300_000
+    while (steps < SETUP_CAP && !fullyAutomated()) {
+      steps++
+      const dt = chooseDt(state)
+      applyTick(state, dt, true)
+      simMs += dt; activeMs += dt; setClock(simMs)
+      enableUnlockedAutobuyers(state)
+      buyAutomationOP()
+      humanBuyDecision(state, rng)
+      buyGateTier()
+      tryUnlockAP()
+      if (canEncoreNow(state)) performEncore(state, simMs)
+      if (state.layer1WallReached && canMoNow(state)) performMagnumOpus(state, simMs)
+    }
+    expect(fullyAutomated(), 'setup: idle machine fully built (auto-MO + all autobuyers + auto-conduct)').toBe(true)
+
+    // AFK: walk away — no manual buys, not conducting (auto-conduct sustains crescendo). Only autobuyers
+    // (multi-fire) + auto-encore + auto-MO drive.
+    const afkOpus = state.opusCount
+    const afkActiveH = activeMs / 3_600_000
+    const wasPlat = state.platinum
+    const AFK_CAP = steps + 400_000
+    while (steps < AFK_CAP && (state.opusCount < afkOpus + 4 || !state.platinum)) {
+      steps++
+      const dt = chooseDt(state)
+      applyTick(state, dt, false)
+      simMs += dt; activeMs += dt; setClock(simMs)
+      const enc = state.autobuyers['encore']
+      if (enc?.unlocked && enc.enabled && !state.layer1WallReached && state.peakSoundwaves.gt(ENCORE_EP_THRESHOLD) && simMs - lastAutoEncoreMs >= getAutoEncoreInterval(state.opusCount)) {
+        if (performEncore(state, simMs)) lastAutoEncoreMs = simMs
+      }
+      if (state.autoMO && canMoNow(state)) performMagnumOpus(state, simMs)
+    }
+
+    const afkMOs = state.opusCount - afkOpus
+    console.log('\n=== AFK Idle Verify (L2 hands-free) ===')
+    console.log(`Idle machine built by opus ${afkOpus} @ ${afkActiveH.toFixed(2)}h active${wasPlat ? ' (Platinum already reached)' : ''}`)
+    console.log(`Then HANDS-FREE (no input): +${afkMOs} Magnum Opuses | Platinum: ${state.platinum ? 'YES' : 'NO'} @ ${(activeMs / 3_600_000).toFixed(2)}h | records ${Math.floor(state.recordsSold).toLocaleString()}`)
+
+    expect(afkMOs, 'AFK auto-MO keeps cycling hands-free').toBeGreaterThanOrEqual(3)
+    expect(state.platinum, 'AFK idle reaches/holds Platinum hands-free').toBe(true)
+  }, 300_000)
 })
