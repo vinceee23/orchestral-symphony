@@ -403,13 +403,16 @@ function canMoNow(state: GameState): boolean {
   return moPurchased >= moCost.amount
 }
 
-/** Mirrors gameStore offline replay — 1s chunks, no conducting, 24h cap. */
+// Offline replay uses COARSE chunks (perf): offline is production-accrual only (no prestige), so
+// stepping at 60s instead of 1s is ~60x faster with negligible pacing impact. (sim perf, plan §4.1)
+const OFFLINE_CHUNK_MS = 60_000
+/** Mirrors gameStore offline replay — coarse chunks, no conducting, 24h cap. */
 function applyOfflineProgress(state: GameState, offlineMs: number): void {
   const capped = Math.min(offlineMs, MAX_OFFLINE_MS)
   if (capped <= 1000) return
   let remaining = capped
   while (remaining > 0) {
-    const step = Math.min(remaining, TICK_MS)
+    const step = Math.min(remaining, OFFLINE_CHUNK_MS)
     Object.assign(state, calculateTick(state, step, false))
     remaining -= step
   }
