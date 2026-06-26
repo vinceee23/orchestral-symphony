@@ -18,6 +18,7 @@ import {
   getHeadStartExponent, getRehearsalCostReduction, getOvertureGainMultiplier,
 } from '../core/encoreUpgrades'
 import { OPUS_UPGRADES, OPUS_UPGRADE_MAP, getOpusUpgradeCost } from '../core/opusUpgrades'
+import { FAME_NODE_MAP, FAME_NODES, getFameNodeCost, getFameGain } from '../core/fameTree'
 import { hasPerk, WARMUP_TIERS, WARMUP_BONUS_SW, TEMPO_HEADSTART_LEVEL, CRESCENDO_HEADSTART, ENCORE_UPGRADE_DISCOUNT } from '../core/perks'
 import { getOpusGain } from '../core/records'
 import { calculateTick } from '../core/tick'
@@ -102,6 +103,9 @@ function createInitialState(): GameState {
     autoGraduate: false,
     circuitComplete: false,
     postPlatinumMoCount: 0,
+    spendableFame: 0,
+    lifetimeFame: 0,
+    fameUpgrades: {},
     finalePoints: 0,
     finaleCount: 0,
     peakSoundwaves: new Decimal(0),
@@ -481,6 +485,21 @@ export const useGameStore = create<GameState & GameActions>()(
         })
       },
 
+      buyFameUpgrade: (id: string) => {
+        set((state) => {
+          const config = FAME_NODE_MAP[id] ?? FAME_NODES.find((n) => n.id === id)
+          if (!config) return state
+          const level = state.fameUpgrades[id] ?? 0
+          if (level >= config.maxLevel) return state
+          const cost = getFameNodeCost(config, level)
+          if (state.spendableFame < cost) return state
+          return {
+            spendableFame: state.spendableFame - cost,
+            fameUpgrades: { ...state.fameUpgrades, [id]: level + 1 },
+          }
+        })
+      },
+
       checkAchievements: () => {
         const state = get()
         const currentSet = new Set(state.achievements)
@@ -719,8 +738,13 @@ export const useGameStore = create<GameState & GameActions>()(
         const skipWall = hasPerk(achSet, 'perk-skip-wall')
         const keepEncoreUpgrades = hasPerk(achSet, 'perk-keep-encore-upgrades')
         const wasPlatinum = state.platinum || state.recordsSold >= PLATINUM_THRESHOLD
+        // Break phase: each post-Platinum MO mints Fame (0 pre-Platinum). Spendable + lifetime both grow;
+        // Fame is meta, so it survives this reset (not listed below = preserved by the partial set()).
+        const fameGain = wasPlatinum ? getFameGain(state.recordsSold, state.fameUpgrades) : 0
         set({
           ...resetTiersAndSW(state.achievements),
+          spendableFame: state.spendableFame + fameGain,
+          lifetimeFame: state.lifetimeFame + fameGain,
           peakSoundwaves: new Decimal(0),
           encorePoints: 0,
           lifetimeEncorePoints: 0,
@@ -955,6 +979,9 @@ export const useGameStore = create<GameState & GameActions>()(
           if (state.autoGraduate === undefined) state.autoGraduate = false
           if (state.circuitComplete === undefined) state.circuitComplete = false
           if (state.postPlatinumMoCount === undefined) state.postPlatinumMoCount = 0
+          if (typeof state.spendableFame !== 'number' || !isFinite(state.spendableFame)) state.spendableFame = 0
+          if (typeof state.lifetimeFame !== 'number' || !isFinite(state.lifetimeFame)) state.lifetimeFame = 0
+          if (!state.fameUpgrades) state.fameUpgrades = {}
           if (state.finalePoints === undefined) state.finalePoints = 0
           if (state.finaleCount === undefined) state.finaleCount = 0
           if (state.tempoPurchasesThisRun === undefined) state.tempoPurchasesThisRun = 0
@@ -1014,6 +1041,9 @@ export const useGameStore = create<GameState & GameActions>()(
               autoGraduate: state.autoGraduate,
               circuitComplete: state.circuitComplete,
               postPlatinumMoCount: state.postPlatinumMoCount,
+              spendableFame: state.spendableFame,
+              lifetimeFame: state.lifetimeFame,
+              fameUpgrades: state.fameUpgrades,
               finalePoints: state.finalePoints,
               finaleCount: state.finaleCount,
               peakSoundwaves: state.peakSoundwaves,
