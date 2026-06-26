@@ -4,6 +4,25 @@ Status: **proposal for Vince's sign-off.** Self-iterated for loopholes (see §7)
 
 ---
 
+## ⭐ RECONCILED & LOCKED (2026-06-27) — implementation on `feat/layer3` now matches this spec
+
+A later "Break phase" session diverged from this spec; an audit + reconcile (see `docs/RECONCILE-PLAN.md`)
+brought the code back in line. Final locked state:
+- **Auto-Tour = an L4 reward, NOT L3** (§1.5 automation arc: each layer automates the one below). The code
+  exists but is hard-gated behind `L4_UNLOCKED=false` and is unreachable in L3.
+- **Auto-MO = an earned L3 venue component on venue id 2 "City Theatre"** (single-level UNLOCK), NOT an
+  Applause-Points purchase. Resolves §5 open item 4.
+- **NO Fame currency / Fame tree.** Proposed by the divergent session, CUT as out-of-scope. (The unrelated
+  pre-existing `FAME_PER` records "Fame ×" multiplier stays.) Do not re-add without a fresh design pass.
+- **NO reset-perks "Encore Resonance" / "Opus Memory."** CUT — they carried raw power, violating the
+  perks = QoL-only rule.
+- **KEPT** (spec-aligned): challenge re-gating to reachable L3 thresholds, the Applause-Points automation
+  plumbing, auto-encore execution, multi-fire autobuyers.
+- **Sims:** full suite green. era-pacing's player model fixed (repeated MOs); auto-MO re-climb snowball
+  modeled (46→21→2 min as the ladder graduates to City Theatre).
+
+---
+
 ## 1. The problem to resolve first: how many layers, and is "Grand Finale" the end?
 
 **What exists today (code reality):**
@@ -189,7 +208,7 @@ autoMO: boolean               // mid-venue special upgrade — auto-performs a M
 1. `lifetimeAcclaim` → production-mult shape (additive `1+n·k` vs capped-log) + magnitude.
 2. The hybrid gate's difficulty threshold value + target first-tour re-climb minutes.
 3. Per-venue component counts/costs + capacity/rate curves; effects of the later components (Acoustics/Marketing/Backstage) — `[PROPOSAL]` in §2.4.
-4. Where exactly Auto-MO sits (which mid venue) + its trigger condition.
+4. ~~Where exactly Auto-MO sits (which mid venue)~~ **RESOLVED: venue id 2 "City Theatre"** (single-level unlock component; see the RECONCILED banner). Trigger: auto-performs an MO when profitable, with a toggle.
 
 ## 6. Build order (once signed off)
 1. Sync `sim/` to live `constants.ts` (see ACHIEVEMENTS-V2 §7) + sim the L3 gate + Acclaim curve. 2. Add L3 state (§3.5) + migration. 3. Wire `performTour()` reset + the Acclaim multiplier (minimal) → playable L3. 4. Add the tour/venues tree (capacity-bounded). 5. Add the stage section + era-3 visuals + era-formula ladder. 6. Re-sim full L1→L3 pacing.
