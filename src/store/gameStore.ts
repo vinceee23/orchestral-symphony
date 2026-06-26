@@ -18,7 +18,10 @@ import {
   getHeadStartExponent, getRehearsalCostReduction, getOvertureGainMultiplier,
 } from '../core/encoreUpgrades'
 import { OPUS_UPGRADES, OPUS_UPGRADE_MAP, getOpusUpgradeCost } from '../core/opusUpgrades'
-import { FAME_NODE_MAP, FAME_NODES, getFameNodeCost, getFameGain } from '../core/fameTree'
+import {
+  FAME_NODE_MAP, FAME_NODES, getFameNodeCost, getFameGain,
+  getFameAutoEncoreFactor, getFameApMult,
+} from '../core/fameTree'
 import { hasPerk, WARMUP_TIERS, WARMUP_BONUS_SW, TEMPO_HEADSTART_LEVEL, CRESCENDO_HEADSTART, ENCORE_UPGRADE_DISCOUNT } from '../core/perks'
 import { getOpusGain } from '../core/records'
 import { calculateTick } from '../core/tick'
@@ -225,7 +228,9 @@ export const useGameStore = create<GameState & GameActions>()(
         // .gt (not .gte): getEncoreGain returns 0 at peak == threshold (formulas.ts), so equality would auto-reset for 0 EP.
         if (enc?.unlocked && enc.enabled && !after.activeChallenge && !after.layer1WallReached && after.peakSoundwaves.gt(ENCORE_EP_THRESHOLD)) {
           const now = Date.now()
-          if (now - (enc.lastTick ?? 0) >= getAutoEncoreInterval(after.opusCount)) {
+          // Encore Magnetism (Fame tree) shortens the auto-encore interval.
+          const autoEncoreInterval = getAutoEncoreInterval(after.opusCount) * getFameAutoEncoreFactor(after.fameUpgrades)
+          if (now - (enc.lastTick ?? 0) >= autoEncoreInterval) {
             get().performEncore()
             set((st) => ({
               autobuyers: { ...st.autobuyers, encore: { ...(st.autobuyers['encore'] ?? enc), lastTick: now } },
@@ -676,7 +681,8 @@ export const useGameStore = create<GameState & GameActions>()(
           peakSoundwaves: new Decimal(0),
           encorePoints: state.encorePoints + gain,
           lifetimeEncorePoints: state.lifetimeEncorePoints + gain,
-          applausePoints: state.applausePoints + getApplauseGain(gain),
+          // Encore Magnetism (Fame tree) boosts AP gain.
+          applausePoints: state.applausePoints + Math.floor(getApplauseGain(gain) * getFameApMult(state.fameUpgrades)),
           encoreCount: newEncoreCount,
           layer1WallReached: state.layer1WallReached || newEncoreCount >= ENCORE_WALL_COUNT,
           silentEncoresCompleted: state.silentEncoresCompleted + (silentRun ? 1 : 0),
@@ -709,6 +715,7 @@ export const useGameStore = create<GameState & GameActions>()(
           opusCount: state.opusCount,
           peakCrescendoMult: state.peakCrescendoMult,
           levels: state.opusUpgrades,
+          fameUpgrades: state.fameUpgrades,
         })
         const newOpusCount = state.opusCount + 1
 

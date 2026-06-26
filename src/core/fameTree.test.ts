@@ -24,6 +24,31 @@ describe('Fame gain', () => {
   })
 })
 
+describe('Fame effects are wired into the formulas', () => {
+  it('Standing Ovation raises the crescendo ceiling/multiplier', async () => {
+    const { getCrescendoMultiplier } = await import('./crescendo')
+    const base = getCrescendoMultiplier(1, {}, {})
+    const boosted = getCrescendoMultiplier(1, {}, { 'standing-ovation': 4 })
+    expect(boosted).toBeGreaterThan(base)
+    expect(boosted - base).toBeCloseTo(2, 5) // +0.5 ceiling ×4 levels, at full crescendo (level01=1)
+  })
+
+  it('Sold-Out Shows raises records/sec', async () => {
+    const { getRecordsPerSec } = await import('./records')
+    const base = getRecordsPerSec(5, 1, {}, {})
+    const boosted = getRecordsPerSec(5, 1, {}, { 'sold-out-shows': 6 })
+    expect(boosted / base).toBeCloseTo(2.2, 5) // 1 + 0.20*6
+  })
+
+  it('Limelight raises post-Platinum OP gain', async () => {
+    const { getOpusGain } = await import('./records')
+    const opts = { platinum: true, opGainFlatLevel: 0, opusCount: 10, peakCrescendoMult: 1, levels: {} }
+    const base = getOpusGain(opts)
+    const boosted = getOpusGain({ ...opts, fameUpgrades: { limelight: 8 } })
+    expect(boosted).toBeGreaterThan(base) // +15%/lvl ×8 = +120%
+  })
+})
+
 describe('Fame node cost', () => {
   it('grows geometrically from base', () => {
     const limelight = FAME_NODE_MAP['limelight'] // base 3, growth 1.5

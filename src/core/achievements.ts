@@ -52,8 +52,8 @@ function totalOpusUpgradeLevels(levels: Record<string, number>): number {
 }
 
 function isAtCrescendoCeiling(state: GameState): boolean {
-  const ceiling = getCrescendoCeiling(state.opusUpgrades)
-  return getCrescendoMultiplier(state.crescendo, state.opusUpgrades) >= ceiling - 0.02
+  const ceiling = getCrescendoCeiling(state.opusUpgrades, state.fameUpgrades)
+  return getCrescendoMultiplier(state.crescendo, state.opusUpgrades, state.fameUpgrades) >= ceiling - 0.02
 }
 
 /** Foreground play time only — excludes offline catch-up. */
