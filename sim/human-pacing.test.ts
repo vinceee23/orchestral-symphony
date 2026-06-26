@@ -1145,13 +1145,10 @@ describe('human pacing instrument', () => {
     expect(median(globalAtPlat), 'global mult at Platinum').toBeLessThanOrEqual(3.3)
   }, 600_000)
 
-  // Idle/AFK verify (#12): once the idle machine is fully built (auto-MO + all tier autobuyers +
-  // auto-conduct), a player who WALKS AWAY (no manual buys, not conducting) keeps progressing hands-free.
-  // Verifies the L2->Platinum idle promise; the L3-circuit-hands-free part waits on auto-tour (Break phase).
-  // RESIM: this probe assumes auto-MO is AP-unlockable pre-Platinum (fullyAutomated() requires it).
-  // Auto-MO is now an L3 venue component (post-Platinum, City Theatre). Re-conceive as auto-Encore-only
-  // pre-Platinum + L3 auto-MO once in World Tour. Tracked in docs/RECONCILE-PLAN.md (final resim phase).
-  it.skip('AFK idle: a fully-automated player keeps cycling Magnum Opuses hands-free (slog -> idle)', () => {
+  // Idle/AFK verify (#12): once the pre-Platinum idle machine is built (auto-Encore + all tier
+  // autobuyers + auto-conduct — NOT auto-MO, which is an L3 venue component at City Theatre),
+  // a player who WALKS AWAY keeps progressing with minimal MO taps at the prestige gate.
+  it('AFK idle: a fully-automated player keeps cycling Magnum Opuses hands-free (slog -> idle)', () => {
     const setClock = (globalThis as { __setSimClock?: (t: number) => void }).__setSimClock!
     const rng = new SeededRng(99_001)
     let simMs = 0
@@ -1162,7 +1159,8 @@ describe('human pacing instrument', () => {
     let lastAutoEncoreMs = -Infinity
 
     const allTiersAuto = () => TIER_CONFIGS.every((c) => state.autobuyers[`tier_${c.id}`]?.unlocked)
-    const fullyAutomated = () => state.autoMO && hasAutoConduct(state.opusUpgrades) && allTiersAuto()
+    const autoEncoreUnlocked = () => !!state.autobuyers['encore']?.unlocked
+    const prePlatinumIdleMachine = () => autoEncoreUnlocked() && hasAutoConduct(state.opusUpgrades) && allTiersAuto()
     const buyAutomationOP = () => {
       for (const c of OPUS_UPGRADES) {
         const isAuto = c.id.startsWith('automator-unlock-') || c.id === 'auto-conduct' || c.id === 'automator-bulk' || c.id === 'automator-speed'
@@ -1176,7 +1174,6 @@ describe('human pacing instrument', () => {
         state.applausePoints -= AP_UNLOCK.encore.cost
         state.autobuyers = { ...state.autobuyers, encore: { unlocked: true, enabled: true, interval: AUTOBUYER_DEFAULT_INTERVAL, bulk: 1, lastTick: 0 } }
       }
-      // RESIM: auto-MO is now an L3 venue component, not an AP unlock — orchestrator re-models timing
     }
     const buyGateTier = () => {
       const gate = state.layer1WallReached ? getMagnumOpusCost(state.opusCount) : getEncoreCost(state.encoreCount)
@@ -1184,9 +1181,9 @@ describe('human pacing instrument', () => {
       if (gt?.unlocked && (gt.purchased ?? 0) < gate.amount) buyTier(state, gate.tierIndex + 1, gate.amount - gt.purchased)
     }
 
-    // SETUP: active play (conducting) until the idle machine is fully built.
+    // SETUP: active play (conducting) until the pre-Platinum idle machine is fully built.
     const SETUP_CAP = 300_000
-    while (steps < SETUP_CAP && !fullyAutomated()) {
+    while (steps < SETUP_CAP && !prePlatinumIdleMachine()) {
       steps++
       const dt = chooseDt(state)
       applyTick(state, dt, true)
@@ -1199,10 +1196,11 @@ describe('human pacing instrument', () => {
       if (canEncoreNow(state)) performEncore(state, simMs)
       if (state.layer1WallReached && canMoNow(state)) performMagnumOpus(state, simMs)
     }
-    expect(fullyAutomated(), 'setup: idle machine fully built (auto-MO + all autobuyers + auto-conduct)').toBe(true)
+    expect(prePlatinumIdleMachine(), 'setup: pre-Platinum idle machine (auto-Encore + all autobuyers + auto-conduct, no auto-MO)').toBe(true)
+    expect(state.autoMO, 'setup: auto-MO not available pre-Platinum').toBeFalsy()
 
-    // AFK: walk away — no manual buys, not conducting (auto-conduct sustains crescendo). Only autobuyers
-    // (multi-fire) + auto-encore + auto-MO drive.
+    // AFK: walk away — no manual buys, not conducting. Auto-encore + gate-tier auto-buy drive re-climbs;
+    // MO still needs a tap when ready (no auto-MO pre-Platinum) — model the minimal tap-at-gate habit.
     const afkOpus = state.opusCount
     const afkActiveH = activeMs / 3_600_000
     const wasPlat = state.platinum
@@ -1217,25 +1215,21 @@ describe('human pacing instrument', () => {
       if (enc?.unlocked && enc.enabled && !state.layer1WallReached && state.peakSoundwaves.gt(ENCORE_EP_THRESHOLD) && simMs - lastAutoEncoreMs >= getAutoEncoreInterval(state.opusCount)) {
         if (performEncore(state, simMs)) lastAutoEncoreMs = simMs
       }
-      if (state.autoMO && canMoNow(state)) performMagnumOpus(state, simMs)
+      if (canMoNow(state)) performMagnumOpus(state, simMs)
     }
 
     const afkMOs = state.opusCount - afkOpus
-    console.log('\n=== AFK Idle Verify (L2 hands-free) ===')
+    console.log('\n=== AFK Idle Verify (L2 hands-free, pre-Platinum auto-Encore only) ===')
     console.log(`Idle machine built by opus ${afkOpus} @ ${afkActiveH.toFixed(2)}h active${wasPlat ? ' (Platinum already reached)' : ''}`)
-    console.log(`Then HANDS-FREE (no input): +${afkMOs} Magnum Opuses | Platinum: ${state.platinum ? 'YES' : 'NO'} @ ${(activeMs / 3_600_000).toFixed(2)}h | records ${Math.floor(state.recordsSold).toLocaleString()}`)
+    console.log(`Then HANDS-FREE (auto-Encore + MO tap-at-gate): +${afkMOs} Magnum Opuses | Platinum: ${state.platinum ? 'YES' : 'NO'} @ ${(activeMs / 3_600_000).toFixed(2)}h | records ${Math.floor(state.recordsSold).toLocaleString()}`)
 
-    expect(afkMOs, 'AFK auto-MO keeps cycling hands-free').toBeGreaterThanOrEqual(3)
+    expect(afkMOs, 'AFK auto-Encore + MO tap-at-gate keeps cycling').toBeGreaterThanOrEqual(3)
     expect(state.platinum, 'AFK idle reaches/holds Platinum hands-free').toBe(true)
   }, 300_000)
 
-  // Early-AFK probe (#12): go hands-free at the EARLIEST automation point (auto-MO unlock, ~MO3) with only
-  // PARTIAL automation, and report how far it gets — quantifies the MO3→full-auto "mostly-idle" window.
-  // Reporting test (lenient assert): the finding is the logged outcome, not a hard pass/fail.
-  // RESIM: this probe goes hands-free "at the auto-MO unlock (~MO3)" — but auto-MO is now an L3 venue
-  // component (post-Platinum), not an AP unlock at MO3, so the partial-automation window it measured no
-  // longer exists pre-Platinum. Re-conceive for the corrected design. Tracked in docs/RECONCILE-PLAN.md.
-  it.skip('early-AFK probe: going hands-free at MO3 (partial automation) — how far?', () => {
+  // Early-AFK probe (#12): go hands-free at the EARLIEST real pre-Platinum automation point
+  // (auto-Encore unlock, ~MO1) with partial automation, and report how far it gets.
+  it('early-AFK probe: going hands-free at auto-Encore unlock (partial automation) — how far?', () => {
     const setClock = (globalThis as { __setSimClock?: (t: number) => void }).__setSimClock!
     const rng = new SeededRng(99_002)
     let simMs = 0
@@ -1258,7 +1252,6 @@ describe('human pacing instrument', () => {
         state.applausePoints -= AP_UNLOCK.encore.cost
         state.autobuyers = { ...state.autobuyers, encore: { unlocked: true, enabled: true, interval: AUTOBUYER_DEFAULT_INTERVAL, bulk: 1, lastTick: 0 } }
       }
-      // RESIM: auto-MO is now an L3 venue component, not an AP unlock — orchestrator re-models timing
     }
     const buyGateTier = () => {
       const gate = state.layer1WallReached ? getMagnumOpusCost(state.opusCount) : getEncoreCost(state.encoreCount)
@@ -1266,9 +1259,9 @@ describe('human pacing instrument', () => {
       if (gt?.unlocked && (gt.purchased ?? 0) < gate.amount) buyTier(state, gate.tierIndex + 1, gate.amount - gt.purchased)
     }
 
-    // SETUP: active play only until auto-MO unlocks (~MO3) — partial automation.
+    // SETUP: active play only until auto-Encore unlocks — earliest real pre-Platinum automation.
     const SETUP_CAP = 200_000
-    while (steps < SETUP_CAP && !state.autoMO) {
+    while (steps < SETUP_CAP && !state.autobuyers['encore']?.unlocked) {
       steps++
       const dt = chooseDt(state)
       applyTick(state, dt, true)
@@ -1281,32 +1274,32 @@ describe('human pacing instrument', () => {
       if (canEncoreNow(state)) performEncore(state, simMs)
       if (state.layer1WallReached && canMoNow(state)) performMagnumOpus(state, simMs)
     }
-    expect(state.autoMO, 'probe setup: auto-MO unlocked at ~MO3').toBe(true)
+    expect(state.autobuyers['encore']?.unlocked, 'probe setup: auto-Encore unlocked').toBe(true)
+    expect(state.autoMO, 'probe setup: auto-MO not available at auto-Encore unlock').toBeFalsy()
 
     const startOpus = state.opusCount
     const startRecords = state.recordsSold
     const tiersAutoCount = TIER_CONFIGS.filter((c) => state.autobuyers[`tier_${c.id}`]?.unlocked).length
     const gateAutoUnlocked = !!state.autobuyers[`tier_7`]?.unlocked
 
-    // AFK from here — partial automation, no manual input.
+    // AFK from here — partial automation (auto-Encore only), no manual input.
     const AFK_CAP = steps + 300_000
     while (steps < AFK_CAP && state.opusCount < startOpus + 5) {
       steps++
       const dt = chooseDt(state)
       applyTick(state, dt, false)
       simMs += dt; activeMs += dt; setClock(simMs)
-      buyGateTier() // mirror the game's auto-prestige gate-tier build — makes auto-MO self-sufficient hands-free
+      buyGateTier()
       const enc = state.autobuyers['encore']
       if (enc?.unlocked && enc.enabled && !state.layer1WallReached && state.peakSoundwaves.gt(ENCORE_EP_THRESHOLD) && simMs - lastAutoEncoreMs >= getAutoEncoreInterval(state.opusCount)) {
         if (performEncore(state, simMs)) lastAutoEncoreMs = simMs
       }
-      if (state.autoMO && canMoNow(state)) performMagnumOpus(state, simMs)
     }
 
     const afkMOs = state.opusCount - startOpus
-    console.log('\n=== Early-AFK Probe (hands-free from MO3, partial automation) ===')
+    console.log('\n=== Early-AFK Probe (hands-free from auto-Encore unlock, partial automation) ===')
     console.log(`At AFK start: opus ${startOpus}, ${tiersAutoCount}/7 tier autobuyers unlocked, gate-tier(Symphonies) autobuyer: ${gateAutoUnlocked ? 'YES' : 'NO'}`)
-    console.log(`Hands-free result: +${afkMOs} Magnum Opuses ${afkMOs === 0 ? '(PRODUCTION-LIMITED — at opus 3 AFK, 50% auto-conduct crescendo + no tempo growth can\'t yet afford the gate tier/Symphonies; idle progresses once production ramps. Records still accrue passively.)' : '(progressing hands-free)'}, records ${Math.floor(startRecords).toLocaleString()} -> ${Math.floor(state.recordsSold).toLocaleString()}`)
+    console.log(`Hands-free result: +${afkMOs} Magnum Opuses ${afkMOs === 0 ? '(MO-GATED — auto-Encore cycles pre-wall but MOs need manual tap without auto-MO; records still accrue passively.)' : '(progressing hands-free)'}, records ${Math.floor(startRecords).toLocaleString()} -> ${Math.floor(state.recordsSold).toLocaleString()}`)
 
     // Lenient: records always accrue post-MO (opusCount>=3) even if MOs stall — the LOG is the finding.
     expect(state.recordsSold).toBeGreaterThanOrEqual(startRecords)

@@ -100,6 +100,9 @@ const MAX_SIM_MS = 600 * 60 * 60 * 1000
 const MAX_STEPS = 400_000
 const MAX_TOURS = 12
 
+/** Sim-only autoMO cost scale (src costBase=340). Tune so City Theatre autoMO lands ~tour 4–6. */
+const SIM_AUTOMO_COST_FACTOR = 1
+
 // Auto-tour capstone heuristic (answer #2): re-tour when the LIVE catalogue has grown to this multiple
 // of the frozen touring snapshot. Tuned empirically here, then ported to canAutoPerformTour in the game.
 // Small ratio: once opusCount is large its term dominates the catalogue, so records-rebuild alone only
@@ -200,10 +203,15 @@ function applyUnlockFlags(venue: VenueState, componentId: string): void {
   if (flags.autoMO) venue.autoMO = true
 }
 
+function simComponentCost(id: ComponentId, lvl: number, venueId: number, discountFactor = 1): number {
+  const cost = getComponentCost(id, lvl, venueId, discountFactor)
+  return id === 'autoMO' ? cost * SIM_AUTOMO_COST_FACTOR : cost
+}
+
 function tryBuyComponent(venue: VenueState, id: ComponentId, discountFactor = 1): boolean {
   const lvl = venue.components[id] ?? 0
   if (lvl >= getComponentMaxTier(id)) return false
-  const cost = getComponentCost(id, lvl, venue.currentVenue, discountFactor)
+  const cost = simComponentCost(id, lvl, venue.currentVenue, discountFactor)
   if (venue.acclaim < cost) return false
   venue.acclaim -= cost
   venue.components[id] = lvl + 1
@@ -216,7 +224,7 @@ function listAffordableComponents(venue: VenueState, discountFactor = 1): Compon
   const ids = getVenue(venue.currentVenue).componentIds
   return ids.filter((id) => {
     const lvl = venue.components[id] ?? 0
-    return lvl < getComponentMaxTier(id) && venue.acclaim >= getComponentCost(id, lvl, venue.currentVenue, discountFactor)
+    return lvl < getComponentMaxTier(id) && venue.acclaim >= simComponentCost(id, lvl, venue.currentVenue, discountFactor)
   })
 }
 
@@ -644,10 +652,44 @@ function performTour(state: GameState, venue: VenueState, simTime: number): void
   venue.soldOut = false
 }
 
-// RESIM: auto-MO is now an L3 venue component, not an AP unlock — orchestrator re-models timing
-/** Stub until orchestrator models buying the autoMO venue component at City Theatre. */
-function maybeUnlockAutoMO(_state: GameState, _venue?: VenueState): void {
-  // no-op
+/** Mirror venue unlock flags onto GameState (autoMO, keepAutobuyers, autoCollect). */
+function syncVenueUnlockFlagsToState(state: GameState, venue: VenueState): void {
+  if (venue.autoCollect) state.autoCollect = true
+  if (venue.keepAutobuyers) state.keepAutobuyers = true
+  if (venue.autoMO) {
+    state.autoMO = true
+    state.autoMOEnabled = true
+  }
+}
+
+function maybeUnlockAutoMO(state: GameState, venue?: VenueState): void {
+  if (venue) syncVenueUnlockFlagsToState(state, venue)
+}
+
+/** Phase C venue ladder: buy components, prioritize autoMO at City Theatre, graduate when maxed. */
+function phaseCVenueProgress(state: GameState, venue: VenueState, rng: SeededRng): void {
+  if (venue.soldOut && rng.chance(0.55)) bankBuffer(venue)
+
+  // Greedy drain: player checks in and buys what's affordable (mirrors simAfkCircuit).
+  let bought = true
+  while (bought) {
+    bought = false
+    const affordable = listAffordableComponents(venue)
+    if (affordable.length === 0) break
+    const pick = affordable.reduce((a, b) =>
+      simComponentCost(a, venue.components[a] ?? 0, venue.currentVenue)
+        <= simComponentCost(b, venue.components[b] ?? 0, venue.currentVenue) ? a : b)
+    bought = tryBuyComponent(venue, pick)
+  }
+
+  // At City Theatre, snap up autoMO as soon as affordable (mid-venue unlock target).
+  if (venue.currentVenue === 2 && !venue.autoMO) tryBuyComponent(venue, 'autoMO')
+
+  syncVenueUnlockFlagsToState(state, venue)
+
+  if (isVenueGraduatable(venue.components, venue.currentVenue) && venue.currentVenue < LAST_VENUE_ID) {
+    graduateVenueSim(venue)
+  }
 }
 
 function isL3GateOpen(state: GameState, postPlatMos: number): boolean {
@@ -1022,8 +1064,7 @@ function runL3Seed(seed: number, setClock: (t: number) => void): L3RunResult {
       activeMs += dt
       setClock(simMs)
       if (simMs % 5000 < TICK_MS) {
-        humanVenueDecision(venue, rng)
-        maybeUnlockAutoMO(state, venue)
+        phaseCVenueProgress(state, venue, rng)
       }
     }
 
@@ -1215,9 +1256,8 @@ function buildVerdicts(results: L3RunResult[]): PacingVerdict[] {
   const tour8Re = reclimbByTour.get(8) ?? []
   const tour12Re = reclimbByTour.get(12) ?? []
 
-  // Re-climb is AUTOMATED from tour 1 (auto-MO is AP-bought pre-L3 and persists via Roadies), so the
-  // curve is "short and shrinking" (≈6→2 min) rather than the old manual-tour-1 "46→2". Bar: tour 1 is
-  // a non-trivial automated re-climb that meaningfully shrinks by tour 8 and is near-instant by tour 12.
+  // Re-climb is manual at tour 1; auto-MO (City Theatre component) speeds later tours via Roadies persistence.
+  // Bar: tour 1 is non-trivial, meaningfully shrinks by tour 8, near-instant by tour 12.
   const snowballOk =
     tour1Re.length > 0 &&
     tour8Re.length > 0 &&
@@ -1369,22 +1409,10 @@ describe('L3 World Tour pacing instrument', () => {
     const t8 = reclimbCurve.find((p) => p.tour === 8)?.medianMin ?? 999
     const t12 = reclimbCurve.find((p) => p.tour === 12)?.medianMin ?? 999
     expect(t1, 'Tour 1 re-climb (automated, non-trivial)').toBeGreaterThanOrEqual(3)
-    // RESIM: auto-MO moved to the V2 City Theatre component, but this tour loop still tours from V1, so
-    // auto-MO is not yet reachable here and re-climbs lack its speedup (t12 ~19.7m, not <4m). Re-enable
-    // these two once the resim models tour-loop venue graduation + buying autoMO at City Theatre.
-    // Tracked in docs/RECONCILE-PLAN.md (final resim phase).
-    const RESIM_AUTOMO_RECLIMB: boolean = false
-    if (RESIM_AUTOMO_RECLIMB) {
-      expect(t8, 'Tour 8 faster than tour 1').toBeLessThan(t1 * 0.7)
-      expect(t12, 'Tour 12 near-instant').toBeLessThan(4)
-    }
-    void t8; void t12
+    expect(t8, 'Tour 8 faster than tour 1').toBeLessThan(t1 * 0.7)
+    expect(t12, 'Tour 12 near-instant').toBeLessThan(4)
 
     for (const v of verdicts) {
-      // RESIM: the snowball/near-instant verdict needs auto-MO, which is gated to V2 City Theatre and
-      // unreachable in this V1-only tour loop. Re-enable with RESIM_AUTOMO_RECLIMB once the tour loop
-      // graduates venues + buys autoMO. Tracked in docs/RECONCILE-PLAN.md.
-      if (!RESIM_AUTOMO_RECLIMB && v.criterion === 'Snowball: re-climb trends minutes → near-instant') continue
       expect(v.pass, v.criterion).toBe(true)
     }
   }, 900_000)
