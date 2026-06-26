@@ -64,7 +64,6 @@ function minimalState(overrides: Partial<GameState> = {}): GameState {
     autoTourEnabled: true,
     circuitComplete: false,
     postPlatinumMoCount: 2,
-    spendableFame: 0, lifetimeFame: 0, fameUpgrades: {},
     finalePoints: 0,
     finaleCount: 0,
     peakSoundwaves: new Decimal(0),

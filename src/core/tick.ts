@@ -58,7 +58,7 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
 
   // === Layer 2: crescendo + records ===
   const nextCresc = advanceCrescendo(state.crescendo, conducting, deltaMs / 1000, state.opusUpgrades)
-  const crescendoMult = getCrescendoMultiplier(nextCresc, state.opusUpgrades, state.fameUpgrades)
+  const crescendoMult = getCrescendoMultiplier(nextCresc, state.opusUpgrades)
   const peakCrescendoMult = Math.max(state.peakCrescendoMult, crescendoMult)
   // perk-platinum-press: records sell PLATINUM_PRESS_MULT× faster (injected via the records-per-sec
   // crescendo factor so only record accrual is boosted, not the production crescendoMult).
@@ -69,7 +69,6 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
     crescendoMult * recordsMult,
     deltaMs / 1000,
     state.opusUpgrades,
-    state.fameUpgrades,
   )
   const platinum = state.platinum || isPlatinum(recordsSold)
 
@@ -84,7 +83,6 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
     tempoLevel: state.tempo.level,
     tiers: state.tiers,
     opusUpgrades: state.opusUpgrades,
-    fameUpgrades: state.fameUpgrades,
     crescendoLevel: nextCresc,
     recordsSold,
     platinum,

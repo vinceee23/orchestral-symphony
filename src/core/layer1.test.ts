@@ -27,7 +27,6 @@ function freshState(overrides: Partial<GameState> = {}): GameState {
     components: {}, catalogueSnapshot: new Decimal(1), worldTourUnlocked: false,
     keepAutobuyers: false, autoCollect: false, autoMO: false, autoMOEnabled: true, autoGraduate: false, autoTour: false, autoTourEnabled: true, circuitComplete: false,
     postPlatinumMoCount: 0,
-    spendableFame: 0, lifetimeFame: 0, fameUpgrades: {},
     lifetimeEncoreCount: 0,
     finalePoints: 0, finaleCount: 0,
     peakSoundwaves: new Decimal(0), producedThisRun: new Decimal(0),

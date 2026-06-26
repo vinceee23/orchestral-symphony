@@ -71,18 +71,14 @@ describe('Break-phase reset perks', () => {
 describe('World Tour reset persistence', () => {
   beforeEach(() => useGameStore.getState().hardReset())
 
-  it('Fame/AP/lifetime counts persist; auto-MO resets without Roadies', () => {
+  it('AP/lifetime counts persist; auto-MO resets without Roadies', () => {
     useGameStore.setState({
       worldTourUnlocked: true,
-      spendableFame: 7, lifetimeFame: 12, fameUpgrades: { limelight: 2 },
       applausePoints: 40, lifetimeEncoreCount: 30,
       autoMO: true, autoMOEnabled: true, keepAutobuyers: false,
     })
     useGameStore.getState().performTour()
     const s = useGameStore.getState()
-    expect(s.spendableFame).toBe(7)        // Fame persists
-    expect(s.lifetimeFame).toBe(12)
-    expect(s.fameUpgrades.limelight).toBe(2)
     expect(s.applausePoints).toBe(40)      // AP persists (re-buy automations)
     expect(s.lifetimeEncoreCount).toBe(30) // monotonic
     expect(s.autoMO).toBe(false)           // automation resets without Roadies

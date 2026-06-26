@@ -11,7 +11,6 @@ import {
   RECORDS_ALBUM_K,
   TEMPO_OP_MULT_PER_LEVEL,
 } from './constants'
-import { getFameCrescendoCeilingBonus } from './fameTree'
 
 export type OpusUpgradeTrack = 'AUTOMATORS' | 'CRESCENDO' | 'TEMPO' | 'OP_GAIN'
 
@@ -229,12 +228,8 @@ export function getBpmCapFactor(levels: Record<string, number>): number {
   return 1 + 0.25 * lvl(levels, 'bpm-cap')
 }
 
-export function getCrescendoCeiling(
-  levels: Record<string, number>,
-  fameUpgrades: Record<string, number> = {},
-): number {
-  // Fame "Standing Ovation" raises the (active) ceiling on top of the OP "Grand Crescendo" node.
-  return CRESCENDO_BASE_MAX + lvl(levels, 'crescendo-ceiling') + getFameCrescendoCeilingBonus(fameUpgrades)
+export function getCrescendoCeiling(levels: Record<string, number>): number {
+  return CRESCENDO_BASE_MAX + lvl(levels, 'crescendo-ceiling')
 }
 
 export function getCrescendoBuildSec(levels: Record<string, number>): number {

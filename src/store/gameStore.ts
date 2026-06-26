@@ -18,10 +18,6 @@ import {
   getHeadStartExponent, getRehearsalCostReduction, getOvertureGainMultiplier,
 } from '../core/encoreUpgrades'
 import { OPUS_UPGRADES, OPUS_UPGRADE_MAP, getOpusUpgradeCost } from '../core/opusUpgrades'
-import {
-  FAME_NODE_MAP, FAME_NODES, getFameNodeCost, getFameGain,
-  getFameAutoEncoreFactor, getFameApMult, getFameVenueCostFactor,
-} from '../core/fameTree'
 import { hasPerk, WARMUP_TIERS, WARMUP_BONUS_SW, TEMPO_HEADSTART_LEVEL, CRESCENDO_HEADSTART, ENCORE_UPGRADE_DISCOUNT } from '../core/perks'
 import { getOpusGain } from '../core/records'
 import { calculateTick } from '../core/tick'
@@ -109,9 +105,6 @@ function createInitialState(): GameState {
     autoTourEnabled: true,
     circuitComplete: false,
     postPlatinumMoCount: 0,
-    spendableFame: 0,
-    lifetimeFame: 0,
-    fameUpgrades: {},
     finalePoints: 0,
     finaleCount: 0,
     peakSoundwaves: new Decimal(0),
@@ -231,8 +224,7 @@ export const useGameStore = create<GameState & GameActions>()(
         // .gt (not .gte): getEncoreGain returns 0 at peak == threshold (formulas.ts), so equality would auto-reset for 0 EP.
         if (enc?.unlocked && enc.enabled && !after.activeChallenge && !after.layer1WallReached && after.peakSoundwaves.gt(ENCORE_EP_THRESHOLD)) {
           const now = Date.now()
-          // Encore Magnetism (Fame tree) shortens the auto-encore interval.
-          const autoEncoreInterval = getAutoEncoreInterval(after.opusCount) * getFameAutoEncoreFactor(after.fameUpgrades)
+          const autoEncoreInterval = getAutoEncoreInterval(after.opusCount)
           if (now - (enc.lastTick ?? 0) >= autoEncoreInterval) {
             get().performEncore()
             set((st) => ({
@@ -500,21 +492,6 @@ export const useGameStore = create<GameState & GameActions>()(
         })
       },
 
-      buyFameUpgrade: (id: string) => {
-        set((state) => {
-          const config = FAME_NODE_MAP[id] ?? FAME_NODES.find((n) => n.id === id)
-          if (!config) return state
-          const level = state.fameUpgrades[id] ?? 0
-          if (level >= config.maxLevel) return state
-          const cost = getFameNodeCost(config, level)
-          if (state.spendableFame < cost) return state
-          return {
-            spendableFame: state.spendableFame - cost,
-            fameUpgrades: { ...state.fameUpgrades, [id]: level + 1 },
-          }
-        })
-      },
-
       checkAchievements: () => {
         const state = get()
         const currentSet = new Set(state.achievements)
@@ -697,8 +674,7 @@ export const useGameStore = create<GameState & GameActions>()(
           peakSoundwaves: new Decimal(0),
           encorePoints: state.encorePoints + gain,
           lifetimeEncorePoints: state.lifetimeEncorePoints + gain,
-          // Encore Magnetism (Fame tree) boosts AP gain.
-          applausePoints: state.applausePoints + Math.floor(getApplauseGain(gain) * getFameApMult(state.fameUpgrades)),
+          applausePoints: state.applausePoints + Math.floor(getApplauseGain(gain)),
           encoreCount: newEncoreCount,
           lifetimeEncoreCount: (state.lifetimeEncoreCount ?? 0) + 1,
           layer1WallReached: state.layer1WallReached || newEncoreCount >= ENCORE_WALL_COUNT,
@@ -732,7 +708,6 @@ export const useGameStore = create<GameState & GameActions>()(
           opusCount: state.opusCount,
           peakCrescendoMult: state.peakCrescendoMult,
           levels: state.opusUpgrades,
-          fameUpgrades: state.fameUpgrades,
         })
         const newOpusCount = state.opusCount + 1
 
@@ -762,9 +737,6 @@ export const useGameStore = create<GameState & GameActions>()(
         const skipWall = hasPerk(achSet, 'perk-skip-wall')
         const keepEncoreUpgrades = hasPerk(achSet, 'perk-keep-encore-upgrades')
         const wasPlatinum = state.platinum || state.recordsSold >= PLATINUM_THRESHOLD
-        // Break phase: each post-Platinum MO mints Fame (0 pre-Platinum). Spendable + lifetime both grow;
-        // Fame is meta, so it survives this reset (not listed below = preserved by the partial set()).
-        const fameGain = wasPlatinum ? getFameGain(state.recordsSold, state.fameUpgrades) : 0
         // perk-opus-memory (Break phase, @10 post-Plat MOs): MO stops resetting the layers below it —
         // keep tiers/SW/peakSW + the whole Encore layer intact. Only the MO-layer crescendo re-seeds.
         // ⚠️ resim flag: this removes the L1 re-climb entirely post-unlock; intended deep QoL reward.
@@ -786,8 +758,6 @@ export const useGameStore = create<GameState & GameActions>()(
             }
         set({
           ...resetPatch,
-          spendableFame: state.spendableFame + fameGain,
-          lifetimeFame: state.lifetimeFame + fameGain,
           opusPoints: state.opusPoints + gain,
           opusCount: newOpusCount,
           autobuyers,
@@ -818,7 +788,7 @@ export const useGameStore = create<GameState & GameActions>()(
           if (!(componentId in L3.COMPONENTS)) return state
           const level = state.components[componentId] ?? 0
           if (level >= getComponentMaxTier(componentId)) return state
-          const cost = getComponentCost(componentId, level, state.currentVenue, getFameVenueCostFactor(state.fameUpgrades))
+          const cost = getComponentCost(componentId, level, state.currentVenue)
           const acclaim = state.acclaim instanceof Decimal ? state.acclaim : new Decimal(state.acclaim ?? 0)
           if (acclaim.lt(cost)) return state
           const nextComponents = { ...state.components, [componentId]: level + 1 }
@@ -920,7 +890,7 @@ export const useGameStore = create<GameState & GameActions>()(
           autobuyers: keptAutobuyers,
           // Automations reset unless Roadies (keepAutobuyers) — re-buy with persisted AP. auto-MO is a
           // separate boolean (not in the autobuyers map), so it needs the same reset as auto-encore above.
-          // (Fame, AP, lifetimeEncoreCount, opusCount + the venue ladder/Acclaim all persist by omission.)
+          // (AP, lifetimeEncoreCount, opusCount + the venue ladder/Acclaim all persist by omission.)
           autoMO: state.keepAutobuyers ? state.autoMO : false,
           autoMOEnabled: state.keepAutobuyers ? state.autoMOEnabled : true,
           // Auto-Tour resets unless Roadies too — symmetric with auto-MO/auto-encore. Without Roadies the
@@ -1032,9 +1002,6 @@ export const useGameStore = create<GameState & GameActions>()(
           if (state.autoTourEnabled === undefined) state.autoTourEnabled = true
           if (state.circuitComplete === undefined) state.circuitComplete = false
           if (state.postPlatinumMoCount === undefined) state.postPlatinumMoCount = 0
-          if (typeof state.spendableFame !== 'number' || !isFinite(state.spendableFame)) state.spendableFame = 0
-          if (typeof state.lifetimeFame !== 'number' || !isFinite(state.lifetimeFame)) state.lifetimeFame = 0
-          if (!state.fameUpgrades) state.fameUpgrades = {}
           if (state.finalePoints === undefined) state.finalePoints = 0
           if (state.finaleCount === undefined) state.finaleCount = 0
           if (state.tempoPurchasesThisRun === undefined) state.tempoPurchasesThisRun = 0
@@ -1097,9 +1064,6 @@ export const useGameStore = create<GameState & GameActions>()(
               autoTourEnabled: state.autoTourEnabled,
               circuitComplete: state.circuitComplete,
               postPlatinumMoCount: state.postPlatinumMoCount,
-              spendableFame: state.spendableFame,
-              lifetimeFame: state.lifetimeFame,
-              fameUpgrades: state.fameUpgrades,
               finalePoints: state.finalePoints,
               finaleCount: state.finaleCount,
               peakSoundwaves: state.peakSoundwaves,

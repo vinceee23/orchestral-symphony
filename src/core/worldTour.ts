@@ -318,7 +318,7 @@ export function getComponentCost(
   componentId: string,
   level: number,
   venueId = 0,
-  discountFactor = 1, // Tour Buzz (Fame tree) — getFameVenueCostFactor(fameUpgrades); 1 = no discount
+  discountFactor = 1,
 ): number {
   const cfg = getComponentDef(componentId)
   if (!cfg) return Infinity

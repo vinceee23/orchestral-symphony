@@ -19,7 +19,6 @@ import { getPerfectPitchMultiplier } from './encoreUpgrades'
 import { getTempoOpMultiplier } from './opusUpgrades'
 import { getCrescendoMultiplier } from './crescendo'
 import { getFameMultiplier } from './records'
-import { getFameProdMult } from './fameTree'
 import type { TierState } from '../store/types'
 
 /**
@@ -206,7 +205,6 @@ export function getCoreProductionMultiplier(p: {
   tempoLevel: number
   tiers: { purchased: number }[]
   opusUpgrades: Record<string, number>
-  fameUpgrades?: Record<string, number>
   crescendoLevel: number
   recordsSold: number
   platinum: boolean
@@ -215,8 +213,7 @@ export function getCoreProductionMultiplier(p: {
   /** lifetimeAcclaim production snowball (Layer 3 World Tour). */
   acclaimMult?: number
 }): Decimal {
-  const fameUpgrades = p.fameUpgrades ?? {}
-  const crescendoMult = getCrescendoMultiplier(p.crescendoLevel, p.opusUpgrades, fameUpgrades)
+  const crescendoMult = getCrescendoMultiplier(p.crescendoLevel, p.opusUpgrades)
   const fameMult = p.platinum ? getFameMultiplier(p.recordsSold, p.opusUpgrades) : 1
   // Mass Production perk: each tier you own 1,000+ of contributes a x2 (sim-tuned in formulas.test).
   const massMult = p.massProduction
@@ -228,7 +225,6 @@ export function getCoreProductionMultiplier(p: {
     .times(getTempoOpMultiplier(p.opusUpgrades))
     .times(crescendoMult)
     .times(fameMult)
-    .times(getFameProdMult(fameUpgrades)) // Limelight (Fame tree)
     .times(getPerfectPitchMultiplier(p.encoreUpgrades))
     .times(PRODUCTION_SCALE)
     .times(getTempoProductionMultiplier(p.tempoLevel, p.achievementTempoBonus ?? 0))

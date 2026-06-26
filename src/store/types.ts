@@ -108,13 +108,6 @@ export interface GameState {
   /** MOs performed after Platinum — drives the hybrid L3 unlock gate. */
   postPlatinumMoCount: number
 
-  // Post-Platinum "Break" phase: Fame. spendableFame = spent on the Fame tree; lifetimeFame is monotonic
-  // (kept for future lifetime-scaled effects/display). fameUpgrades = Fame tree id -> level. All persist
-  // across every reset incl. World Tour. Distinct from the always-on FAME_PER passive prod mult.
-  spendableFame: number
-  lifetimeFame: number
-  fameUpgrades: Record<string, number>
-
   // Prestige Layer 6: Grand Finale (the "infinity" reset at 1.79e308 SW)
   finalePoints: number
   finaleCount: number
@@ -151,7 +144,6 @@ export interface GameActions {
   setAutoTourEnabled: (enabled: boolean) => void
   buyEncoreUpgrade: (id: string) => void
   buyOpusUpgrade: (id: string) => void
-  buyFameUpgrade: (id: string) => void
   checkAchievements: () => void
   checkChallengeCompletion: () => void
   startChallenge: (id: string) => void

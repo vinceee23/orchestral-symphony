@@ -26,14 +26,6 @@ import {
   L4_UNLOCKED,
 } from '../src/core/constants'
 import {
-  FAME_NODES,
-  getFameNodeCost,
-  getFameGain,
-  getFameApMult,
-  getFameVenueCostFactor,
-  getFameAutoEncoreFactor,
-} from '../src/core/fameTree'
-import {
   getTierCost,
   getMilestoneMultiplier,
   getTempoCost,
@@ -289,13 +281,8 @@ function createInitialState(simTime: number): GameState {
     autoGraduate: false,
     circuitComplete: false,
     postPlatinumMoCount: 0,
-    // Break phase (post-Platinum): Fame currency + tree, Applause Points, lifetime Encore counter.
-    // calculateTick now dereferences fameUpgrades — omitting these crashes the worker.
     lifetimeEncoreCount: 0,
     applausePoints: 0,
-    spendableFame: 0,
-    lifetimeFame: 0,
-    fameUpgrades: {},
   }
 }
 
@@ -442,8 +429,7 @@ function performEncore(state: GameState, simTime: number): boolean {
     peakSoundwaves: new Decimal(0),
     encorePoints: state.encorePoints + gain,
     lifetimeEncorePoints: state.lifetimeEncorePoints + gain,
-    // Encore Magnetism (Fame tree) boosts AP gain. AP funds the prestige-automation unlocks.
-    applausePoints: state.applausePoints + Math.floor(getApplauseGain(gain) * getFameApMult(state.fameUpgrades)),
+    applausePoints: state.applausePoints + Math.floor(getApplauseGain(gain)),
     encoreCount: newEncoreCount,
     lifetimeEncoreCount: (state.lifetimeEncoreCount ?? 0) + 1,
     layer1WallReached: state.layer1WallReached || newEncoreCount >= ENCORE_WALL_COUNT,
@@ -462,7 +448,6 @@ function performMagnumOpus(state: GameState, simTime: number): boolean {
     opusCount: state.opusCount,
     peakCrescendoMult: state.peakCrescendoMult,
     levels: state.opusUpgrades,
-    fameUpgrades: state.fameUpgrades,
   })
   const newOpusCount = state.opusCount + 1
   let autobuyers = { ...state.autobuyers }
@@ -482,8 +467,6 @@ function performMagnumOpus(state: GameState, simTime: number): boolean {
   const skipWall = hasPerk(achSet, 'perk-skip-wall')
   const keepEncoreUpgrades = hasPerk(achSet, 'perk-keep-encore-upgrades')
   const wasPlatinum = state.platinum || state.recordsSold >= PLATINUM_THRESHOLD
-  // Break phase: each post-Platinum MO mints Fame (0 pre-Plat). Fame is meta — survives the reset.
-  const fameGain = wasPlatinum ? getFameGain(state.recordsSold, state.fameUpgrades) : 0
   // perk-opus-memory (Break phase, @10 post-Plat MOs): MO stops resetting the layers below it.
   const opusMemory = hasPerk(achSet, 'perk-opus-memory')
   const crescendoSeed = hasPerk(achSet, 'perk-crescendo-headstart') ? CRESCENDO_HEADSTART : 0
@@ -501,8 +484,6 @@ function performMagnumOpus(state: GameState, simTime: number): boolean {
         peakCrescendoMult: 1,
       }
   Object.assign(state, resetPatch, {
-    spendableFame: state.spendableFame + fameGain,
-    lifetimeFame: state.lifetimeFame + fameGain,
     opusPoints: state.opusPoints + gain,
     opusCount: newOpusCount,
     autobuyers,
@@ -618,25 +599,6 @@ function humanSpendMeta(state: GameState, rng: SeededRng): void {
   }
 }
 
-// Break phase: a player spends Fame on the tree. Priority leans into production/economy nodes
-// (Limelight, Diamond Status, Sold-Out Shows, Tour Buzz) but any affordable node is fair game.
-const FAME_PRIORITY = ['limelight', 'diamond-status', 'sold-out-shows', 'tour-buzz', 'encore-magnetism', 'standing-ovation']
-function humanSpendFame(state: GameState, rng: SeededRng): void {
-  if (state.spendableFame <= 0 || !rng.chance(0.5)) return
-  const affordable = FAME_NODES.filter((n) => {
-    const level = state.fameUpgrades[n.id] ?? 0
-    return level < n.maxLevel && state.spendableFame >= getFameNodeCost(n, level)
-  })
-  if (affordable.length === 0) return
-  // 70% buy by priority order; 30% random spread.
-  const pick = rng.chance(0.7)
-    ? affordable.sort((a, b) => FAME_PRIORITY.indexOf(a.id) - FAME_PRIORITY.indexOf(b.id))[0]
-    : rng.pick(affordable)!
-  const level = state.fameUpgrades[pick.id] ?? 0
-  state.spendableFame -= getFameNodeCost(pick, level)
-  state.fameUpgrades = { ...state.fameUpgrades, [pick.id]: level + 1 }
-}
-
 function humanVenueDecision(venue: VenueState, rng: SeededRng, discountFactor = 1): void {
   if (venue.soldOut && rng.chance(0.55)) {
     bankBuffer(venue)
@@ -677,7 +639,7 @@ function performTour(state: GameState, venue: VenueState, simTime: number): void
     platinum: carriedRecords >= PLATINUM_THRESHOLD,
     autobuyers: keptAutobuyers,
     // auto-MO is an AP-purchased boolean — resets unless Roadies (mirrors gameStore.performTour).
-    // (Fame, AP, lifetimeEncoreCount, opusCount + venue ladder/Acclaim persist by omission.)
+    // (AP, lifetimeEncoreCount, opusCount + venue ladder/Acclaim persist by omission.)
     autoMO: roadies ? state.autoMO : false,
     autoMOEnabled: roadies ? state.autoMOEnabled : true,
     tourCount: state.tourCount + 1,
@@ -895,7 +857,6 @@ function runL3Seed(seed: number, setClock: (t: number) => void): L3RunResult {
       if (!rng.chance(0.12)) {
         humanBuyDecision(state, rng)
         humanSpendMeta(state, rng)
-        humanSpendFame(state, rng)
       }
       if (canEncoreNow(state)) {
         if (encoreReadySince === null) encoreReadySince = activeMs
@@ -998,12 +959,11 @@ function runL3Seed(seed: number, setClock: (t: number) => void): L3RunResult {
     setClock(simMs)
 
     if (simMs >= nextDecisionAt) {
-      humanVenueDecision(venue, rng, getFameVenueCostFactor(state.fameUpgrades))
+      humanVenueDecision(venue, rng)
       maybeUnlockAutoMO(state, venue)
       if (!rng.chance(0.15)) {
         humanBuyDecision(state, rng)
         humanSpendMeta(state, rng)
-        humanSpendFame(state, rng)
       }
       nextDecisionAt = simMs + rng.range(1200, 4000)
     }
@@ -1026,7 +986,7 @@ function runL3Seed(seed: number, setClock: (t: number) => void): L3RunResult {
     applyTick(state, dt, conducting, lifetimeAcclaimProductionMult(venue.lifetimeAcclaim))
     simMs += dt
     activeMs += dt
-    if (rng.chance(0.35)) tryBuyComponent(venue, 'keepAutobuyers', getFameVenueCostFactor(state.fameUpgrades))
+    if (rng.chance(0.35)) tryBuyComponent(venue, 'keepAutobuyers')
   }
 
   // Idle AFK bound: 24h offline should yield ~one buffer
@@ -1070,9 +1030,8 @@ function runL3Seed(seed: number, setClock: (t: number) => void): L3RunResult {
       activeMs += dt
       setClock(simMs)
       if (simMs % 5000 < TICK_MS) {
-        humanVenueDecision(venue, rng, getFameVenueCostFactor(state.fameUpgrades))
+        humanVenueDecision(venue, rng)
         maybeUnlockAutoMO(state, venue)
-        humanSpendFame(state, rng)
       }
     }
 
@@ -1134,7 +1093,7 @@ function simAfkCircuit(seed: number, setClock: (t: number) => void): AfkCircuitR
   let activeMs = 0
   let steps = 0
 
-  // A player who has just cleared the L3 gate WITH the prestige automations + a Fame loadout. opusCount
+  // A player who has just cleared the L3 gate WITH the prestige automations. opusCount
   // is mid-ramp (not yet the ~27 endgame); the circuit must snowball it the rest of the way.
   const state = createInitialState(simMs)
   state.opusCount = 8
@@ -1148,7 +1107,6 @@ function simAfkCircuit(seed: number, setClock: (t: number) => void): AfkCircuitR
   state.autoMOEnabled = true
   state.autoCollect = true
   state.keepAutobuyers = true
-  state.fameUpgrades = { limelight: 4, 'diamond-status': 2, 'sold-out-shows': 3, 'tour-buzz': 3, 'encore-magnetism': 2 }
   // Full tier automation (OP-tree endgame) + the encore autobuyer.
   for (let t = 1; t <= 7; t++) {
     state.autobuyers[`tier_${t}`] = { unlocked: true, enabled: true, interval: AUTOBUYER_DEFAULT_INTERVAL, bulk: 1, lastTick: 0 }
@@ -1161,7 +1119,6 @@ function simAfkCircuit(seed: number, setClock: (t: number) => void): AfkCircuitR
   venue.autoMO = true
 
   const seen = new Set(state.achievements)
-  const discount = () => getFameVenueCostFactor(state.fameUpgrades)
   const reclimbMins: number[] = []
   let toursTaken = 0
   let lastTourActiveMs = 0
@@ -1190,19 +1147,18 @@ function simAfkCircuit(seed: number, setClock: (t: number) => void): AfkCircuitR
       let bought = true
       while (bought) {
         bought = false
-        const affordable = listAffordableComponents(venue, discount())
+        const affordable = listAffordableComponents(venue)
         if (affordable.length === 0) break
         const cheapest = affordable.reduce((a, b) =>
-          getComponentCost(a, venue.components[a] ?? 0, venue.currentVenue, discount())
-            <= getComponentCost(b, venue.components[b] ?? 0, venue.currentVenue, discount()) ? a : b)
-        bought = tryBuyComponent(venue, cheapest, discount())
+          getComponentCost(a, venue.components[a] ?? 0, venue.currentVenue)
+            <= getComponentCost(b, venue.components[b] ?? 0, venue.currentVenue) ? a : b)
+        bought = tryBuyComponent(venue, cheapest)
       }
       // Auto-graduate when the venue is maxed (Auto-Graduate component on World Stage; greedy elsewhere).
       if (isVenueGraduatable(venue.components, venue.currentVenue)) {
         if (venue.currentVenue >= LAST_VENUE_ID) circuitComplete = true
         else graduateVenueSim(venue)
       }
-      humanSpendFame(state, rng)
       nextDecisionAt = simMs + 5000
     }
 

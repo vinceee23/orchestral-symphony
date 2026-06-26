@@ -4,20 +4,17 @@ import {
   getEffectiveRecordsK,
   getFamePer,
 } from './opusUpgrades'
-import { getFameProdMult, getFameRecordsMult } from './fameTree'
 
 /** Records sold per second — album-style: scales with opusCount and crescendo. */
 export function getRecordsPerSec(
   opusCount: number,
   crescendoMult: number,
   levels: Record<string, number>,
-  fameUpgrades: Record<string, number> = {},
 ): number {
   return (
     getEffectiveRecordsK(levels) *
     Math.pow(opusCount, RECORDS_OPUS_EXP) *
-    crescendoMult *
-    getFameRecordsMult(fameUpgrades) // Sold-Out Shows
+    crescendoMult
   )
 }
 
@@ -28,9 +25,8 @@ export function accrueRecords(
   crescendoMult: number,
   dtSec: number,
   levels: Record<string, number>,
-  fameUpgrades: Record<string, number> = {},
 ): number {
-  return currentRecords + getRecordsPerSec(opusCount, crescendoMult, levels, fameUpgrades) * dtSec
+  return currentRecords + getRecordsPerSec(opusCount, crescendoMult, levels) * dtSec
 }
 
 export function isPlatinum(recordsSold: number): boolean {
@@ -43,18 +39,13 @@ export function getOpusGain(opts: {
   opusCount: number
   peakCrescendoMult: number
   levels: Record<string, number>
-  fameUpgrades?: Record<string, number>
 }): number {
   if (!opts.platinum) {
     return 1 + opts.opGainFlatLevel
   }
 
   const catalogBase = 1 + opts.opusCount * OPUS_CATALOG_K + opts.opGainFlatLevel
-  // Limelight (Fame tree) boosts post-Platinum OP gain alongside production.
-  const raw =
-    catalogBase *
-    getCrescendoOpBonus(opts.peakCrescendoMult, opts.levels) *
-    getFameProdMult(opts.fameUpgrades ?? {})
+  const raw = catalogBase * getCrescendoOpBonus(opts.peakCrescendoMult, opts.levels)
   const n = Math.floor(raw)
   return isFinite(n) ? n : 0
 }
