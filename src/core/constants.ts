@@ -133,7 +133,9 @@ export function getApplauseGain(encoreGain: number): number {
 // Interval = base shortened by opusCount, floored so it never goes instant. Curve TUNED in resim.
 export const AUTO_ENCORE_BASE_INTERVAL = 60_000
 export function getAutoEncoreInterval(opusCount: number): number {
-  return Math.max(2000, AUTO_ENCORE_BASE_INTERVAL / (1 + opusCount * 0.5))
+  // opusCount-1 so the FIRST automated cycle (auto-encore unlocks at opusCount>=1) is the full 60s
+  // ("weak at first"), then shortens: MO#1=60s, MO#3≈29s, MO#10≈10s. (balance review)
+  return Math.max(2000, AUTO_ENCORE_BASE_INTERVAL / (1 + Math.max(0, opusCount - 1) * 0.55))
 }
 
 // AP unlock costs + gates for the prestige automations. Auto-encore opens after the 1st manual MO
@@ -141,7 +143,7 @@ export function getAutoEncoreInterval(opusCount: number): number {
 // is learned before it automates. Costs are starting guesses — TUNED in the resim vs AP accrual.
 export const AP_UNLOCK: Record<'encore' | 'autoMO', { cost: number; minOpusCount: number }> = {
   encore: { cost: 5, minOpusCount: 1 },
-  autoMO: { cost: 25, minOpusCount: 3 },
+  autoMO: { cost: 75, minOpusCount: 3 }, // 75 (not 25) so the cost actually binds ~MO#3 instead of being decorative (balance review)
 }
 
 // Magnum Opus gate: gentle escalation — 72 Symphonies + floor(opusCount/3)
