@@ -26,7 +26,10 @@ Full spec: **`docs/L2-AUTOMATION-SPEC.md`** (LOCKED, ~97%). Decision: don't spee
   2. **Challenges repurpose** → AP + automation-power (D1). Minimal version = flat AP payout per challenge; richer "automation-power" rewards = new subsystem, deferred.
   3. **autoMO venue-component removal** from L3 (worldTour.ts) — auto-MO now also unlocks via L2 AP; the L3 component is redundant. Removal touches built L3 + tests.
 - **NEW BUG (baseline):** Sound of Silence (`ach_perk_patron`) unreachable across 18 human seeds — investigating (task #6).
-- **Remaining:** resim+tune AP costs/auto-encore interval to §10 acceptance; re-pace held sims; then the flagged items per Vince.
+- **Codex review** of the slice: 1 MUST-FIX (auto-encore `.gte`→`.gt` 0-EP boundary) — **fixed + committed `2320719`, pushed**. AP persistence / unlock guards / migration all cleared.
+- **⏸ NEW DESIGN FORK — offline auto-prestige (gameStore.ts:1008).** Offline catch-up runs `calculateTick` only → **autobuyers fire offline, but auto-encore/auto-MO do NOT.** So "idle" works AD-style **only with the tab left open** (everything runs); **closing** the game accrues production but stalls re-climbs. Decision: leave as tab-open-idle (AD-normal, lazy), or also run auto-prestige during offline catch-up for true closed-tab idle? Affects how the resim models idle.
+- **Resim (task #7) PAUSED pending Vince:** the economy I'd tune (AP costs, auto-encore interval) depends on the deferred forks (tier-AP, challenges, offline-idle). Building/tuning on top of unresolved economy = wasted work. Core code is committed + reviewed; tuning waits for the decisions below.
+- **DECISIONS WAITING FOR VINCE (4):** (1) tier-autobuyer AP-early-unlock? (2) challenges→AP reward shape? (3) autoMO L3-component removal? (4) offline auto-prestige for closed-tab idle? Plus: Sound-of-Silence fix approach (task #6).
 
 ## OLD BLOCKER (now folded into the plan above) — why L3 isn't deployed yet
 Two HEAVY pacing-sim INSTRUMENTS fail: **`sim/era-pacing.test.ts` + `sim/human-pacing.test.ts`** — assertion `expect(platinum || recordsSold >= PLATINUM_THRESHOLD).toBe(true)` fails (their modeled player doesn't reach 1M records within `MAX_STEPS=250_000`).
