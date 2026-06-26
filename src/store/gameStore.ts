@@ -902,6 +902,11 @@ export const useGameStore = create<GameState & GameActions>()(
           recordsSold: carriedRecords,
           platinum: carriedRecords >= PLATINUM_THRESHOLD,
           autobuyers: keptAutobuyers,
+          // Automations reset unless Roadies (keepAutobuyers) — re-buy with persisted AP. auto-MO is a
+          // separate boolean (not in the autobuyers map), so it needs the same reset as auto-encore above.
+          // (Fame, AP, lifetimeEncoreCount, opusCount + the venue ladder/Acclaim all persist by omission.)
+          autoMO: state.keepAutobuyers ? state.autoMO : false,
+          autoMOEnabled: state.keepAutobuyers ? state.autoMOEnabled : true,
           tourCount: newTourCount,
           catalogueSnapshot: new Decimal(getCatalogueSnapshot(opusCount, carriedRecords)),
           venueBuffer: new Decimal(0),

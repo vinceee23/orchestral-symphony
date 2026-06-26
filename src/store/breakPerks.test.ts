@@ -66,3 +66,30 @@ describe('Break-phase reset perks', () => {
     expect(s.tiers[moCost.tierIndex].purchased).toBe(moCost.amount) // tiers kept
   })
 })
+
+describe('World Tour reset persistence', () => {
+  beforeEach(() => useGameStore.getState().hardReset())
+
+  it('Fame/AP/lifetime counts persist; auto-MO resets without Roadies', () => {
+    useGameStore.setState({
+      worldTourUnlocked: true,
+      spendableFame: 7, lifetimeFame: 12, fameUpgrades: { limelight: 2 },
+      applausePoints: 40, lifetimeEncoreCount: 30,
+      autoMO: true, autoMOEnabled: true, keepAutobuyers: false,
+    })
+    useGameStore.getState().performTour()
+    const s = useGameStore.getState()
+    expect(s.spendableFame).toBe(7)        // Fame persists
+    expect(s.lifetimeFame).toBe(12)
+    expect(s.fameUpgrades.limelight).toBe(2)
+    expect(s.applausePoints).toBe(40)      // AP persists (re-buy automations)
+    expect(s.lifetimeEncoreCount).toBe(30) // monotonic
+    expect(s.autoMO).toBe(false)           // automation resets without Roadies
+  })
+
+  it('auto-MO survives a tour when Roadies (keepAutobuyers) is owned', () => {
+    useGameStore.setState({ worldTourUnlocked: true, autoMO: true, keepAutobuyers: true })
+    useGameStore.getState().performTour()
+    expect(useGameStore.getState().autoMO).toBe(true)
+  })
+})
