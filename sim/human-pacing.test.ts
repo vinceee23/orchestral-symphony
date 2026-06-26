@@ -1215,6 +1215,7 @@ describe('human pacing instrument', () => {
       const dt = chooseDt(state)
       applyTick(state, dt, false)
       simMs += dt; activeMs += dt; setClock(simMs)
+      buyGateTier() // mirror the game's auto-prestige gate-tier build — makes auto-MO self-sufficient hands-free
       const enc = state.autobuyers['encore']
       if (enc?.unlocked && enc.enabled && !state.layer1WallReached && state.peakSoundwaves.gt(ENCORE_EP_THRESHOLD) && simMs - lastAutoEncoreMs >= getAutoEncoreInterval(state.opusCount)) {
         if (performEncore(state, simMs)) lastAutoEncoreMs = simMs
@@ -1297,6 +1298,7 @@ describe('human pacing instrument', () => {
       const dt = chooseDt(state)
       applyTick(state, dt, false)
       simMs += dt; activeMs += dt; setClock(simMs)
+      buyGateTier() // mirror the game's auto-prestige gate-tier build — makes auto-MO self-sufficient hands-free
       const enc = state.autobuyers['encore']
       if (enc?.unlocked && enc.enabled && !state.layer1WallReached && state.peakSoundwaves.gt(ENCORE_EP_THRESHOLD) && simMs - lastAutoEncoreMs >= getAutoEncoreInterval(state.opusCount)) {
         if (performEncore(state, simMs)) lastAutoEncoreMs = simMs
@@ -1307,7 +1309,7 @@ describe('human pacing instrument', () => {
     const afkMOs = state.opusCount - startOpus
     console.log('\n=== Early-AFK Probe (hands-free from MO3, partial automation) ===')
     console.log(`At AFK start: opus ${startOpus}, ${tiersAutoCount}/7 tier autobuyers unlocked, gate-tier(Symphonies) autobuyer: ${gateAutoUnlocked ? 'YES' : 'NO'}`)
-    console.log(`Hands-free result: +${afkMOs} Magnum Opuses ${afkMOs === 0 ? '(STALLED — needs manual gate-tier buying until the Symphony autobuyer unlocks)' : '(progressing)'}, records ${Math.floor(startRecords).toLocaleString()} -> ${Math.floor(state.recordsSold).toLocaleString()}`)
+    console.log(`Hands-free result: +${afkMOs} Magnum Opuses ${afkMOs === 0 ? '(PRODUCTION-LIMITED — at opus 3 AFK, 50% auto-conduct crescendo + no tempo growth can\'t yet afford the gate tier/Symphonies; idle progresses once production ramps. Records still accrue passively.)' : '(progressing hands-free)'}, records ${Math.floor(startRecords).toLocaleString()} -> ${Math.floor(state.recordsSold).toLocaleString()}`)
 
     // Lenient: records always accrue post-MO (opusCount>=3) even if MOs stall — the LOG is the finding.
     expect(state.recordsSold).toBeGreaterThanOrEqual(startRecords)

@@ -191,6 +191,24 @@ export const useGameStore = create<GameState & GameActions>()(
         set({ ...updates, activeTimePlayed: state.activeTimePlayed + deltaMs })
         const after = get()
 
+        // Auto-prestige self-sufficiency: when auto-encore OR auto-MO is active, build toward the CURRENT
+        // prestige gate tier (encore gate pre-wall, Magnum Opus gate — Symphonies — post-wall). Without this
+        // the automations are dead weight, because nothing auto-buys the gate tier until that tier's own
+        // autobuyer unlocks (OP-gated, ~opus 27) — so auto-MO could never fire hands-free. Targeted: only the
+        // gate tier, only while automating; buyTier is affordability-checked so it just converts production.
+        const autoPrestigeActive =
+          (after.autobuyers['encore']?.unlocked && after.autobuyers['encore']?.enabled) ||
+          (after.autoMO && after.autoMOEnabled)
+        if (autoPrestigeActive && !after.activeChallenge) {
+          const gate = after.layer1WallReached
+            ? getMagnumOpusCost(after.opusCount)
+            : getEncoreCost(after.encoreCount)
+          const gt = after.tiers[gate.tierIndex]
+          if (gt?.unlocked && gt.purchased < gate.amount) {
+            get().buyTier(gate.tierIndex + 1, gate.amount - gt.purchased)
+          }
+        }
+
         // Auto-encore (L1 automation): the `encore` autobuyer, throttled + MO-upgraded. Fires the SAME
         // performEncore() the player would — only when unlocked, enabled, not in a challenge, and an
         // encore would yield ≥1 EP (peak past the threshold) so it never auto-prestiges a net-loss.
