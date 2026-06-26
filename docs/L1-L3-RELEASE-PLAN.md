@@ -10,7 +10,9 @@ _Status: AWAITING VINCE APPROVAL. Nothing new gets built until this is signed of
 A **free web playtest** of the full **L1 → L3** arc:
 - **Arc:** L1 Encore → 8-Encore wall → Magnum Opus → Platinum → World Tour (L3) → **complete the circuit (all 6 venues graduated)** = content finale. **L4 (Signature) teased/locked** ("coming soon").
 - **Length:** ~**20–30h** (active + idle; a week of casual check-ins). Platinum ~22h is most of it; L3 adds a few hours.
-- **Monetization:** pure free, **Ko-fi link baked in** (non-intrusive donation). No ads/IAP.
+- **Monetization:** pure free, **Ko-fi link baked in** (non-intrusive donation): **https://ko-fi.com/vinceangelolmacaraig**. No ads/IAP.
+- **Feedback / recruiting:** via existing communities (**r/incremental_games** + similar) — that's also how testers are found. No dedicated Discord/Form for the first playtest (in-game "feedback" link can point to the community thread). Revisit Discord if a community forms.
+- **4 flagged achievements** (opus_seven, harmony_bot, melody_machine, ach_hello): all reachable by a real player — **verify each unlocks during Vince's end-to-end playtest** (no code change planned).
 - **Onboarding:** light — brief intro + self-explanatory UI; teach-by-doing.
 - **Release gate:** **Vince plays the full build end-to-end and approves** before it goes public.
 - **Goal of the playtest:** validate the fun + pacing of the L1→L3 loop and the new idle automation, before investing in L4+ and living-venue art.
