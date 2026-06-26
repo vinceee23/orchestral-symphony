@@ -50,6 +50,21 @@ Platinum is a **Break Infinity-style event**, not the start of dead idle. The ro
   Sight-Reading (partial SW carry, exists) → **★Encore Resonance** (Encore stops resetting SW) → Keep Encore Upgrades (exists) → Skip the Wall (~Platinum, exists) → **★Opus Memory** (MO stops resetting layers below) → Roadies (=keepAutobuyers, WT spares autobuyers) → **★Legacy** (challenge-time persists across all resets). ★=new.
 - **World Tour reset (LOCKED):** deep reset incl. **autobuyers** (a real sacrifice) unless Roadies/keep-autobuyers is owned; challenge-time always persists (Legacy).
 
+### 3b-numbers. Break-phase DRAFT magnitudes (proposed — resim-tuned, AWAITING VINCE APPROVE/TWEAK)
+**Fame Tree** — Fame earned per post-Platinum MO ≈ `floor(1 + log10(records/1M))`; spendable + lifetime passive mult:
+| Node | Effect/lvl | Base cost | Max |
+|---|---|---|---|
+| Limelight | +15% prod & OP (lifetime-Fame-scaled) | 3 Fame | 8 |
+| Standing Ovation | +0.5× crescendo ceiling (active) | 5 | 4 |
+| Sold-Out Shows | +20% records sell-rate | 4 | 6 |
+| Tour Buzz | −8% World Tour unlock gate | 6 | 5 |
+| Encore Magnetism | −10% auto-encore interval, +10% AP | 4 | 6 |
+| Diamond Status | +25% Fame gain | 8 | 5 |
+
+**Reset-Perk Ladder** unlocks: Sight-Reading (early, exists) · ★Encore Resonance (25 lifetime Encores → Encore stops resetting SW) · Keep Encore Upgrades (exists) · Skip the Wall (1st Platinum, exists) · ★Opus Memory (10 post-Plat MOs → MO stops resetting below) · Roadies/keepAutobuyers (L3 component) · ★Legacy (1st challenge → challenge-time persists across all resets).
+
+**Crescendo (Standing Ovation):** active base ×3 → +0.5×/lvl → ×5 at lvl 4; idle/auto-conduct = 83% of active (×2.5 → ~×4.15).
+
 ## 4. Work breakdown — build order: **sim-fix → idle-verify → Break phase → challenges → polish → ship**
 
 ### 4.1 Fix + harden the sim (FIRST — it's the verification backbone)

@@ -41,6 +41,14 @@ Full spec: **`docs/L2-AUTOMATION-SPEC.md`** (LOCKED, ~97%). Decision: don't spee
 - **⚠️ 4 achievements EXCLUDED from the sim bar as efficient-auto-model coverage gaps — MANUALLY VERIFY each is reachable in the real game during playtest:** `ach_opus_seven` (7 MOs — sim horizon), `ach_harmony_bot`/`ach_melody_machine` (buy automator-unlock-5/-4 — OP budget), `ach_hello` (own 500 of a tier — needs long run / reset-perks).
 - **NEXT:** idle/AFK-verify (#12, the idle-promise proof + extends sim into L3) → then Break phase (Fame tree, reset-perk ladder, crescendo choice — DRAFT numbers, STOP for Vince approval) → challenges → polish → ship. Master-merge waits for a complete, Vince-reviewed L2-idle chunk.
 
+### RESUME POINT for idle-verify (#12) — scoped, fresh-context effort
+Build in **sim/l3-pacing.test.ts** (already models full L1→L3 incl. World Tour). Mirror the human-pacing sim-fix:
+1. **Port goal-directed buying** into Phase A/B buy spots (after humanBuyDecision/humanSpendMeta) — build toward the next prestige gate's tier; else l3-pacing will stall post-skip-wall like human-pacing did.
+2. Expect this to **shift l3-pacing's pacing** (faster, like 22h→16h) → **recalibrate its assertions** (Venue-1 graduate, re-tour cadence, L3-unlock bounds) to the faithful model.
+3. Add an **AFK-after-automation** scenario: once auto-encore + auto-MO unlocked (~MO3), stop manual buys; only autobuyers (multi-fire) + auto-encore + auto-MO drive. **Acceptance:** reaches Platinum AND completes the circuit hands-free (any duration); report idle-time-to-Platinum + circuit vs the ~16h engaged figure.
+4. Gate (tsc + the 4 sims + unit), commit.
+- Break-phase DRAFT numbers are in docs/L1-L3-RELEASE-PLAN.md §3b-numbers — AWAITING Vince approve/tweak before that build.
+
 ### Review LOOP — Round 1 COMPLETE (2026-06-26, all 5 parallel streams done)
 Streams: resim ✓ · ultracode 4-lens review ✓ · Codex balance ✓ · Claude balance ✓ · dir-cleanup ✓.
 - **CRITICAL BUG found+fixed (`36aefdf`):** auto-encore had no wall-gate → post-wall it reset the board (~65 Sym) before reaching the 72 for auto-MO, so **auto-MO never fired**. Fixed: gate auto-encore on `!layer1WallReached`. Also fixed: applausePoints migration robustness; sim throttle activeMs→simMs + wall-gate mirror.
