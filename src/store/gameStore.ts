@@ -6,7 +6,7 @@ import type { BuyAmount } from '../core/constants'
 import {
   TIER_CONFIGS, STARTING_SOUNDWAVES, MAX_OFFLINE_MS,
   getEncoreCost, getMagnumOpusCost, getApplauseGain, getAutoEncoreInterval,
-  AP_UNLOCK,
+  AP_UNLOCK, AP_UNLOCK_AUTO_TOUR, L4_UNLOCKED,
   GRAND_FINALE_SW_THRESHOLD,
   ENCORE_EP_THRESHOLD,
   AUTOBUYER_DEFAULT_INTERVAL,
@@ -431,12 +431,14 @@ export const useGameStore = create<GameState & GameActions>()(
       // Gated by opusCount so the first climb (and a few MO decisions) are hand-played first.
       unlockWithApplause: (key: 'encore' | 'autoMO' | 'autoTour') => {
         set((state) => {
-          const cfg = AP_UNLOCK[key]
-          if (!cfg || state.opusCount < cfg.minOpusCount || state.applausePoints < cfg.cost) return state
           if (key === 'autoTour') {
-            if (state.autoTour || !state.worldTourUnlocked) return state
+            if (!L4_UNLOCKED || state.autoTour || !state.worldTourUnlocked) return state
+            const cfg = AP_UNLOCK_AUTO_TOUR
+            if (state.opusCount < cfg.minOpusCount || state.applausePoints < cfg.cost) return state
             return { applausePoints: state.applausePoints - cfg.cost, autoTour: true, autoTourEnabled: true }
           }
+          const cfg = AP_UNLOCK[key]
+          if (!cfg || state.opusCount < cfg.minOpusCount || state.applausePoints < cfg.cost) return state
           if (key === 'autoMO') {
             if (state.autoMO) return state
             return { applausePoints: state.applausePoints - cfg.cost, autoMO: true, autoMOEnabled: true }

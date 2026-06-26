@@ -13,8 +13,8 @@ const mem: Record<string, string> = {}
 } as Storage
 
 const { useGameStore } = await import('./gameStore')
-const { getEncoreCost, getMagnumOpusCost, AP_UNLOCK } = await import('../core/constants')
-const { canAutoPerformTour, getCatalogueSnapshot, L3 } = await import('../core/worldTour')
+const { getEncoreCost, getMagnumOpusCost } = await import('../core/constants')
+const { canAutoPerformTour, getCatalogueSnapshot } = await import('../core/worldTour')
 
 function setTier(tierIndex: number, purchased: number) {
   const tiers = useGameStore.getState().tiers.map((t, i) =>
@@ -95,47 +95,21 @@ describe('World Tour reset persistence', () => {
   })
 })
 
-describe('Auto-Tour capstone', () => {
+describe('Auto-Tour is gated to L4 (not reachable in L3)', () => {
   beforeEach(() => useGameStore.getState().hardReset())
 
-  it('canAutoPerformTour fires only once the live catalogue passes the ratio', () => {
-    // Frozen snapshot from a small catalogue; live catalogue has since regrown well past the ratio.
+  it('canAutoPerformTour never fires in L3, even past the catalogue ratio', () => {
     const snap = getCatalogueSnapshot(4, 100_000)
     useGameStore.setState({
       worldTourUnlocked: true, autoTour: true, autoTourEnabled: true, circuitComplete: false,
       catalogueSnapshot: new Decimal(snap), opusCount: 12, recordsSold: 2_000_000,
     })
-    expect(canAutoPerformTour(useGameStore.getState())).toBe(true)
-
-    // Same state but disabled, or circuit already complete → never fires.
-    useGameStore.setState({ autoTourEnabled: false })
-    expect(canAutoPerformTour(useGameStore.getState())).toBe(false)
-    useGameStore.setState({ autoTourEnabled: true, circuitComplete: true })
-    expect(canAutoPerformTour(useGameStore.getState())).toBe(false)
+    expect(canAutoPerformTour(useGameStore.getState())).toBe(false) // L4_UNLOCKED === false
   })
 
-  it('does not fire when the catalogue has barely moved (below the ratio)', () => {
-    const snap = getCatalogueSnapshot(12, 1_000_000)
-    useGameStore.setState({
-      worldTourUnlocked: true, autoTour: true, autoTourEnabled: true, circuitComplete: false,
-      catalogueSnapshot: new Decimal(snap), opusCount: 12, recordsSold: 1_010_000, // +1% < ratio
-    })
-    expect(L3.AUTO_TOUR_CAT_RATIO).toBeGreaterThan(1)
-    expect(canAutoPerformTour(useGameStore.getState())).toBe(false)
-  })
-
-  it('unlockWithApplause(autoTour) needs World Tour + AP, and resets unless Roadies', () => {
-    // Locked: no World Tour yet → no unlock even with AP.
-    useGameStore.setState({ worldTourUnlocked: false, opusCount: 10, applausePoints: 9999 })
+  it('unlockWithApplause(autoTour) is a no-op in L3', () => {
+    useGameStore.setState({ worldTourUnlocked: true, opusCount: 10, applausePoints: 9999 })
     useGameStore.getState().unlockWithApplause('autoTour')
-    expect(useGameStore.getState().autoTour).toBe(false)
-
-    // Unlock in L3, then a tour without Roadies clears it; AP was spent.
-    useGameStore.setState({ worldTourUnlocked: true, opusCount: 10, applausePoints: AP_UNLOCK.autoTour.cost, keepAutobuyers: false })
-    useGameStore.getState().unlockWithApplause('autoTour')
-    expect(useGameStore.getState().autoTour).toBe(true)
-    expect(useGameStore.getState().applausePoints).toBe(0)
-    useGameStore.getState().performTour()
     expect(useGameStore.getState().autoTour).toBe(false)
   })
 })

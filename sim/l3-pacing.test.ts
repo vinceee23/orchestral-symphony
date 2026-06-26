@@ -23,6 +23,7 @@ import {
   getApplauseGain,
   getAutoEncoreInterval,
   AP_UNLOCK,
+  L4_UNLOCKED,
 } from '../src/core/constants'
 import {
   FAME_NODES,
@@ -1211,9 +1212,9 @@ function simAfkCircuit(seed: number, setClock: (t: number) => void): AfkCircuitR
       nextDecisionAt = simMs + 5000
     }
 
-    // Auto-tour: re-tour once the live catalogue has grown to K× the frozen snapshot.
+    // Auto-tour (L4-only): re-tour once the live catalogue has grown to K× the frozen snapshot.
     const live = catalogueSnapshot(state.opusCount, state.recordsSold)
-    if (!circuitComplete && live >= venue.catalogueSnapshot * AUTO_TOUR_CAT_RATIO) {
+    if (L4_UNLOCKED && !circuitComplete && live >= venue.catalogueSnapshot * AUTO_TOUR_CAT_RATIO) {
       if (toursTaken > 0) reclimbMins.push((activeMs - lastTourActiveMs) / 60000)
       performTour(state, venue, simMs)
       toursTaken += 1
@@ -1434,7 +1435,7 @@ describe('L3 World Tour pacing instrument', () => {
     }
   }, 900_000)
 
-  it('auto-tour: fully-AFK player completes the venue circuit hands-free', () => {
+  it.skipIf(!L4_UNLOCKED)('auto-tour: fully-AFK player completes the venue circuit hands-free', () => {
     const setClock = (globalThis as { __setSimClock?: (t: number) => void }).__setSimClock!
     const results: AfkCircuitResult[] = []
     for (let i = 0; i < NUM_SEEDS; i++) {

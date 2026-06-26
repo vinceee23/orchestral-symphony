@@ -43,8 +43,6 @@ export function WorldTourPage() {
   const autoCollect = useGameStore((s) => s.autoCollect)
   const autoMO = useGameStore((s) => s.autoMO)
   const autoMOEnabled = useGameStore((s) => s.autoMOEnabled)
-  const autoTour = useGameStore((s) => s.autoTour)
-  const autoTourEnabled = useGameStore((s) => s.autoTourEnabled)
   const circuitComplete = useGameStore((s) => s.circuitComplete)
   const conducting = useUiStore((s) => s.conducting)
   const buyComponent = useGameStore((s) => s.buyComponent)
@@ -52,7 +50,6 @@ export function WorldTourPage() {
   const graduateVenue = useGameStore((s) => s.graduateVenue)
   const performTour = useGameStore((s) => s.performTour)
   const setAutoMOEnabled = useGameStore((s) => s.setAutoMOEnabled)
-  const setAutoTourEnabled = useGameStore((s) => s.setAutoTourEnabled)
 
   const acclaimNum = acclaim instanceof Object && 'toNumber' in acclaim ? acclaim.toNumber() : Number(acclaim)
   const lifetimeNum = lifetimeAcclaim instanceof Object && 'toNumber' in lifetimeAcclaim
@@ -235,18 +232,6 @@ export function WorldTourPage() {
             className="rounded border-border"
           />
           Auto-Magnum Opus (when profitable)
-        </label>
-      )}
-
-      {autoTour && (
-        <label className="flex items-center justify-center gap-3 text-sm text-text-muted cursor-pointer">
-          <input
-            type="checkbox"
-            checked={autoTourEnabled}
-            onChange={(e) => setAutoTourEnabled(e.target.checked)}
-            className="rounded border-border"
-          />
-          Auto World Tour (when catalogue regrows)
         </label>
       )}
 
