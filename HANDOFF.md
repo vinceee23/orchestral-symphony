@@ -46,14 +46,18 @@ Full spec: **`docs/L2-AUTOMATION-SPEC.md`** (LOCKED, ~97%). Decision: don't spee
 - **Slog-fix completed (`507c76d`):** auto-prestige builds its own gate tier in the tick-driver (Symphony autobuyer is OP-gated to opus 27, so auto-prestige was stalling at the gate without it).
 - **Crescendo (`0236918`):** idle/auto-conduct AUTO_CONDUCT_FRACTION 0.5→0.7 (active holding = 100%; Standing Ovation Fame node will raise the active ceiling later).
 
-### RESUME POINT for Break-phase bulk (#13) — biggest build in the plan; do fresh, build incrementally
-DRAFT numbers (Fame tree / reset-perks / crescendo) are APPROVED in **docs/L1-L3-RELEASE-PLAN.md §3b-numbers**. Build each sub-feature → gate (tsc + 45 unit + AFK sims) → commit:
-1. **Fame currency** — spendable + lifetime passive mult. Gain ≈ `floor(1 + log10(recordsSold/1e6))` per post-Platinum MO. Add field/init/migration to gameStore; grant in performMagnumOpus when post-Platinum; spendable balance separate from the existing FAME_PER passive mult.
-2. **Fame Tree** — 6 nodes (Limelight, Standing Ovation [raises crescendo active ceiling ×3→×5], Sold-Out Shows, Tour Buzz, Encore Magnetism, Diamond Status) + UI page. Magnitudes in §3b-numbers.
-3. **Reset-perk ladder** — 3 new perks (Encore Resonance @25 encores, Opus Memory @10 post-plat MOs, Legacy @1st challenge); touch the reset functions (resetTiersAndSW / performMagnumOpus / challenge-time).
-4. **Auto-tour capstone** — AP-gated near circuit end.
-5. **WT-reset persistence** — AP + Fame persist across World Tour reset; automations reset unless Roadies.
-6. Then **L3-circuit idle-verify** in sim/l3-pacing.test.ts (port goal-directed buying into Phase A/B; recalibrate assertions; AFK-after-automation scenario reaching Platinum + circuit hands-free).
+### Break-phase bulk (#13) — Fame currency + tree + UI ✅ DONE (committed b0e1efc / c4a3e50 / b031d3f)
+- **A (b0e1efc):** Fame currency — `spendableFame`/`lifetimeFame`/`fameUpgrades` state (+init/migration/offline-literal); minted per post-Plat MO = `floor(1+log10(records/1M))×DiamondStatus` in performMagnumOpus; `buyFameUpgrade` action; **src/core/fameTree.ts** = 6-node config + pure getters. Persists across all resets (meta).
+- **B (c4a3e50):** all 6 effects wired — Limelight (+15%/lvl prod & OP), Standing Ovation (+0.5/lvl active crescendo ceiling), Sold-Out Shows (+20%/lvl records/sec), Tour Buzz (lowers WT MO-gate), Encore Magnetism (−10%/lvl auto-encore interval +10%/lvl AP), Diamond Status (Fame gain). `fameUpgrades` threaded as optional params (default {}) → sims/tests inert unless nodes bought; AFK idle still green.
+- **C (b031d3f):** **src/components/fame/FamePage.tsx** dedicated tab (mirrors OpusPage); Sidebar shows "Fame" tab once `platinum`.
+- ⚠️ **RESIM/DESIGN flags for next pass:** (1) Fame node cost **growth=1.5** is a placeholder (wasn't in the approved §3b table) — tune in resim. (2) **Tour Buzz** only affects the FIRST WT unlock (where Fame is scarce) — consider repurposing (re-tour / venue-cost reduction). (3) Name collision: Fame "Standing Ovation" vs the existing OP-tree "Standing Ovation" (`crescendo-op-bonus`) — both touch crescendo; rename one if it reads confusing in playtest.
+
+### RESUME POINT — remaining Break-phase pieces (#13 cont.)
+Build each → gate (tsc + unit + AFK sims) → commit. DRAFT magnitudes in **docs/L1-L3-RELEASE-PLAN.md §3b-numbers**:
+1. **Reset-perk ladder** — 3 new perks (Encore Resonance @25 encores → Encore stops resetting SW; Opus Memory @10 post-plat MOs → MO stops resetting below; Legacy @1st challenge → challenge-time persists). Touch resetTiersAndSW / performMagnumOpus / challenge-time. (Perk plumbing pattern: src/core/perks.ts + achievements gating.)
+2. **Auto-tour capstone** — AP-gated near circuit end.
+3. **WT-reset persistence** — AP + Fame persist across World Tour reset (Fame already persists via meta; verify performTour doesn't wipe it); automations reset unless Roadies.
+4. Then **L3-circuit idle-verify** in sim/l3-pacing.test.ts (port goal-directed buying into Phase A/B; recalibrate assertions; AFK-after-automation reaching Platinum + circuit hands-free).
 
 ### Review LOOP — Round 1 COMPLETE (2026-06-26, all 5 parallel streams done)
 Streams: resim ✓ · ultracode 4-lens review ✓ · Codex balance ✓ · Claude balance ✓ · dir-cleanup ✓.
