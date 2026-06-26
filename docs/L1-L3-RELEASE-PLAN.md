@@ -65,7 +65,7 @@ Platinum is a **Break Infinity-style event**, not the start of dead idle. The ro
 
 **Reset-Perk Ladder** unlocks: Sight-Reading (early, exists) · ★Encore Resonance (25 lifetime Encores → Encore stops resetting SW) · Keep Encore Upgrades (exists) · Skip the Wall (1st Platinum, exists) · ★Opus Memory (10 post-Plat MOs → MO stops resetting below) · Roadies/keepAutobuyers (L3 component) · ★Legacy (1st challenge → challenge-time persists across all resets).
 
-**Crescendo (Standing Ovation):** active base ×3 → +0.5×/lvl → ×5 at lvl 4; idle/auto-conduct = 83% of active (×2.5 → ~×4.15).
+**Crescendo (Standing Ovation):** active base ×3 → +0.5×/lvl → ×5 at lvl 4. **Idle/auto-conduct = 70% of active power (FLAT); active holding = 100%** → idle ×2.1 → ×3.5. ⚠️ SUPERSEDES all earlier "×2.5 auto-conduct cap / 83%" mentions in this doc — the rule is now "auto = 70% of whatever active is."
 
 ## 4. Work breakdown — build order: **sim-fix → idle-verify → Break phase → challenges → polish → ship**
 
