@@ -209,10 +209,14 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
     const bulk = (state.opusCount > 0 && ab.unlocked)
       ? clampAutobuyerBulk(ab.bulk, bulkPerk ? 'max' : getAutomatorBulk(state.opusUpgrades))
       : ab.bulk
+    // Multi-fire: fire once per elapsed interval, so a coarse tick (sim) or a lagged frame catches up
+    // instead of under-buying. At the live small frame-dt this is ×1 (unchanged). 'max' already spends
+    // all affordable SW in one pass, so it doesn't multiply.
+    const fires = Math.max(1, Math.floor((now - ab.lastTick) / interval))
     if (bulk === 'max') {
       buyCount = getMaxBuyable(config, tier.purchased, newSoundwaves, abCostMult)
     } else {
-      buyCount = bulk as number
+      buyCount = (bulk as number) * fires
     }
 
     // Challenge: maxPerTier limit
@@ -246,8 +250,11 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
     if (tempoAb && tempoAb.unlocked && tempoAb.enabled) {
       const interval = tempoAb.interval || AUTOBUYER_DEFAULT_INTERVAL
       if (now - tempoAb.lastTick >= interval) {
-        const tempoCost = getTempoCost(newTempo.level)
-        if (newSoundwaves.gte(tempoCost)) {
+        // Multi-fire: buy up to one tempo level per elapsed interval (×1 at live small dt; catches up under coarse/lagged dt)
+        const fires = Math.max(1, Math.floor((now - tempoAb.lastTick) / interval))
+        for (let f = 0; f < fires; f++) {
+          const tempoCost = getTempoCost(newTempo.level)
+          if (newSoundwaves.lt(tempoCost)) break
           newSoundwaves = newSoundwaves.minus(tempoCost)
           const newLevel = newTempo.level + 1
           newTempo = {
