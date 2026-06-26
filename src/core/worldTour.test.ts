@@ -107,7 +107,7 @@ describe('worldTour helpers', () => {
     expect(VENUES).toHaveLength(6)
     expect(getVenue(0).componentIds).toEqual(['lighting', 'roof', 'instruments'])
     expect(getVenue(1).componentIds).toContain('keepAutobuyers')
-    expect(getVenue(2).componentIds).toContain('autoMO')
+    expect(getVenue(2).componentIds).toEqual(['lighting', 'roof', 'crowd', 'acoustics'])
     expect(getVenue(5).componentIds).toContain('autoGraduate')
     expect(getVenue(5).componentIds).toHaveLength(8)
   })
@@ -176,7 +176,6 @@ describe('worldTour helpers', () => {
   it('unlock components map to automation flags', () => {
     expect(getUnlockFlagsFromComponent('instruments')).toEqual({ autoCollect: true })
     expect(getUnlockFlagsFromComponent('keepAutobuyers')).toEqual({ keepAutobuyers: true })
-    expect(getUnlockFlagsFromComponent('autoMO')).toEqual({ autoMO: true, autoMOEnabled: true })
     expect(getUnlockFlagsFromComponent('autoGraduate')).toEqual({ autoGraduate: true })
     expect(getUnlockFlagsFromComponent('lighting')).toEqual({})
   })
@@ -187,7 +186,7 @@ describe('worldTour helpers', () => {
     expect(getAcclaimMultiplier(1e9)).toBeLessThanOrEqual(L3.MULT_CAP + 1)
   })
 
-  it('Auto-MO unlocks only via component flag', () => {
+  it('isAutoMOUnlocked reflects autoMO state flag', () => {
     expect(isAutoMOUnlocked({ autoMO: false })).toBe(false)
     expect(isAutoMOUnlocked({ autoMO: true })).toBe(true)
   })

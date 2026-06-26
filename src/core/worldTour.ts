@@ -9,7 +9,6 @@ export type ComponentTarget =
   | 'acclaimRate'
   | 'autoCollect'
   | 'keepAutobuyers'
-  | 'autoMO'
   | 'autoGraduate'
 
 export interface ComponentDef {
@@ -100,15 +99,6 @@ export const L3 = {
       target: 'fillSpeed',
       perLevel: 0.14,
     },
-    autoMO: {
-      label: 'Auto-MO',
-      role: 'unlock',
-      maxLevel: 1,
-      costBase: 420,
-      costGrowth: 1,
-      visual: false,
-      target: 'autoMO',
-    },
     marketing: {
       label: 'Marketing',
       role: 'multiplier',
@@ -180,7 +170,7 @@ export const VENUES: readonly VenueConfig[] = [
   {
     id: 2,
     name: 'City Theatre',
-    componentIds: ['lighting', 'roof', 'crowd', 'acoustics', 'autoMO'],
+    componentIds: ['lighting', 'roof', 'crowd', 'acoustics'],
     costScale: 1.82,
     capScale: 1.38,
   },
@@ -242,7 +232,7 @@ function multiplierBoost(components: Record<string, number>, target: ComponentTa
 /** Flags set when an unlock component is purchased. */
 export function getUnlockFlagsFromComponent(
   componentId: string,
-): Partial<Pick<GameState, 'autoCollect' | 'keepAutobuyers' | 'autoMO' | 'autoMOEnabled' | 'autoGraduate'>> {
+): Partial<Pick<GameState, 'autoCollect' | 'keepAutobuyers' | 'autoGraduate'>> {
   const cfg = getComponentDef(componentId)
   if (!cfg || cfg.role !== 'unlock') return {}
   switch (cfg.target) {
@@ -250,8 +240,6 @@ export function getUnlockFlagsFromComponent(
       return { autoCollect: true }
     case 'keepAutobuyers':
       return { keepAutobuyers: true }
-    case 'autoMO':
-      return { autoMO: true, autoMOEnabled: true }
     case 'autoGraduate':
       return { autoGraduate: true }
     default:

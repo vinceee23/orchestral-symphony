@@ -16,7 +16,6 @@ function componentEffectLabel(id: string, level: number): string {
     switch (cfg.target) {
       case 'autoCollect': return 'Auto-collect Acclaim'
       case 'keepAutobuyers': return 'Autobuyers survive tours'
-      case 'autoMO': return 'Auto Magnum Opus'
       case 'autoGraduate': return 'Auto-graduate venues'
       default: return 'Unlock'
     }

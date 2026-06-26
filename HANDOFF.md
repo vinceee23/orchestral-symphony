@@ -33,6 +33,15 @@ Full spec: **`docs/L2-AUTOMATION-SPEC.md`** (LOCKED, ~97%). Decision: don't spee
   → Resim is UNBLOCKED for the core (auto-encore + auto-MO via AP, tiers on OP path, tab-open idle). Challenge rewards are independent L3 work.
 - **DECISIONS RESOLVED (round 2):** (5) **Tempo autobuyer stays CHALLENGE-gated, NOT AP** — Vince: tempo is the special/strongest exponential lever, keep it earned via a challenge. So idle L2 runs at baseline tempo (hands-free but slow) until tempo automation is earned via challenge. Current build is correct (does NOT AP-unlock tempo). (6) **Challenges = FULL reward scheme:** each challenge grants AP payout + unique themed permanent multiplier (overcome-its-constraint) + automation-power reward (tempo autobuyer / faster auto-encore / finale_auto / all_auto). Big L3 feature — design the per-challenge table, get Vince's approval, then build. Independent of core L2 idle.
 - **Build order:** (a) resim core idle-L2 (validate slog→idle) → (b) remove autoMO from L3 venues → (c) challenge full-reward redesign (design+approve+build) → (d) SoS restraint seed.
+
+### Review LOOP — Round 1 COMPLETE (2026-06-26, all 5 parallel streams done)
+Streams: resim ✓ · ultracode 4-lens review ✓ · Codex balance ✓ · Claude balance ✓ · dir-cleanup ✓.
+- **CRITICAL BUG found+fixed (`36aefdf`):** auto-encore had no wall-gate → post-wall it reset the board (~65 Sym) before reaching the 72 for auto-MO, so **auto-MO never fired**. Fixed: gate auto-encore on `!layer1WallReached`. Also fixed: applausePoints migration robustness; sim throttle activeMs→simMs + wall-gate mirror.
+- **Balance tuning (`3f7533d`):** autoMO AP cost 25→75 (was decorative); auto-encore interval weak-on-first-use (60s at MO#1). Records unchanged.
+- **Review CONFIRMED correct:** AP persistence across all resets, tempo challenge-gated, tiers on OP path, offline tab-open-idle, .gt guard.
+- **#1 OPEN RISK (both balance reviews):** the ~22h-MOSTLY-IDLE claim is NOT sim-verified — human sim measures ACTIVE time; idle cadence unmodeled → task #12 idle/AFK sim.
+- **Round 2 in flight:** resim re-run (validate fixes) + cursor-agent removing autoMO from L3 (#8, Claude gates). Next: idle-sim (#12), then re-review round 2.
+- **Tooling note:** cursor-agent IS installed (`%LOCALAPPDATA%\cursor-agent\cursor-agent.cmd`, on User PATH) — earlier "missing" was a Git-Bash `.cmd` resolution quirk; invoke as `cursor-agent.cmd` from Bash.
 - **Sound of Silence — DIAGNOSED (not a bug):** sim-test-design gap. `tempoPurchasesThisRun` resets per-encore; SoS needs the wall-reaching encore's run to have ≤8 tempo AND ≥3min (deliberate restraint). Human sim models a free-tempo player → never restraint-style → unreachable for that model (but reachable by a real restraint player). Fix during rework: add a restraint seed proving reachability [rec], or relax the assertion. Sim-only.
 
 ## OLD BLOCKER (now folded into the plan above) — why L3 isn't deployed yet
