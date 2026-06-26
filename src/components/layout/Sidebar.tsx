@@ -16,6 +16,7 @@ const BASE_TABS: { id: string; label: string; icon: IconName }[] = [
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const opusCount = useGameStore((s) => s.opusCount)
+  const platinum = useGameStore((s) => s.platinum)
   const worldTourUnlocked = useGameStore((s) => s.worldTourUnlocked)
   const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const finalePoints = useGameStore((s) => s.finalePoints)
@@ -29,6 +30,15 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         ...BASE_TABS.slice(2),
       ]
     : BASE_TABS
+  // Fame tab appears once Platinum-certified (post-Platinum Break phase).
+  if (platinum) {
+    const insertAt = tabs.findIndex((t) => t.id === 'opus') + 1
+    tabs = [
+      ...tabs.slice(0, insertAt),
+      { id: 'fame', label: 'Fame', icon: 'sparkle' as IconName },
+      ...tabs.slice(insertAt),
+    ]
+  }
   if (worldTourUnlocked) {
     const insertAt = tabs.findIndex((t) => t.id === 'autobuyers') + 1
     tabs = [
