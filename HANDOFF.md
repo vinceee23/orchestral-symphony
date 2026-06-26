@@ -3,10 +3,14 @@
 **Read this FIRST on resume.** Everything below is committed + pushed to `feat/layer3` unless noted. Sections are newest-on-top; older dated blocks are historical context (still accurate but superseded by anything above them).
 
 ## ⭐ WHERE WE LEFT OFF (2026-06-27) — START HERE
-- **Branch `feat/layer3`, HEAD `e9f549f`** (all pushed). **NOT merged to master** — master-merge waits for a complete, Vince-reviewed chunk. `master` is still the older deployed playtest build (Venue-1 slice).
-- **This session built almost the entire post-Platinum "Break" phase (#13):** ✅ crescendo idle→70% (`0236918`) · ✅ **Fame currency + 6-node tree + dedicated UI tab** (`b0e1efc`/`c4a3e50`/`b031d3f`) · ✅ flag fixes — Tour Buzz repurposed to venue-cost discount + OP "Standing Ovation"→"Rave Reviews" (`476ae8a`) · ✅ reset perks **Encore Resonance** + **Opus Memory** (`e98a3b3`, Legacy dropped → L4) · ✅ **World Tour reset persistence** (`85a3d48`). All gated: tsc + 57 unit (Fame/perk/persistence tests added) + AFK idle sim + vite build.
-- **➡️ NEXT ACTION (2 interlocked pieces, IN THIS ORDER):** see the "RESUME POINT — final two Break-phase pieces" section below. (1) **L3-circuit idle-verify sim** (models the re-tour economy), THEN (2) **auto-tour capstone** built off that sim's heuristic. After those: Break phase COMPLETE → #9 challenge rewards → polish → ship the L1→L3 playtest.
-- **Open for Vince:** playtest the Fame tab (post-Platinum) for *feel* — sims confirm the math, not the spend experience. Resim-flagged items (non-blocking): Fame node cost growth=1.5 placeholder; Encore Resonance/Opus Memory are literal interpretations that remove re-climb friction post-unlock (intended, tune in resim).
+- **Branch `feat/layer3`** (all pushed). **NOT merged to master** — master-merge waits for a complete, Vince-reviewed chunk. `master` is still the older deployed playtest build (Venue-1 slice).
+- **🎉 BREAK PHASE (#13) IS COMPLETE.** Earlier this session: crescendo idle→70%, Fame currency+tree+UI, flag fixes, reset perks (Encore Resonance + Opus Memory), WT-reset persistence. **This session finished the final two pieces:**
+  - ✅ **L3-circuit idle-verify sim** (`sim/l3-pacing.test.ts`) — fixed the crash (it predated the `a1bbda5` sim-fix AND was missing the Break-phase state fields that `calculateTick` now dereferences); re-synced performEncore/MO/Tour to the live store; **fully modeled** the new mechanics (Fame minting + a Fame-spending player, Encore Resonance, Opus Memory, AP-bought auto-MO, Tour Buzz discount); recalibrated bars. Added a **continuous AFK-circuit scenario** that proves a fully-AFK player completes V1→World Stage hands-free (8/8 seeds, ~24h, ~6 auto-tours).
+  - ✅ **Auto-Tour capstone** (real game) — `canAutoPerformTour` (catalogue-ratio K=`L3.AUTO_TOUR_CAT_RATIO`=1.12, calibrated in the sim) + AP unlock (`AP_UNLOCK.autoTour`, 200 AP, gated on worldTourUnlocked) + tick-driver auto-fire + AutobuyersPage unlock card + WT-reset symmetry (resets unless Roadies) + `setAutoTourEnabled`. Unit tests in `breakPerks.test.ts`.
+  - Gated: tsc -b ✓ · vite build ✓ · 60 src unit ✓ · l3 sim (both tests) ✓ · full suite (pending/▶).
+- **KEY DESIGN FINDING (from the sim — surface to Vince):** the catalogue-ratio auto-tour produces a **LENGTHENING** cadence (95→313 min between tours), not a tightening one. Reason: once `opusCount` is large its catalogue term dominates, so the records-rebuild swing (records reset to 12% each tour) hits K×snapshot more slowly. The circuit still completes hands-free because **venue FILL drives graduation — auto-tour is an accelerant, not the gate.** This is legitimate/shippable; flagged for resim if a steadier cadence is wanted (would need an adaptive K or a records-based trigger).
+- **➡️ NEXT ACTION:** **#9 challenge full-reward redesign** (design the per-challenge table → Vince approval → build; see "DECISIONS RESOLVED round 2" §6 below) → polish → ship the L1→L3 playtest. Master-merge after a Vince-reviewed chunk.
+- **Open for Vince:** (1) playtest the Fame tab + auto-tour *feel* — sims confirm the math, not the spend experience. (2) Resim-flagged (non-blocking): Fame node cost growth=1.5, AP costs (autoMO 75 / autoTour 200), `AUTO_TOUR_CAT_RATIO`=1.12, and the literal Encore Resonance/Opus Memory interpretations.
 
 ## Where we are RIGHT NOW (older — pre-Break-phase context)
 - **`master`** = the deployed playtest build: pacing-v2 balance (wall ~3h, Platinum ~22h, steady drip) + the **Venue-1 World Tour slice**. Testable: `https://vinceee23.github.io/orchestral-symphony/?l3` (or `?fresh&l3` clean). `?fresh` works in prod.
@@ -65,11 +69,11 @@ Full spec: **`docs/L2-AUTOMATION-SPEC.md`** (LOCKED, ~97%). Decision: don't spee
 ### WT-reset persistence (#13) — ✅ DONE (committed 85a3d48)
 - performTour preserves Fame/AP/lifetimeEncoreCount/opusCount + venue ladder by omission. Fixed: auto-MO (separate boolean) was persisting unconditionally — now resets unless Roadies, matching auto-encore + the plan. Tests in breakPerks.test.ts.
 
-### RESUME POINT — final two Break-phase pieces (#13 cont.) — DO IN THIS ORDER (auto-tour depends on the sim)
-Everything else in the Break phase is done/gated/committed. These two are a focused L3-economy effort (fresh-context, like the first idle-verify):
-1. **L3-circuit idle-verify FIRST** in sim/l3-pacing.test.ts — port goal-directed buying into Phase A/B; recalibrate assertions; AFK-after-automation scenario reaching Platinum + completing the circuit hands-free. **This models the re-tour economy.**
-2. **THEN auto-tour capstone** — AP-gated unlock that auto-performs the World Tour (analogous to auto-MO's `canAutoPerformMagnumOpus`). Its trigger heuristic ("when is re-touring worth it?") should be derived from what the idle-verify sim shows about the L3 circuit — DON'T guess it blind. New AP unlock (`AP_UNLOCK`) + tick-driver auto-fire + AutobuyersPage UI + WT-reset symmetry (reset unless Roadies).
-- After these two: Break phase COMPLETE → then #9 challenge rewards → polish → ship.
+### RESUME POINT — final two Break-phase pieces (#13 cont.) — ✅ DONE (2026-06-27)
+Both done + gated this session (see WHERE WE LEFT OFF up top for detail):
+1. ✅ **L3-circuit idle-verify** in sim/l3-pacing.test.ts — crash fixed, store-synced, new mechanics fully modeled, recalibrated, + continuous AFK-completes-circuit scenario.
+2. ✅ **Auto-tour capstone** — catalogue-ratio K=1.12 (calibrated, NOT guessed) + AP unlock + tick-driver auto-fire + AutobuyersPage card + WT-reset symmetry. canAutoPerformTour in worldTour.ts.
+- **Break phase COMPLETE.** → next: #9 challenge rewards → polish → ship.
 
 ### Review LOOP — Round 1 COMPLETE (2026-06-26, all 5 parallel streams done)
 Streams: resim ✓ · ultracode 4-lens review ✓ · Codex balance ✓ · Claude balance ✓ · dir-cleanup ✓.
