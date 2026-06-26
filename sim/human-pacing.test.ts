@@ -1230,4 +1230,86 @@ describe('human pacing instrument', () => {
     expect(afkMOs, 'AFK auto-MO keeps cycling hands-free').toBeGreaterThanOrEqual(3)
     expect(state.platinum, 'AFK idle reaches/holds Platinum hands-free').toBe(true)
   }, 300_000)
+
+  // Early-AFK probe (#12): go hands-free at the EARLIEST automation point (auto-MO unlock, ~MO3) with only
+  // PARTIAL automation, and report how far it gets — quantifies the MO3→full-auto "mostly-idle" window.
+  // Reporting test (lenient assert): the finding is the logged outcome, not a hard pass/fail.
+  it('early-AFK probe: going hands-free at MO3 (partial automation) — how far?', () => {
+    const setClock = (globalThis as { __setSimClock?: (t: number) => void }).__setSimClock!
+    const rng = new SeededRng(99_002)
+    let simMs = 0
+    let activeMs = 0
+    let steps = 0
+    const state = createInitialState(simMs)
+    setClock(simMs)
+    let lastAutoEncoreMs = -Infinity
+
+    const buyAutomationOP = () => {
+      for (const c of OPUS_UPGRADES) {
+        const isAuto = c.id.startsWith('automator-unlock-') || c.id === 'auto-conduct' || c.id === 'automator-bulk' || c.id === 'automator-speed'
+        if (!isAuto) continue
+        const lv = state.opusUpgrades[c.id] ?? 0
+        if (lv < c.maxLevel && state.opusPoints >= getOpusUpgradeCost(c, lv)) buyOpusUpgrade(state, c.id)
+      }
+    }
+    const tryUnlockAP = () => {
+      if (!state.autobuyers['encore']?.unlocked && state.opusCount >= AP_UNLOCK.encore.minOpusCount && state.applausePoints >= AP_UNLOCK.encore.cost) {
+        state.applausePoints -= AP_UNLOCK.encore.cost
+        state.autobuyers = { ...state.autobuyers, encore: { unlocked: true, enabled: true, interval: AUTOBUYER_DEFAULT_INTERVAL, bulk: 1, lastTick: 0 } }
+      }
+      if (!state.autoMO && state.opusCount >= AP_UNLOCK.autoMO.minOpusCount && state.applausePoints >= AP_UNLOCK.autoMO.cost) {
+        state.applausePoints -= AP_UNLOCK.autoMO.cost
+        state.autoMO = true
+      }
+    }
+    const buyGateTier = () => {
+      const gate = state.layer1WallReached ? getMagnumOpusCost(state.opusCount) : getEncoreCost(state.encoreCount)
+      const gt = state.tiers[gate.tierIndex]
+      if (gt?.unlocked && (gt.purchased ?? 0) < gate.amount) buyTier(state, gate.tierIndex + 1, gate.amount - gt.purchased)
+    }
+
+    // SETUP: active play only until auto-MO unlocks (~MO3) — partial automation.
+    const SETUP_CAP = 200_000
+    while (steps < SETUP_CAP && !state.autoMO) {
+      steps++
+      const dt = chooseDt(state)
+      applyTick(state, dt, true)
+      simMs += dt; activeMs += dt; setClock(simMs)
+      enableUnlockedAutobuyers(state)
+      buyAutomationOP()
+      humanBuyDecision(state, rng)
+      buyGateTier()
+      tryUnlockAP()
+      if (canEncoreNow(state)) performEncore(state, simMs)
+      if (state.layer1WallReached && canMoNow(state)) performMagnumOpus(state, simMs)
+    }
+    expect(state.autoMO, 'probe setup: auto-MO unlocked at ~MO3').toBe(true)
+
+    const startOpus = state.opusCount
+    const startRecords = state.recordsSold
+    const tiersAutoCount = TIER_CONFIGS.filter((c) => state.autobuyers[`tier_${c.id}`]?.unlocked).length
+    const gateAutoUnlocked = !!state.autobuyers[`tier_7`]?.unlocked
+
+    // AFK from here — partial automation, no manual input.
+    const AFK_CAP = steps + 300_000
+    while (steps < AFK_CAP && state.opusCount < startOpus + 5) {
+      steps++
+      const dt = chooseDt(state)
+      applyTick(state, dt, false)
+      simMs += dt; activeMs += dt; setClock(simMs)
+      const enc = state.autobuyers['encore']
+      if (enc?.unlocked && enc.enabled && !state.layer1WallReached && state.peakSoundwaves.gt(ENCORE_EP_THRESHOLD) && simMs - lastAutoEncoreMs >= getAutoEncoreInterval(state.opusCount)) {
+        if (performEncore(state, simMs)) lastAutoEncoreMs = simMs
+      }
+      if (state.autoMO && canMoNow(state)) performMagnumOpus(state, simMs)
+    }
+
+    const afkMOs = state.opusCount - startOpus
+    console.log('\n=== Early-AFK Probe (hands-free from MO3, partial automation) ===')
+    console.log(`At AFK start: opus ${startOpus}, ${tiersAutoCount}/7 tier autobuyers unlocked, gate-tier(Symphonies) autobuyer: ${gateAutoUnlocked ? 'YES' : 'NO'}`)
+    console.log(`Hands-free result: +${afkMOs} Magnum Opuses ${afkMOs === 0 ? '(STALLED — needs manual gate-tier buying until the Symphony autobuyer unlocks)' : '(progressing)'}, records ${Math.floor(startRecords).toLocaleString()} -> ${Math.floor(state.recordsSold).toLocaleString()}`)
+
+    // Lenient: records always accrue post-MO (opusCount>=3) even if MOs stall — the LOG is the finding.
+    expect(state.recordsSold).toBeGreaterThanOrEqual(startRecords)
+  }, 200_000)
 })
