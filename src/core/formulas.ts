@@ -47,8 +47,11 @@ export function getTierBatchCost(config: TierConfig, purchased: number, amount: 
   return total
 }
 
-/** Multiplier from milestone bonuses (every 10 purchased = base^x, capped at 4 milestones).
- *  milestoneStrength raises the per-milestone base above MILESTONE_MULTIPLIER (challenge Flat: +0.2 → ×2.2). */
+/** Multiplier from milestone bonuses: every 10 purchased = ×base, UNCAPPED (MILESTONE_PROD_CAP=Infinity —
+ *  the "buy-10 chase"). Bounded in practice by exponential tier-cost growth, so it's balanced for L1–L3.
+ *  milestoneStrength raises the per-milestone base above MILESTONE_MULTIPLIER (challenge Flat: +0.2 → ×2.2).
+ *  ⚠ Any permanent layer that SNAPSHOTS production (e.g. L6 Canon's Palimpsest) must take this term
+ *  SUBLINEARLY (log/root) or it becomes an unbounded runaway — see docs/HARDENING-PLAN.md (B2). */
 export function getMilestoneMultiplier(purchased: number, milestoneStrength = 0): Decimal {
   const base = MILESTONE_MULTIPLIER + milestoneStrength
   const milestones = Math.min(Math.floor(purchased / MILESTONE_INTERVAL), MILESTONE_PROD_CAP)

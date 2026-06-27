@@ -7,6 +7,36 @@ each layer fully playable + balanced before the next. Narrative for each layer l
 ## The arc of axes
 produce → economy → space/automation → **identity → mastery → permanence → convergence → gauntlet → bosses**
 
+## ⭐ RESET MATRIX (authoritative — supersedes LAYER3-SPEC §3.5's 6-layer table) — B1
+**Model (= the M9 declarative-reset plan):** every field has ONE `resetTier` = the *deepest* prestige that
+wipes it; every shallower event **keeps** it. A prestige action is `applyReset(state, tier)`. Reset events,
+shallow→deep: **Encore → MagnumOpus → Tour(L3 start) → Signature(L4) → Virtuoso(L5) → Canon(L6) →
+GrandFinale(L7, ONE-TIME) → Fall(L8)**. (Platinum is a non-reset *milestone*; L9 wins reset nothing.)
+
+| Field(s) | resetTier (deepest wipe) | Notes |
+|---|---|---|
+| soundwaves, tiers, crescendo, producedThisRun, tempoPurchasesThisRun | **run** (Encore+) | the active climb |
+| encorePoints, encoreUpgrades, encoreCount | **encore** (MO+) | (Encore Resonance perk was CUT — Encore always resets SW) |
+| opusPoints, opusUpgrades (OP tree), opusCount | **tour/L3** ⚠ | a Tour resets the L1/L2 climb but SNAPSHOTS catalogue (blend opusCount+records) first — VERIFY exact kept-vs-wiped vs gameStore.performTour |
+| lifetimeEncorePoints | **never until L7** ⚠ | **BUG: performTour currently wipes this (gameStore.ts:913) — must NOT; L3 keeps it** |
+| recordsSold, platinum | **tour/L3** | Platinum re-earned each tour; "ever reached Platinum" + its seen-beat persist forever |
+| acclaim | **tour** (spendable) · **lifetimeAcclaim = L4** ⚠ | lifetimeAcclaim→prod-mult persists across tours; reset-at-L4? = decide at L4 build |
+| currentVenue, components, keepAutobuyers, autoMO (venue ladder) | **L4** ⚠ | persist across tours (L3); reset-at-L4 = confirm at L4 build |
+| completedChallenges (reward mults) | **L4** unless `keepChallenges` | per §2.8 |
+| challengeBestTimes | **never** | skill record — survives the Fall (capstone recomputes from survivors) |
+| seenStoryBeats | **never** | story-seen flags; only `?fresh` wipes |
+| **Signature allocation** (L4 identity) | **never** (identity record) | drives the L9 mirror; live PRODUCTION effect resets with the layer |
+| **Mastery rank** (L5) | TBD at L5 build | permanent floor; likely **never** |
+| **Palimpsest** {top, ghosts[]} (L6) | **never** | the eternal score — survives ALL resets incl. the Fall |
+| finalePoints / performGrandFinale (L7) | **one-time** | NOT a repeatable prestige; fires once |
+| **Recognition** (L8) | **never** (gods' attention) | persists across comebacks + the Fall; mortal fame (Platinum etc.) resets each comeback |
+| L9 claimed god-powers | **never** (boss-rush retry) | losing resets nothing; powers stack |
+
+⚠ = needs code-verification or a per-layer build decision (don't invent — confirm against `gameStore` /
+decide when that layer is built). The DEEP-permanent rows (Palimpsest, Recognition, Signature-identity,
+best-times, seen-beats) are locked — those are what L8/L9 depend on. **The Fall (L8) keeps everything tagged
+`never`; resets the rest like a deep prestige.** This table is the source of truth; `applyReset` reads it.
+
 | Layer | Theme | Novel axis / mechanic | Status |
 |---|---|---|---|
 | L1 Encore | foundation | tier production + Encore prestige | **built** |

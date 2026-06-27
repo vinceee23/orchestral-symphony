@@ -4,7 +4,21 @@ Status: **proposal for Vince's sign-off.** Self-iterated for loopholes (see §7)
 
 ---
 
-## ⭐ RECONCILED & LOCKED (2026-06-27) — implementation on `feat/layer3` now matches this spec
+## ⛔ SUPERSEDED — LADDER IS NOW 9 LAYERS (2026-06-28)
+
+**This doc's layer-COUNT framing is DEAD.** Anything here saying "Grand Finale = L6 = the END" / a 6-layer
+ladder (esp. §1, §5, §6.5) is superseded. The authoritative ladder is **9 layers** — see
+`docs/LADDER-MECHANICS.md`: L1 Encore · L2 Magnum Opus · L3 World Tour · L4 Signature · L5 Virtuoso ·
+**L6 Canon · L7 Grand Finale (one-time, NOT repeatable, NOT the end) · L8 Redemption · L9 The gods**.
+- `finalePoints` / `performGrandFinale` are **L7, one-time** — never a repeatable prestige.
+- The **reset matrix below (§3.5) is 6-layer and superseded** by the authoritative 9-layer matrix in
+  `LADDER-MECHANICS.md`. Pre-build fixes (incl. the `performTour` `lifetimeEncorePoints` bug) tracked in
+  `docs/HARDENING-PLAN.md`. The L3 *mechanics* in this doc remain accurate; only the layer count / end-state
+  / reset-matrix framing changed.
+
+---
+
+## ⭐ RECONCILED & LOCKED (2026-06-27) — implementation on `feat/layer3` now matches this spec (L3 mechanics)
 
 A later "Break phase" session diverged from this spec; an audit + reconcile (see `docs/RECONCILE-PLAN.md`)
 brought the code back in line. Final locked state:
