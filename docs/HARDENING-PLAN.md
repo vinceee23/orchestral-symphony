@@ -96,7 +96,20 @@ challenge panel until 1–2 venues graduate); accessibility (toggle-conduct, no 
 armed by `docs/bible/`. L0 = the cold-open + era-0 onboarding (pre-Encore base, intro, light tutorial).
 Decisions: **M9 + M11 refactors = THIS session** (hand the L4 session a clean registry); **venue art =
 deferred** (document the approach in the bible, do in a later visual pass); **balancing = a FULL sim-tuned
-pass.** Ordered worklist (one Cursor code-task at a time on the tree):
+pass.**
+
+**VISION + TARGETS (LOCKED, Vince's words — anchor everything to these):**
+- **North-star / player fantasy:** a **MYTHIC RISE → TRANSCENDENCE** — a mortal musician ascends from a
+  single note to godhood through mastery, a fall, and a comeback. **The story arc is the point; idle is the
+  vehicle.**
+- **Target length/feel:** **AD-style long-haul** (~100–200h+ engaged + idle, **idle-FIRST** — works AFK,
+  active amplifies; ~22h to Platinum).
+- **L4–L9 build-spec gaps:** **mark TBD-decide-at-build** — do NOT invent numbers/specifics blind; the
+  fresh session + Vince resolve them with sim/playtest data.
+- **Balance finality:** sim-tune L0–L3 as "final for now"; **fine feel/pacing tuning is deferred to fresh
+  sessions post-playtest** (documented per Vince).
+- **how-to-work-here:** Vince approved the encoded method (gate-everything, tight-spec delegation,
+  verify-don't-blind-fix, lock-plans-first, tap-batch decisions, no mid-build pivots, account/data policy). Ordered worklist (one Cursor code-task at a time on the tree):
 
 1. **B5** save-migration refactor *(in progress)* → gate + commit.
 2. **M9** multiplier-registry + declarative resets (after B5 — both touch gameStore/formulas).
