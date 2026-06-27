@@ -71,6 +71,7 @@ import {
   isVenueGraduatable,
   getUnlockFlagsFromComponent,
   getAcclaimMultiplier,
+  getAutoMOReclimbDelayMs,
 } from '../src/core/worldTour'
 import type { GameState } from '../src/store/types'
 
@@ -736,6 +737,7 @@ function simReclimbActiveMs(
   const targetMoCount = postTourState.opusCount + 1
   const automated = autoMO
   const humanOverhead = tourIndex < 1 ? 2.6 : tourIndex < 3 ? 2.0 : tourIndex < 6 ? 1.55 : 1.1
+  const autoMoReadyAt = state.currentRunStartTime + getAutoMOReclimbDelayMs(state.tourCount ?? 0)
 
   while (steps < 80_000 && activeMs < 75 * 60_000) {
     steps++
@@ -747,7 +749,7 @@ function simReclimbActiveMs(
     setClock(simMs)
     recordNewAchievements(state, seen)
 
-    if (automated && state.layer1WallReached && canMoNow(state)) {
+    if (automated && simMs >= autoMoReadyAt && state.layer1WallReached && canMoNow(state)) {
       if (performMagnumOpus(state, simMs) && state.opusCount >= targetMoCount) return activeMs
     }
 
