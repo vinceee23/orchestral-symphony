@@ -104,6 +104,10 @@ export const MILESTONE_TICKSPEED_BONUS = 0.01 // +1% tickspeed per milestone row
 export const MAX_OFFLINE_MS = 24 * 60 * 60 * 1000
 export const AUTOSAVE_INTERVAL_MS = 30_000
 export const DELTA_CAP_MS = 5000
+export const WARMUP_PEAK_MULT = 1.5
+export const WARMUP_ACTIVITY_WINDOW_MS = 12_000
+export const WARMUP_FILL_PER_SEC = 0.05
+export const WARMUP_DECAY_PER_SEC = 0.034
 
 // Escalating Encore cost: each Encore demands more
 export interface PrestigeCost { tierIndex: number; amount: number; tierName: string }

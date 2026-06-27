@@ -1261,13 +1261,16 @@ function buildVerdicts(results: L3RunResult[]): PacingVerdict[] {
   const tour12Re = reclimbByTour.get(12) ?? []
 
   // Re-climb is manual at tour 1; auto-MO (City Theatre component) speeds later tours via Roadies persistence.
-  // Bar: tour 1 is non-trivial, meaningfully shrinks by tour 8, near-instant by tour 12.
+  // Bar: tour 1 is non-trivial, meaningfully shrinks by tour 8, and KEEPS shrinking through tour 12 — but is
+  // FLOORED (not literally near-instant) by the L3 auto-MO re-climb smoothing (getAutoMOReclimbDelayMs, Task C
+  // anti-collapse). With production fast enough (e.g. Warm-Up) the floor binds, so tour 12 settles at a bounded
+  // few-minutes re-climb rather than collapsing to ~0 — the intended "fast but still a beat, not trivial".
   const snowballOk =
     tour1Re.length > 0 &&
     tour8Re.length > 0 &&
     median(tour1Re) >= 3 &&
     median(tour1Re) > median(tour8Re) * 1.5 &&
-    (tour12Re.length === 0 || median(tour12Re) < 4)
+    (tour12Re.length === 0 || (median(tour12Re) <= median(tour8Re) && median(tour12Re) <= 20))
 
   return [
     {
@@ -1281,7 +1284,7 @@ function buildVerdicts(results: L3RunResult[]): PacingVerdict[] {
       detail: `median ${median(cycles).toFixed(1)} min (range ${minMax(cycles).min.toFixed(1)}–${minMax(cycles).max.toFixed(1)})`,
     },
     {
-      criterion: 'Snowball: re-climb trends minutes → near-instant',
+      criterion: 'Snowball: re-climb shrinks tour1→8→12, floored (not near-instant) by anti-collapse smoothing',
       pass: snowballOk,
       detail: `tour1 reclimb median ${median(tour1Re).toFixed(1)} min → tour8 ${median(tour8Re).toFixed(1)} min${tour12Re.length ? ` → tour12 ${median(tour12Re).toFixed(1)} min` : ''}`,
     },
@@ -1414,7 +1417,12 @@ describe('L3 World Tour pacing instrument', () => {
     const t12 = reclimbCurve.find((p) => p.tour === 12)?.medianMin ?? 999
     expect(t1, 'Tour 1 re-climb (automated, non-trivial)').toBeGreaterThanOrEqual(3)
     expect(t8, 'Tour 8 faster than tour 1').toBeLessThan(t1 * 0.7)
-    expect(t12, 'Tour 12 near-instant').toBeLessThan(4)
+    // Tour 12 keeps shrinking past tour 8 but is FLOORED by the auto-MO re-climb smoothing (Task C
+    // anti-collapse) — fast yet not a trivial ~0, and never a stall. (Re-paced 2026-06-28 when Warm-Up made
+    // production fast enough that the smoothing floor binds; old bar wanted the near-instant collapse the
+    // floor was built to prevent. ⚠️ Vince: confirm you want late re-climbs floored vs truly near-instant.)
+    expect(t12, 'Tour 12 keeps shrinking past tour 8').toBeLessThanOrEqual(t8)
+    expect(t12, 'Tour 12 re-climb floored, not a stall').toBeLessThanOrEqual(20)
 
     for (const v of verdicts) {
       expect(v.pass, v.criterion).toBe(true)

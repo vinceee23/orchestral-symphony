@@ -8,6 +8,7 @@ import { FloatingNotes } from '../shared/FloatingNotes'
 import { StageHall } from './StageHall'
 import { StageLife } from './StageLife'
 import { ConductorPodium } from './ConductorPodium'
+import { WarmUpBar } from './WarmUpBar'
 import { RecordsMeter } from './RecordsMeter'
 import { getEncoreCost, getMagnumOpusCost } from '../../core/constants'
 import { formatNumber } from '../../core/format'
@@ -18,7 +19,10 @@ import { getFameMultiplier, getOpusGain } from '../../core/records'
 import { getOvertureGainMultiplier } from '../../core/encoreUpgrades'
 import { playPrestigeSound } from '../../core/audio'
 import { getChallengeById, getActiveChallengeModifiers } from '../../core/challenges'
+import { isWarmUpUnlocked } from '../../core/warmup'
 import { PrestigeDialog } from '../prestige/PrestigeDialog'
+import { HintCard } from '../onboarding/HintCard'
+import { useOnboardingHint } from '../onboarding/useOnboardingHint'
 import { useUiStore } from '../../store/uiStore'
 
 export function ComposePage() {
@@ -29,6 +33,8 @@ export function ComposePage() {
   const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const opusUpgrades = useGameStore((s) => s.opusUpgrades)
   const crescendo = useGameStore((s) => s.crescendo)
+  const warmUpLevel = useGameStore((s) => s.warmUpLevel)
+  const activityGraceMs = useGameStore((s) => s.activityGraceMs)
   const recordsSold = useGameStore((s) => s.recordsSold)
   const platinum = useGameStore((s) => s.platinum)
   const finalePoints = useGameStore((s) => s.finalePoints)
@@ -40,11 +46,15 @@ export function ComposePage() {
   const performMagnumOpus = useGameStore((s) => s.performMagnumOpus)
   const activeChallenge = useGameStore((s) => s.activeChallenge)
   const celebrateEncore = useUiStore((s) => s.celebrateEncore)
+  const conducting = useUiStore((s) => s.conducting)
   // Spacebar conduct is global now (see AppShell). This page only owns the pointer "Conduct" button.
   const setPointerHeld = useUiStore((s) => s.setPointerHeld)
+  const { activeHint, dismiss: dismissHint } = useOnboardingHint()
 
   const [pendingEncore, setPendingEncore] = useState(false)
   const [pendingMO, setPendingMO] = useState(false)
+  const visibleHint = activeHint && !pendingEncore && !pendingMO ? activeHint : null
+  const firstBuyHintActive = visibleHint?.id === 'first_buy'
   // §11 era-reveal: when the era increments (1st Encore → gold, 1st MO → violet, Finale → blaze), flash a
   // one-shot bloom as the camera pulls back to the grander hall.
   const [revealEra, setRevealEra] = useState<number | null>(null)
@@ -78,6 +88,8 @@ export function ComposePage() {
   const crescendoMult = getCrescendoMultiplier(crescendo, opusUpgrades)
   const tempoOpMult = getTempoOpMultiplier(opusUpgrades)
   const fameMult = platinum ? getFameMultiplier(recordsSold, opusUpgrades) : 1
+  const warmUpUnlocked = isWarmUpUnlocked({ tiers })
+  const warmUpEngaged = conducting || (activityGraceMs ?? 0) > 0
   const goldWash = (0.04 + liveliness * 0.10 + climb * 0.06 + blaze * 0.16).toFixed(3)
   // Magnum Opus era brings violet richness into the hall — a clear mood shift, not just brighter gold.
   const purpleWash = (opusCount > 0 ? 0.13 : liveliness * 0.03).toFixed(3)
@@ -140,6 +152,11 @@ export function ComposePage() {
       <div className="relative z-10 h-full overflow-y-auto flex flex-col items-center px-4 py-5 [scrollbar-gutter:stable_both-edges]">
         <SoundwaveDisplay />
         <div className="w-full max-w-3xl mt-1"><TempoBar /></div>
+        {visibleHint && (
+          <div className="w-full max-w-xl mt-3">
+            <HintCard hint={visibleHint} onDismiss={dismissHint} />
+          </div>
+        )}
 
         <div className="w-full max-w-5xl flex items-center justify-end mt-5 mb-1">
           <BuyAmountToggle />
@@ -147,7 +164,12 @@ export function ComposePage() {
 
         <div className="w-full flex justify-center mt-3 pb-24">
           <div
-            className="shrink-0 transition-transform duration-[1500ms] ease-out"
+            className={[
+              'shrink-0 transition-transform duration-[1500ms] ease-out',
+              firstBuyHintActive
+                ? '[&_button:first-of-type]:ring-2 [&_button:first-of-type]:ring-accent-gold/70 [&_button:first-of-type]:ring-offset-2 [&_button:first-of-type]:ring-offset-bg-primary [&_button:first-of-type]:animate-pulse-gold'
+                : '',
+            ].join(' ')}
             style={{ transform: `scale(${orchestraScale})`, transformOrigin: 'top center' }}
           >
             <OrchestraStage />
@@ -162,6 +184,7 @@ export function ComposePage() {
           stacked as ONE column (gap-spaced, no overlap) so the swell-meter rises from the podium toward
           the button. Active after the first Magnum Opus; dormant podium ("the baton awaits") before. */}
       <div className={`pointer-events-none absolute left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-3 ${opusCount > 0 ? 'bottom-6' : 'bottom-[16%]'}`}>
+        <WarmUpBar active={warmUpUnlocked} level={warmUpLevel} engaged={warmUpEngaged} />
         {opusCount > 0 && (
           <>
             <div className="text-center leading-tight tabular-nums">

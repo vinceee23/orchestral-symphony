@@ -219,6 +219,8 @@ export function getCoreProductionMultiplier(p: {
   acclaimMult?: number
   /** Challenge reward: stacked global production × (default 1 = no-op). */
   challengeGlobalProdMult?: number
+  /** Early active-play bonus channel (default 1 = no-op). */
+  warmUpMult?: number
   /** Challenge reward: additive crescendo ceiling boost (default 0 = no-op). */
   crescendoBonus?: number
 }): Decimal {
@@ -241,4 +243,5 @@ export function getCoreProductionMultiplier(p: {
     .times(massMult)
     .times(p.acclaimMult ?? 1)
     .times(p.challengeGlobalProdMult ?? 1)
+    .times(p.warmUpMult ?? 1)
 }

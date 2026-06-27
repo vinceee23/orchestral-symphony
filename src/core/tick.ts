@@ -1,6 +1,6 @@
 import Decimal from 'break_infinity.js'
 import type { GameState } from '../store/types'
-import { TIER_CONFIGS, AUTOBUYER_DEFAULT_INTERVAL } from './constants'
+import { TIER_CONFIGS, AUTOBUYER_DEFAULT_INTERVAL, WARMUP_ACTIVITY_WINDOW_MS } from './constants'
 import {
   getTierProductionPerTick,
   getTierCost,
@@ -25,6 +25,7 @@ import {
 import { getChallengeById, getActiveChallengeModifiers, getChallengeMultipliers } from './challenges'
 import type { ChallengeModifiers } from './challenges'
 import { getAcclaimMultiplier, calculateWorldTourTick } from './worldTour'
+import { advanceWarmUp, isWarmUpUnlocked, warmUpMultiplier } from './warmup'
 
 export function calculateTick(state: GameState, deltaMs: number, conducting = false): Partial<GameState> {
   const achievementSet = new Set(state.achievements)
@@ -38,6 +39,14 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
   // nerfedTickspeed: slow production and crescendo accrual (challenge-only)
   const effectiveDeltaMs =
     mods.tickspeedDivisor > 1 ? deltaMs / mods.tickspeedDivisor : deltaMs
+  const currentActivityGraceMs = conducting ? WARMUP_ACTIVITY_WINDOW_MS : (state.activityGraceMs ?? 0)
+  const activeNow = conducting || currentActivityGraceMs > 0
+  const activityGraceMs = Math.max(0, currentActivityGraceMs - deltaMs)
+  // Warm-Up does not apply during a challenge — challenges are a separately-tuned, constrained test (§2.8),
+  // and the active-presence bonus would trivialize them. The bar re-fills once the challenge ends.
+  const warmUpLevel = isWarmUpUnlocked(state) && !state.activeChallenge
+    ? advanceWarmUp(state.warmUpLevel ?? 0, activeNow, deltaMs / 1000)
+    : 0
 
   const newTiers = state.tiers.map((t) => ({
     ...t,
@@ -100,6 +109,7 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
     achievementTempoBonus: totalTempoBonus,
     acclaimMult,
     challengeGlobalProdMult: challengeMults.globalProdMult,
+    warmUpMult: warmUpMultiplier(warmUpLevel),
     crescendoBonus: challengeMults.crescendoBonus,
   }))
 
@@ -325,6 +335,8 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
     peakCrescendoMult,
     recordsSold,
     platinum,
+    warmUpLevel,
+    activityGraceMs,
     totalTimePlayed: state.totalTimePlayed + deltaMs,
     ...worldTourUpdates,
   }

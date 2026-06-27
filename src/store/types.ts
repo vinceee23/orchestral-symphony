@@ -39,6 +39,8 @@ export interface GameState {
   soundwaves: Decimal
   tiers: TierState[]
   tempo: TempoState
+  warmUpLevel?: number
+  activityGraceMs?: number
   buyAmount: BuyAmount
   achievements: string[]
   /** L3 challenge clears — resets on L4 ascension unless keepChallenges (LAYER3-SPEC §2.8). */
@@ -139,6 +141,8 @@ export interface GameState {
 
   /** Story beat ids already shown (first-time only; persists with save). */
   seenStoryBeats: string[]
+  /** Mechanical onboarding hint ids already dismissed or bypassed. Defaults to [] after state creation/migration. */
+  seenHints?: string[]
 }
 
 export interface GameActions {
@@ -169,5 +173,6 @@ export interface GameActions {
   bankVenueAcclaim: () => void
   setAutoMOEnabled: (enabled: boolean) => void
   setStoryBeatSeen: (id: string) => void
+  markHintSeen: (id: string) => void
   hardReset: () => void
 }

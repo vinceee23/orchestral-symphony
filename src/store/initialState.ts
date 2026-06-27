@@ -19,6 +19,8 @@ export function createInitialState(): GameState {
       tickInterval: 1000,
       baseBPM: 60,
     },
+    warmUpLevel: 0,
+    activityGraceMs: 0,
     buyAmount: 1,
     achievements: [],
     completedChallenges: [],
@@ -74,5 +76,6 @@ export function createInitialState(): GameState {
     version: '0.6.0',
     saveSchemaVersion: SAVE_SCHEMA_VERSION,
     seenStoryBeats: [],
+    seenHints: [],
   }
 }

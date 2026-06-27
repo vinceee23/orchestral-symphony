@@ -12,6 +12,7 @@ import {
   AUTOBUYER_DEFAULT_INTERVAL,
   ENCORE_WALL_COUNT,
   PLATINUM_THRESHOLD,
+  WARMUP_ACTIVITY_WINDOW_MS,
 } from '../core/constants'
 import {
   ENCORE_UPGRADE_MAP, getEncoreUpgradeCost,
@@ -43,6 +44,7 @@ import {
 import {
   seedSeenStoryBeatsFromProgress,
 } from '../components/story/beats'
+import { seedSeenHintsFromProgress } from '../components/onboarding/hints'
 import { createInitialState } from './initialState'
 import { migratePersistedSave } from './saveMigration'
 
@@ -54,6 +56,17 @@ function createDefaultAutobuyer(): AutobuyerState {
     bulk: 1,
     lastTick: 0,
   }
+}
+
+function mergeSeenHintIds(existing: string[] | undefined, seeded: string[]): string[] {
+  if (seeded.length === 0) return existing ?? []
+  const seen = new Set(existing ?? [])
+  for (const id of seeded) seen.add(id)
+  return [...seen]
+}
+
+function seedSeenHintsForCurrentProgress(state: GameState): void {
+  state.seenHints = mergeSeenHintIds(state.seenHints, seedSeenHintsFromProgress(state))
 }
 
 /** Reset tiers, soundwaves, and tempo to initial state, with achievement starting SW bonus */
@@ -270,7 +283,7 @@ export const useGameStore = create<GameState & GameActions>()(
             return t
           })
 
-          return { tiers: newTiers, soundwaves: sw }
+          return { tiers: newTiers, soundwaves: sw, activityGraceMs: WARMUP_ACTIVITY_WINDOW_MS }
         })
       },
 
@@ -314,6 +327,7 @@ export const useGameStore = create<GameState & GameActions>()(
           const tempoBonus = getTotalTempoBonus(state)
           return {
             soundwaves: state.soundwaves.minus(cost),
+            activityGraceMs: WARMUP_ACTIVITY_WINDOW_MS,
             tempoPurchasesThisRun: (state.tempoPurchasesThisRun ?? 0) + 1,
             tempo: {
               level: newLevel,
@@ -346,6 +360,7 @@ export const useGameStore = create<GameState & GameActions>()(
 
           return {
             soundwaves: sw,
+            activityGraceMs: WARMUP_ACTIVITY_WINDOW_MS,
             tempoPurchasesThisRun: (state.tempoPurchasesThisRun ?? 0) + levels,
             tempo: {
               level,
@@ -659,6 +674,7 @@ export const useGameStore = create<GameState & GameActions>()(
           silentEncoresCompleted: state.silentEncoresCompleted + (silentRun ? 1 : 0),
           wallReachedWithoutTempo: state.wallReachedWithoutTempo || qualifiedPatron,
           wallReachedWithoutTempoAtActiveMs: qualifiedPatron ? patronActiveMs : state.wallReachedWithoutTempoAtActiveMs,
+          activityGraceMs: WARMUP_ACTIVITY_WINDOW_MS,
         })
       },
 
@@ -734,6 +750,7 @@ export const useGameStore = create<GameState & GameActions>()(
           opusCount: newOpusCount,
           autobuyers,
           postPlatinumMoCount: wasPlatinum ? state.postPlatinumMoCount + 1 : state.postPlatinumMoCount,
+          activityGraceMs: WARMUP_ACTIVITY_WINDOW_MS,
         })
       },
 
@@ -914,6 +931,14 @@ export const useGameStore = create<GameState & GameActions>()(
         })
       },
 
+      markHintSeen: (id) => {
+        set((state) => {
+          const seenHints = state.seenHints ?? []
+          if (seenHints.includes(id)) return state
+          return { seenHints: [...seenHints, id] }
+        })
+      },
+
       hardReset: () => {
         set(createInitialState())
       },
@@ -929,7 +954,7 @@ export const useGameStore = create<GameState & GameActions>()(
           performEncore, performMagnumOpus, performGrandFinale,
           buyComponent, buyKeepAutobuyers, graduateVenue, performTour, unlockWorldTour, bankVenueAcclaim,
           setAutoMOEnabled, setAutoTourEnabled,
-          setStoryBeatSeen,
+          setStoryBeatSeen, markHintSeen,
           hardReset,
           ...data
         } = state
@@ -939,7 +964,11 @@ export const useGameStore = create<GameState & GameActions>()(
         return (state: (GameState & GameActions) | undefined) => {
           if (!state) return
 
+          const hadSeenHints = Array.isArray((state as Partial<GameState>).seenHints)
           migratePersistedSave(state)
+          if (!hadSeenHints) {
+            seedSeenHintsForCurrentProgress(state)
+          }
 
           const now = Date.now()
           const offlineMs = Math.min(now - state.lastSaveTimestamp, MAX_OFFLINE_MS)
@@ -964,10 +993,13 @@ export const useGameStore = create<GameState & GameActions>()(
             state.peakCrescendoMult = currentState.peakCrescendoMult
             state.recordsSold = currentState.recordsSold
             state.platinum = currentState.platinum
+            state.warmUpLevel = currentState.warmUpLevel
+            state.activityGraceMs = currentState.activityGraceMs
             state.acclaim = currentState.acclaim
             state.lifetimeAcclaim = currentState.lifetimeAcclaim
             state.venueBuffer = currentState.venueBuffer
             state.venueSoldOut = currentState.venueSoldOut
+            seedSeenHintsForCurrentProgress(state)
           }
 
           // Dev shortcut: ?l3 seeds World Tour for instant playtesting
@@ -985,6 +1017,7 @@ export const useGameStore = create<GameState & GameActions>()(
             state.recordsSold = Math.max(state.recordsSold, 750_000)
             state.postPlatinumMoCount = Math.max(state.postPlatinumMoCount, L3.GATE_POST_PLAT_MO)
             state.seenStoryBeats = seedSeenStoryBeatsFromProgress(state)
+            seedSeenHintsForCurrentProgress(state)
             try {
               const url = new URL(location.href)
               url.searchParams.delete('l3')
