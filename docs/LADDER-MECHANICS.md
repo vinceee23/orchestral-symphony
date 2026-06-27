@@ -17,8 +17,9 @@ GrandFinale(L7, ONE-TIME) → Fall(L8)**. (Platinum is a non-reset *milestone*; 
 |---|---|---|
 | soundwaves, tiers, crescendo, producedThisRun, tempoPurchasesThisRun | **run** (Encore+) | the active climb |
 | encorePoints, encoreUpgrades, encoreCount | **encore** (MO+) | (Encore Resonance perk was CUT — Encore always resets SW) |
-| opusPoints, opusUpgrades (OP tree), opusCount | **tour/L3** ⚠ | a Tour resets the L1/L2 climb but SNAPSHOTS catalogue (blend opusCount+records) first — VERIFY exact kept-vs-wiped vs gameStore.performTour |
-| lifetimeEncorePoints | **never until L7** ⚠ | **BUG: performTour currently wipes this (gameStore.ts:913) — must NOT; L3 keeps it** |
+| opusPoints, opusUpgrades (OP tree) | **tour** | reset each tour (performTour:921-923) + each MO |
+| opusCount (catalogue counter) | **L4** ⚠ | KEPT across tours (performTour:922 keeps it); feeds the catalogue snapshot. Reset-at-L4 = confirm at L4 build |
+| lifetimeEncorePoints | **MagnumOpus** | NOT permanent despite the name — it IS the Encore production mult (`getEncoreMultiplier`) and resets every MO (gameStore:789), hence every tour/finale too. *Codex's "performTour wipes it" flag was a MISREAD (verified: code is consistent + intentional); the old §3.5 "L3 keeps it" row was wrong.* `lifetimeEncoreCount` (separate field) is the persistent counter. |
 | recordsSold, platinum | **tour/L3** | Platinum re-earned each tour; "ever reached Platinum" + its seen-beat persist forever |
 | acclaim | **tour** (spendable) · **lifetimeAcclaim = L4** ⚠ | lifetimeAcclaim→prod-mult persists across tours; reset-at-L4? = decide at L4 build |
 | currentVenue, components, keepAutobuyers, autoMO (venue ladder) | **L4** ⚠ | persist across tours (L3); reset-at-L4 = confirm at L4 build |

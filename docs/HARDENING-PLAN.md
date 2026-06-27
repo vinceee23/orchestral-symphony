@@ -78,8 +78,11 @@ This doc's revisions **supersede** the matching `LADDER-MECHANICS.md` layer sect
   **Fix:** gate the capstone on all 12 clears, OR count uncleared as floor-time penalties. Build the
   still-LOCKED §2.8 challenge sim before shipping magnitudes; fold the 4 flat clears into ONE additive bucket
   + capstone as a separate capped factor.
-- **`performTour` resets `lifetimeEncorePoints`** (gameStore.ts:913) though the L3 matrix says L3 keeps it.
-  Fix to match the reconciled matrix.
+- ~~`performTour` resets `lifetimeEncorePoints`~~ — **VERIFIED NOT A BUG (2026-06-28).** `lifetimeEncorePoints`
+  IS the Encore production mult (`getEncoreMultiplier`) and resets every Magnum Opus by design (gameStore:789),
+  so resetting it on a tour is consistent/intentional (it's MO-tier, not permanent — the name misleads). The
+  old §3.5 "L3 keeps it" row was wrong; the reset matrix is corrected. **No code change.** (Codex misread it
+  without full code context — a reminder to verify, not blind-fix.)
 
 ## MINORS (fold in during the work) — see the red-team output for the full list
 L5 "(We were never the living)" reveals too early (pull back to a fingerprint); fake-credits leak (go
