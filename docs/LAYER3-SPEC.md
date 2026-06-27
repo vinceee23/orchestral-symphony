@@ -112,9 +112,40 @@ Each venue is a mini-build you improve by pouring Acclaim into **components**, e
 
 ### 2.8 Challenges arrive at L3
 - A **separate challenges panel** opens at L3 (moved here from the old L5 idea). Each challenge unlocks at **its own SW/Encore/MO threshold** (independent of the venue loop — optional side content). This also kills the old "challenges gated on finaleCount unlock after the end" bug.
-  - **Confirmed live (sim, 2026-06-25):** all 12 challenges currently gate on `finaleCount >= unlockAt` (min 1), but a Grand Finale needs 1.79e308 SW → **challenges are unreachable in normal play today** (dead content; `ach_around_world`/`ach_vivaldi` can never fire). Re-gating them to L3 thresholds is the fix.
-- **Clearing a challenge grants all three** reward types: a **permanent production/Acclaim bonus** + a **tour component/Acclaim lump** + a specific **unlock**.
-- **Challenge rewards reset on an L4 (Signature) ascension** — making them L3-tier progress and giving L4 its own fresh-start meaning. (Note: this changes `completedChallenges` semantics — some achievements read it; handle in migration.)
+  - **DONE (2026-06-27):** challenges re-gated off the unreachable `finaleCount` to reachable L3 thresholds (`worldTourUnlocked` + per-challenge `opusCount`/`encoreCount`/`peakSoundwaves`). All 11 constraint types are implemented live in `tick.ts`/`formulas.ts`.
+
+#### Reward model — REFINED & LOCKED (2026-06-27)
+Replaces the old autobuyer-unlock rewards, which **redundantly duplicated** the OP tree (tier autobuyers), the AP path (auto-encore), and the V2 auto-MO venue component. Each clear now grants **AP + a UNIQUE permanent multiplier thematic to overcoming that challenge's constraint** (the inverse of the constraint), plus an automation **only where nothing else grants it**. Tiers stay on the OP tree; encore/MO-auto on AP/venue — **challenges never duplicate another unlock path.**
+
+| # | Challenge (constraint) | Unique permanent reward (L3-scoped) | Automation | AP |
+|---|---|---|---|---|
+| 1 | Solo (only Notes) | Tier-1 (Notes) production ×1.5 | — | small |
+| 2 | Duet (2 tiers) | Global production ×1.15 | — | small |
+| 3 | Adagio (10× slow tick) | Permanent tempo-speed +X% | — | low |
+| 4 | Inflation (10× costs) | Tier cost ×0.9 (cheaper) | — | low |
+| 5 | One-Hit (max 10/tier) | Production-per-purchase bonus | — | mid |
+| 6 | Acoustic (no tempo) | small tempo bonus | **Tempo autobuyer** | mid |
+| 7 | Diminuendo (÷100 prod) | Global production ×1.5 | — | mid |
+| 8 | Flat (no milestones) | Milestone strength ×2→×2.2 | — | mid |
+| 9 | Leaky (2%/tick decay) | Production ×1.25 | — | mid |
+| 10 | Opening Night (rising costs) | Cost-growth scaling −X% | — | high |
+| 11 | Reverse (reversed prod) | Global production ×1.3 | **finale_auto** | high |
+| 12 | Unplugged (no prestige, 1e15) | **Big global ×, speed-scaled (below)** | **all_auto** | highest |
+
+All ×magnitudes + AP amounts are **sim-tuned** (challenge-sim gate below), not final. Mapping is thematic — the reward is the *inverse* of the constraint (beat no-tempo → tempo mastery; beat ÷100 production → production ×; beat rising-costs → cost-scaling cut).
+
+#### Speed-scaled capstone — driven by TOTAL challenge time (all 12)
+- **All 12 challenges are re-runnable** and each stores a **best completion time**. The single speed metric is the **sum of best-times across every challenge — lower is better.**
+- The **#12 Unplugged capstone** grants a **big global multiplier = `f(total_time)`**: a **generous baseline ×** once cleared, scaling up to a **hard cap** as the total time drops (e.g. ×2 floor → ×4 cap; cap-time + curve are sim-tuned). The other 11 keep their **flat unique multipliers** on first clear (one-and-done) — they feed the total via their best-times but don't individually speed-scale.
+- Re-running *any* challenge to shave its time lowers the total → grows the capstone bonus, up to the cap. A whole-suite mastery chase, not infinite power. (Total = sum over *cleared* challenges; fully optimized once all 12 are cleared.)
+
+#### Persistence (extends reset matrix §3.5)
+- Challenge **rewards reset at L4 (Signature) ascension** by default — keeps L3 a clean re-climb layer. (Changes `completedChallenges` semantics; some achievements read it → handle in migration.)
+- **Best-times PERSIST across L4** (a permanent skill record). A #12 capped at L3 keeps its best-time → **instant re-cap on re-clear**; the speed chase is never re-ground from scratch.
+- A **"Keep Challenges" upgrade** (an L4-era unlock, analogous to Roadies/`keepAutobuyers` for autobuyers) preserves the completed-challenge reward multipliers across ascension for players who buy it. *(New state: per-challenge best-time + the keep flag — add to the state model + reset matrix when built.)*
+
+#### Sim gate — LOCKED (build BEFORE finalizing magnitudes)
+No sim currently completes a challenge run (`era-pacing` has the machinery but it's gated behind `worldTourUnlocked`, never reached in an L1+L2 sim; `l3`/`human-pacing` don't touch challenges). **Build a challenge-completion sim** that plays each of the 12 to target under its constraint and verifies: (a) beatable, (b) completion time, (c) reward applies. Then tune every ×magnitude / AP payout / speed-curve cap-time, and confirm the unlock thresholds are monotonic + reachable across the ~22h L3.
 
 ### 2.9 Constraints (do NOT violate)
 - Acclaim modest/flat pre-break → catalogue-scaling at the full-circuit break.
