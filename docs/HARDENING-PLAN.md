@@ -91,6 +91,28 @@ the button; per-layer **mechanic cards** to teach each new verb (narrator stays 
 opacity (concrete readouts); L3 re-climb soft-floor (already 46→21→2 min collapse); L3 onboarding (gate the
 challenge panel until 1–2 venues graduate); accessibility (toggle-conduct, no hold-only paths).
 
+## ⭐ SESSION SCOPE + WORKLIST (2026-06-28) — LOCKED
+**This session = L0–L3 only.** L4+ is handled by FUTURE FRESH SESSIONS (bulkier, needs more context) —
+armed by `docs/bible/`. L0 = the cold-open + era-0 onboarding (pre-Encore base, intro, light tutorial).
+Decisions: **M9 + M11 refactors = THIS session** (hand the L4 session a clean registry); **venue art =
+deferred** (document the approach in the bible, do in a later visual pass); **balancing = a FULL sim-tuned
+pass.** Ordered worklist (one Cursor code-task at a time on the tree):
+
+1. **B5** save-migration refactor *(in progress)* → gate + commit.
+2. **M9** multiplier-registry + declarative resets (after B5 — both touch gameStore/formulas).
+3. **M11** Decimal-overflow guards (NaN/Infinity throw in calculateTick) — fold with M9 or right after.
+4. **Capstone exploit fix** + build the **§2.8 challenge sim** → tune challenge magnitudes + autoMO cost.
+5. **L3 re-climb soft-floor** + the "profitable-MO" auto-trigger (kill the 46→21→2 collapse).
+6. **Onboarding (L0–L3):** cold-open light-tutorial (first-button highlight); gate the challenge panel until
+   1–2 venues graduate; tour-start explainer.
+7. **Challenge-reward readouts** (UI — they're opaque) + tiny-tempo-reward late-game check.
+8. **Narrative copy micro-tweaks:** pull L5 "(We were never the living)" back to a fingerprint; go
+   narrator-silent at the L7 Finale (fix the fake-credits leak). (Copy only — beats.ts.)
+9. **Full sim-tuned balance pass:** re-run all sims (era/human/l3/challenge-pacing), dial the L0–L3 curve.
+10. **Documentation:** review + commit `docs/bible/` (running); document the venue-art approach; reconcile
+    any doc/code divergences found.
+11. **Final gate** (tsc + full suite + build) → merge `feat/layer3` → master → deploy.
+
 ## SEQUENCE
 1. **B1** reconcile (docs + code + the one 9-layer reset matrix) + **B4** milestone-cap contract.
 2. **B2** lock Recognition/Palimpsest forms + the L8 sim invariant; **B3** permanent-power budget/channels.
