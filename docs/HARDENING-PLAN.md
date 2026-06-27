@@ -53,10 +53,10 @@ This doc's revisions **supersede** the matching `LADDER-MECHANICS.md` layer sect
   dev-build NaN/Infinity guard in `calculateTick` that THROWS on a non-finite multiplier.
 
 ## DESIGN REVISIONS (supersede LADDER-MECHANICS sections)
-- **L4:** keep the allocation pie **FIXED** (don't let "budget grows" become free late stacking → Harmony+all
-  becomes objectively correct). Growth, if any, unlocks **efficiency/slots with hard diminishing returns**,
-  not more raw pie. Signature **allocation persists as the identity record** (drives the L9 mirror) even
-  across the fall; the live production effect resets with the layer.
+- **L4:** budget = **HYBRID (decided 2026-06-28, Vince):** FIXED pie early, then a **slow, HARD-CAPPED growth
+  late** — earned breadth without the generalist becoming objectively optimal (the cap keeps a focused build
+  competitive). Signature **allocation persists as the identity record** (drives the L9 mirror) even across
+  the fall; the live production effect resets with the layer.
 - **L5:** per decision 4 above (height-decay idle, ratio cap, Take-count reward, grow-smoothly definition,
   render the corridor UI). Offline Take = accrue floor only (analytic, not 86k chunked iterations).
 - **L7:** per decision 3 (timing/decrescendo-sequence axis). Commits **previewed + staged** (irreversible —
