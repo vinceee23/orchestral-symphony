@@ -106,6 +106,8 @@ function createInitialState(simTime: number): GameState {
     buyAmount: 1,
     achievements: [],
     completedChallenges: [],
+    challengeBestTimes: {},
+    keepChallenges: false,
     encoreUpgrades: {},
     autobuyers: {},
     activeChallenge: null,
@@ -495,11 +497,10 @@ function performGrandFinale(state: GameState, simTime: number): boolean {
 
 function startChallenge(state: GameState, id: string, simTime: number): boolean {
   if (state.activeChallenge) return false
-  if (state.completedChallenges.includes(id)) return false
 
   const challenge = getChallengeById(id)
   if (!challenge) return false
-  if (state.finaleCount < challenge.unlockAt) return false
+  if (!isChallengeUnlocked(state, challenge)) return false
 
   const snapshot = {
     soundwaves: new Decimal(state.soundwaves),
@@ -541,18 +542,29 @@ function checkChallengeCompletion(state: GameState): boolean {
   if (!challenge) return false
   if (!state.soundwaves.gte(challenge.targetSoundwaves)) return false
 
-  const newCompleted = [...state.completedChallenges, challenge.id]
+  const runTimeMs = Date.now() - state.activeChallenge.startTime
+  const prevBest = state.challengeBestTimes[challenge.id]
+  const newBestTimes = {
+    ...state.challengeBestTimes,
+    [challenge.id]: prevBest !== undefined ? Math.min(prevBest, runTimeMs) : runTimeMs,
+  }
+
+  const newCompleted = state.completedChallenges.includes(challenge.id)
+    ? state.completedChallenges
+    : [...state.completedChallenges, challenge.id]
 
   let newAutobuyers = { ...state.autobuyers }
-  if (!newAutobuyers[challenge.unlocksAutobuyer]) {
-    newAutobuyers[challenge.unlocksAutobuyer] = createDefaultAutobuyer()
-  }
-  newAutobuyers = {
-    ...newAutobuyers,
-    [challenge.unlocksAutobuyer]: {
-      ...newAutobuyers[challenge.unlocksAutobuyer],
-      unlocked: true,
-    },
+  if (challenge.unlocksAutobuyer) {
+    const key = challenge.unlocksAutobuyer
+    if (!newAutobuyers[key]) {
+      newAutobuyers[key] = createDefaultAutobuyer()
+    }
+    if (!newAutobuyers[key].unlocked) {
+      newAutobuyers = {
+        ...newAutobuyers,
+        [key]: { ...newAutobuyers[key], unlocked: true },
+      }
+    }
   }
 
   const pre = state.preChallengeState
@@ -562,6 +574,7 @@ function checkChallengeCompletion(state: GameState): boolean {
       tiers: pre.tiers,
       tempo: pre.tempo,
       completedChallenges: newCompleted,
+      challengeBestTimes: newBestTimes,
       autobuyers: newAutobuyers,
       activeChallenge: null,
       preChallengeState: null,
@@ -569,6 +582,7 @@ function checkChallengeCompletion(state: GameState): boolean {
   } else {
     Object.assign(state, {
       completedChallenges: newCompleted,
+      challengeBestTimes: newBestTimes,
       autobuyers: newAutobuyers,
       activeChallenge: null,
       preChallengeState: null,

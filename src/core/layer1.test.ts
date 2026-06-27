@@ -17,7 +17,7 @@ function freshState(overrides: Partial<GameState> = {}): GameState {
     })),
     tempo: { level: 0, tickInterval: 1000, baseBPM: 60 },
     buyAmount: 1,
-    achievements: [], completedChallenges: [], encoreUpgrades: {}, autobuyers: {},
+    achievements: [], completedChallenges: [], challengeBestTimes: {}, keepChallenges: false, encoreUpgrades: {}, autobuyers: {},
     activeChallenge: null, preChallengeState: null,
     encorePoints: 0, lifetimeEncorePoints: 0, encoreCount: 0, applausePoints: 0, layer1WallReached: false,
     opusPoints: 0, opusCount: 0, opusUpgrades: {}, crescendo: 0, peakCrescendoMult: 1,

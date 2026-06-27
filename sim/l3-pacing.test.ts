@@ -245,6 +245,8 @@ function createInitialState(simTime: number): GameState {
     buyAmount: 1,
     achievements: [],
     completedChallenges: [],
+    challengeBestTimes: {},
+    keepChallenges: false,
     encoreUpgrades: {},
     autobuyers: {},
     activeChallenge: null,

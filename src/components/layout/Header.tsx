@@ -2,6 +2,7 @@ import Decimal from 'break_infinity.js'
 import { useGameStore } from '../../store/gameStore'
 import { useUiStore } from '../../store/uiStore'
 import { ACHIEVEMENTS, getAchievementGlobalMultiplier, getAchievementTierMultiplier, getAchievementTempoBonus } from '../../core/achievements'
+import { getChallengeMultipliers } from '../../core/challenges'
 import { getChallengeById } from '../../core/challenges'
 import { TIER_CONFIGS } from '../../core/constants'
 import { formatNumber } from '../../core/format'
@@ -29,22 +30,31 @@ export function Header() {
   const opusCount = useGameStore((s) => s.opusCount)
   const worldTourUnlocked = useGameStore((s) => s.worldTourUnlocked)
   const lifetimeAcclaim = useGameStore((s) => s.lifetimeAcclaim)
+  const completedChallenges = useGameStore((s) => s.completedChallenges)
+  const challengeBestTimes = useGameStore((s) => s.challengeBestTimes)
+  const keepChallenges = useGameStore((s) => s.keepChallenges)
   const conducting = useUiStore((s) => s.conducting)
   const toggleHelp = useUiStore((s) => s.toggleHelp)
 
   // Subtle live Crescendo readout — visible on EVERY tab while the swell is up or you're conducting,
   // so global Space-conduct (AppShell) is felt off the Compose stage. Hidden when fully decayed & idle.
-  const crescendoMult = getCrescendoMultiplier(crescendo, opusUpgrades)
+  const crescendoMult = getCrescendoMultiplier(
+    crescendo, opusUpgrades,
+    getChallengeMultipliers(completedChallenges, challengeBestTimes, keepChallenges).crescendoBonus,
+  )
   const showCrescendo = opusCount > 0 && (conducting || crescendo > 0.02)
 
   const era = getEra(lifetimeEncorePoints, opusCount, finalePoints, worldTourUnlocked)
   const achievementSet = new Set(achievements)
+  const challengeMults = getChallengeMultipliers(completedChallenges, challengeBestTimes, keepChallenges)
   const globalMult = getAchievementGlobalMultiplier(achievementSet).times(getCoreProductionMultiplier({
     lifetimeEncorePoints, finalePoints, encoreUpgrades, tempoLevel: tempo.level, tiers,
     opusUpgrades, crescendoLevel: crescendo, recordsSold, platinum,
     massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
-    achievementTempoBonus: getAchievementTempoBonus(achievementSet),
+    achievementTempoBonus: getAchievementTempoBonus(achievementSet) + challengeMults.tempoBonus,
     acclaimMult: worldTourUnlocked ? getAcclaimMultiplier(lifetimeAcclaim) : 1,
+    challengeGlobalProdMult: challengeMults.globalProdMult,
+    crescendoBonus: challengeMults.crescendoBonus,
   }))
   const tier1 = tiers[0]
   const fullMult = globalMult.times(getAchievementTierMultiplier(achievementSet, 1))

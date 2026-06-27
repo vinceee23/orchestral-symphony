@@ -29,6 +29,8 @@ function minimalState(overrides: Partial<GameState> = {}): GameState {
     buyAmount: 1,
     achievements: [],
     completedChallenges: [],
+    challengeBestTimes: {},
+    keepChallenges: false,
     encoreUpgrades: {},
     autobuyers: {},
     activeChallenge: null,

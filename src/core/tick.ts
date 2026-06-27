@@ -22,7 +22,7 @@ import {
   getAchievementTierCostReduction,
   getAchievementTempoBonus,
 } from './achievements'
-import { getChallengeById, getActiveChallengeModifiers } from './challenges'
+import { getChallengeById, getActiveChallengeModifiers, getChallengeMultipliers } from './challenges'
 import type { ChallengeModifiers } from './challenges'
 import { getAcclaimMultiplier, calculateWorldTourTick } from './worldTour'
 
@@ -54,6 +54,12 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
   // === Global multiplier stack ===
   const achievementGlobal = getAchievementGlobalMultiplier(achievementSet)
   const achievementTempoBonus = getAchievementTempoBonus(achievementSet)
+  const challengeMults = getChallengeMultipliers(
+    state.completedChallenges,
+    state.challengeBestTimes ?? {},
+    state.keepChallenges ?? false,
+  )
+  const totalTempoBonus = achievementTempoBonus + challengeMults.tempoBonus
 
   // Single source of truth for the production multiplier — shared with the UI rate displays so
   // they can't drift (encore/finale/opus/perfectPitch/tempo/milestone-tickspeed/PRODUCTION_SCALE).
@@ -91,8 +97,10 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
     recordsSold,
     platinum,
     massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
-    achievementTempoBonus,
+    achievementTempoBonus: totalTempoBonus,
     acclaimMult,
+    challengeGlobalProdMult: challengeMults.globalProdMult,
+    crescendoBonus: challengeMults.crescendoBonus,
   }))
 
   // Apply production divisor from challenge
@@ -100,9 +108,9 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
     globalMult = globalMult.div(mods.productionDivisor)
   }
 
-  // Cost multiplier from challenge + achievement cost reductions
+  // Cost multiplier from challenge + achievement cost reductions + challenge reward costMult
   const achCostReduction = getAchievementCostReduction(achievementSet)
-  const effectiveCostMult = mods.costMultiplier * achCostReduction
+  const effectiveCostMult = mods.costMultiplier * achCostReduction * challengeMults.costMult
 
   // Rising costs: apply time-based inflation
   let risingCostFactor = 1
@@ -239,7 +247,9 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
     if (bought > 0) {
       tier.purchased += bought
       tier.quantity = tier.quantity.plus(bought)
-      tier.multiplier = mods.noMilestones ? new Decimal(1) : getMilestoneMultiplier(tier.purchased)
+      tier.multiplier = mods.noMilestones
+        ? new Decimal(1)
+        : getMilestoneMultiplier(tier.purchased, challengeMults.milestoneStrength)
     }
 
     newAutobuyers = {
@@ -263,8 +273,8 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
           const newLevel = newTempo.level + 1
           newTempo = {
             level: newLevel,
-            tickInterval: getTempoTickInterval(newLevel),
-            baseBPM: getTempoBPM(newLevel),
+            tickInterval: getTempoTickInterval(newLevel, totalTempoBonus),
+            baseBPM: getTempoBPM(newLevel, totalTempoBonus),
           }
         }
         newAutobuyers = {

@@ -134,9 +134,11 @@ export function ChallengesPage() {
                 Target: {formatNumber(ch.targetSoundwaves)} SW
               </div>
 
-              <div className="text-[10px] text-accent-purple mb-2">
-                Unlocks: {ch.unlocksAutobuyer.replace('tier_', 'Tier ').replace('_auto', ' auto')} autobuyer
-              </div>
+              {ch.unlocksAutobuyer && (
+                <div className="text-[10px] text-accent-purple mb-2">
+                  Unlocks: {ch.unlocksAutobuyer.replace('tier_', 'Tier ').replace('_auto', ' auto')} autobuyer
+                </div>
+              )}
 
               {canStart && (
                 <button

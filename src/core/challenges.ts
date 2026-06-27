@@ -25,6 +25,21 @@ export interface ChallengeUnlockThreshold {
   opusCount?: number
 }
 
+export interface ChallengeReward {
+  /** Flat global production × (stacked multiplicatively across clears). */
+  globalProdMult?: number
+  /** Tier cost ×<1 (stacked multiplicatively). */
+  costMult?: number
+  /** Additive tempo speed bonus (stacked additively). */
+  tempoBonus?: number
+  /** Additive crescendo ceiling boost (stacked additively). */
+  crescendoBonus?: number
+  /** Raises per-milestone base above MILESTONE_MULTIPLIER (stacked additively). */
+  milestoneStrength?: number
+  /** Speed-scaled global × capstone (ch_unplugged only). */
+  capstone?: boolean
+}
+
 export interface ChallengeConfig {
   id: string
   name: string
@@ -32,8 +47,92 @@ export interface ChallengeConfig {
   icon: string
   targetSoundwaves: Decimal
   constraint: ChallengeConstraint
-  unlocksAutobuyer: string
+  reward: ChallengeReward
+  /** Automation unlock — only ch_acoustic / ch_reverse / ch_unplugged grant one. */
+  unlocksAutobuyer: string | null
   unlockThreshold: ChallengeUnlockThreshold
+}
+
+export interface ChallengeMultipliers {
+  globalProdMult: number
+  costMult: number
+  tempoBonus: number
+  crescendoBonus: number
+  milestoneStrength: number
+}
+
+/** Identity multipliers — all hooks inert pre-challenge. */
+export const CHALLENGE_MULT_IDENTITY: ChallengeMultipliers = {
+  globalProdMult: 1,
+  costMult: 1,
+  tempoBonus: 0,
+  crescendoBonus: 0,
+  milestoneStrength: 0,
+}
+
+// Speed-scaled capstone (ch_unplugged) — sim-tunable curve constants.
+/** Total best-time (ms) at or above this → floor ×mult. */
+export const CAPSTONE_TIME_FLOOR_MS = 70 * 60 * 1000
+/** Total best-time (ms) at or below this → cap ×mult. */
+export const CAPSTONE_TIME_CAP_MS = 20 * 60 * 1000
+export const CAPSTONE_MULT_FLOOR = 2.0
+export const CAPSTONE_MULT_CAP = 4.0
+
+/** Map total cleared-challenge best-time (ms) to the Unplugged capstone global ×. */
+export function speedScaledCapstone(totalTimeMs: number): number {
+  if (totalTimeMs >= CAPSTONE_TIME_FLOOR_MS) return CAPSTONE_MULT_FLOOR
+  if (totalTimeMs <= CAPSTONE_TIME_CAP_MS) return CAPSTONE_MULT_CAP
+  const t = (totalTimeMs - CAPSTONE_TIME_CAP_MS) / (CAPSTONE_TIME_FLOOR_MS - CAPSTONE_TIME_CAP_MS)
+  return CAPSTONE_MULT_CAP + t * (CAPSTONE_MULT_FLOOR - CAPSTONE_MULT_CAP)
+}
+
+/**
+ * Aggregate challenge reward multipliers from completed clears + best-times.
+ * Derived (not stored) — follows getAchievementGlobalMultiplier precedent.
+ * keepChallenges is unused here (only affects L4 ascension reset); accepted for call-site symmetry.
+ */
+export function getChallengeMultipliers(
+  completedChallenges: string[],
+  challengeBestTimes: Record<string, number>,
+  _keepChallenges = false,
+): ChallengeMultipliers {
+  if (completedChallenges.length === 0) return { ...CHALLENGE_MULT_IDENTITY }
+
+  const completed = new Set(completedChallenges)
+  let globalProdMult = 1
+  let costMult = 1
+  let tempoBonus = 0
+  let crescendoBonus = 0
+  let milestoneStrength = 0
+
+  for (const ch of CHALLENGES) {
+    if (!completed.has(ch.id)) continue
+    const r = ch.reward
+    if (r.globalProdMult !== undefined) globalProdMult *= r.globalProdMult
+    if (r.costMult !== undefined) costMult *= r.costMult
+    if (r.tempoBonus !== undefined) tempoBonus += r.tempoBonus
+    if (r.crescendoBonus !== undefined) crescendoBonus += r.crescendoBonus
+    if (r.milestoneStrength !== undefined) milestoneStrength += r.milestoneStrength
+    if (r.capstone) {
+      let totalTime = 0
+      for (const id of completed) {
+        totalTime += challengeBestTimes[id] ?? 0
+      }
+      globalProdMult *= speedScaledCapstone(totalTime)
+    }
+  }
+
+  return { globalProdMult, costMult, tempoBonus, crescendoBonus, milestoneStrength }
+}
+
+/** L4 ascension reset patch — completedChallenges clears unless keepChallenges; best-times always persist. */
+export function getL4ChallengeAscensionPatch(
+  state: Pick<GameState, 'completedChallenges' | 'challengeBestTimes' | 'keepChallenges'>,
+): Pick<GameState, 'completedChallenges' | 'challengeBestTimes'> {
+  return {
+    completedChallenges: state.keepChallenges ? [...state.completedChallenges] : [],
+    challengeBestTimes: { ...state.challengeBestTimes },
+  }
 }
 
 export function isChallengeUnlocked(
@@ -140,7 +239,7 @@ export function getChallengeStartingSoundwaves(
   return Decimal.max(STARTING_SOUNDWAVES, firstCost)
 }
 
-// TODO(L4): completedChallenges resets on Signature ascension — LAYER3-SPEC §2.8.
+// Challenge rewards — LAYER3-SPEC §2.8 (LOCKED). Multipliers derived from completedChallenges.
 export const CHALLENGES: ChallengeConfig[] = [
   {
     id: 'ch_solo',
@@ -149,7 +248,8 @@ export const CHALLENGES: ChallengeConfig[] = [
     icon: '\u{1F3B5}',
     targetSoundwaves: new Decimal(5e7),
     constraint: { type: 'singleTier', tierId: 1 },
-    unlocksAutobuyer: 'tier_1',
+    reward: { crescendoBonus: 0.5 },
+    unlocksAutobuyer: null,
     unlockThreshold: {},
   },
   {
@@ -159,7 +259,8 @@ export const CHALLENGES: ChallengeConfig[] = [
     icon: '\u{1F46F}',
     targetSoundwaves: new Decimal(2.5e15),
     constraint: { type: 'maxTiers', count: 2 },
-    unlocksAutobuyer: 'tier_2',
+    reward: { globalProdMult: 1.15 },
+    unlocksAutobuyer: null,
     unlockThreshold: { opusCount: 4 },
   },
   {
@@ -169,7 +270,8 @@ export const CHALLENGES: ChallengeConfig[] = [
     icon: '\u{1F4B8}',
     targetSoundwaves: new Decimal('1.6e58'),
     constraint: { type: 'inflatedCosts', factor: 10 },
-    unlocksAutobuyer: 'tier_4',
+    reward: { costMult: 0.90 },
+    unlocksAutobuyer: null,
     unlockThreshold: { opusCount: 5 },
   },
   {
@@ -179,7 +281,8 @@ export const CHALLENGES: ChallengeConfig[] = [
     icon: '\u{1F509}',
     targetSoundwaves: new Decimal('5e25'),
     constraint: { type: 'nerfedProduction', factor: 100 },
-    unlocksAutobuyer: 'tier_7',
+    reward: { globalProdMult: 1.5 },
+    unlocksAutobuyer: null,
     unlockThreshold: { opusCount: 6 },
   },
   {
@@ -189,7 +292,8 @@ export const CHALLENGES: ChallengeConfig[] = [
     icon: '\u{1F630}',
     targetSoundwaves: new Decimal('4e57'),
     constraint: { type: 'risingCosts', ratePerSec: 1.01 },
-    unlocksAutobuyer: 'mo_auto',
+    reward: { costMult: 0.90 },
+    unlocksAutobuyer: null,
     unlockThreshold: { opusCount: 7 },
   },
   {
@@ -199,7 +303,8 @@ export const CHALLENGES: ChallengeConfig[] = [
     icon: '\u{1F40C}',
     targetSoundwaves: new Decimal('1e132'),
     constraint: { type: 'nerfedTickspeed', factor: 10 },
-    unlocksAutobuyer: 'tier_3',
+    reward: { tempoBonus: 0.15 },
+    unlocksAutobuyer: null,
     unlockThreshold: { encoreCount: 8 },
   },
   {
@@ -209,7 +314,8 @@ export const CHALLENGES: ChallengeConfig[] = [
     icon: '\u{261D}',
     targetSoundwaves: new Decimal('1e62'),
     constraint: { type: 'maxPerTier', limit: 10 },
-    unlocksAutobuyer: 'tier_5',
+    reward: { costMult: 0.92 },
+    unlocksAutobuyer: null,
     unlockThreshold: { encoreCount: 9 },
   },
   {
@@ -219,7 +325,8 @@ export const CHALLENGES: ChallengeConfig[] = [
     icon: '\u{1F3B8}',
     targetSoundwaves: new Decimal(2e21),
     constraint: { type: 'noTempo' },
-    unlocksAutobuyer: 'tier_6',
+    reward: { tempoBonus: 0.05 },
+    unlocksAutobuyer: 'tempo',
     unlockThreshold: { encoreCount: 10 },
   },
   {
@@ -229,7 +336,8 @@ export const CHALLENGES: ChallengeConfig[] = [
     icon: '\u{1F4A7}',
     targetSoundwaves: new Decimal('1e165'),
     constraint: { type: 'swDecay', percentPerTick: 2 },
-    unlocksAutobuyer: 'encore',
+    reward: { globalProdMult: 1.25 },
+    unlocksAutobuyer: null,
     unlockThreshold: { encoreCount: 12 },
   },
   {
@@ -239,7 +347,8 @@ export const CHALLENGES: ChallengeConfig[] = [
     icon: '\u{266D}',
     targetSoundwaves: new Decimal('1.2e62'),
     constraint: { type: 'noMilestones' },
-    unlocksAutobuyer: 'tempo',
+    reward: { milestoneStrength: 0.2 },
+    unlocksAutobuyer: null,
     unlockThreshold: { peakSoundwaves: '1e65' },
   },
   {
@@ -249,6 +358,7 @@ export const CHALLENGES: ChallengeConfig[] = [
     icon: '\u{1F500}',
     targetSoundwaves: new Decimal('8e63'),
     constraint: { type: 'reversedProduction' },
+    reward: { globalProdMult: 1.3 },
     unlocksAutobuyer: 'finale_auto',
     unlockThreshold: { peakSoundwaves: '1e68' },
   },
@@ -259,6 +369,7 @@ export const CHALLENGES: ChallengeConfig[] = [
     icon: '\u{1F50C}',
     targetSoundwaves: new Decimal('1e90'),
     constraint: { type: 'noPrestige' },
+    reward: { capstone: true },
     unlocksAutobuyer: 'all_auto',
     unlockThreshold: { peakSoundwaves: '1e72' },
   },

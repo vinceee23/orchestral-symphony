@@ -31,8 +31,8 @@ import {
   getMaxTempoLevels,
   getEncoreGain,
 } from '../core/formulas'
-import { ACHIEVEMENTS, getAchievementStartingSW, getAchievementCostReduction, getAchievementTierCostReduction, getAchievementHeadStartBoost } from '../core/achievements'
-import { getChallengeById, getActiveChallengeModifiers, isChallengeUnlocked, getChallengeStartingSoundwaves } from '../core/challenges'
+import { ACHIEVEMENTS, getAchievementStartingSW, getAchievementCostReduction, getAchievementTierCostReduction, getAchievementHeadStartBoost, getAchievementTempoBonus } from '../core/achievements'
+import { getChallengeById, getActiveChallengeModifiers, isChallengeUnlocked, getChallengeStartingSoundwaves, getChallengeMultipliers } from '../core/challenges'
 import { createDecimalStorage } from '../core/save'
 import { useUiStore } from './uiStore'
 import {
@@ -70,6 +70,8 @@ function createInitialState(): GameState {
     buyAmount: 1,
     achievements: [],
     completedChallenges: [],
+    challengeBestTimes: {},
+    keepChallenges: false,
     encoreUpgrades: {},
     autobuyers: {},
     activeChallenge: null,
@@ -122,7 +124,7 @@ function createInitialState(): GameState {
 }
 
 /** Reset tiers, soundwaves, and tempo to initial state, with achievement starting SW bonus */
-function resetTiersAndSW(achievementIds: string[]): Partial<GameState> {
+function resetTiersAndSW(achievementIds: string[], milestoneStrength = 0): Partial<GameState> {
   const achSet = new Set(achievementIds)
   const bonusSW = getAchievementStartingSW(achSet)
   // Distinct head-start perks (all gated behind their achievements):
@@ -142,7 +144,7 @@ function resetTiersAndSW(achievementIds: string[]): Partial<GameState> {
         name: config.name,
         quantity: new Decimal(preBought ? 10 : 0),
         purchased: preBought ? 10 : 0,
-        multiplier: preBought ? getMilestoneMultiplier(10) : new Decimal(1),
+        multiplier: preBought ? getMilestoneMultiplier(10, milestoneStrength) : new Decimal(1),
         unlocked: config.id === 1 || (warmup && idx <= WARMUP_TIERS),
       }
     }),
@@ -166,6 +168,12 @@ function getEffectiveCostMultiplier(state: GameState, tierId: number): number {
   // Rehearsal (Encore shop): -5%/level all tier costs
   const rehearsal = 1 - getRehearsalCostReduction(state.encoreUpgrades)
 
+  const challengeMults = getChallengeMultipliers(
+    state.completedChallenges,
+    state.challengeBestTimes ?? {},
+    state.keepChallenges ?? false,
+  )
+
   // Challenge cost multiplier
   const challenge = state.activeChallenge
     ? getChallengeById(state.activeChallenge.challengeId) ?? null
@@ -179,7 +187,25 @@ function getEffectiveCostMultiplier(state: GameState, tierId: number): number {
     risingFactor = Math.pow(mods.risingCostRate, elapsedSec)
   }
 
-  return mods.costMultiplier * globalCostRed * tierCostRed * rehearsal * risingFactor
+  return mods.costMultiplier * globalCostRed * tierCostRed * rehearsal * risingFactor * challengeMults.costMult
+}
+
+function getChallengeMilestoneStrength(state: GameState): number {
+  return getChallengeMultipliers(
+    state.completedChallenges,
+    state.challengeBestTimes ?? {},
+    state.keepChallenges ?? false,
+  ).milestoneStrength
+}
+
+function getTotalTempoBonus(state: GameState): number {
+  const achBonus = getAchievementTempoBonus(new Set(state.achievements))
+  const chBonus = getChallengeMultipliers(
+    state.completedChallenges,
+    state.challengeBestTimes ?? {},
+    state.keepChallenges ?? false,
+  ).tempoBonus
+  return achBonus + chBonus
 }
 
 export const useGameStore = create<GameState & GameActions>()(
@@ -271,6 +297,11 @@ export const useGameStore = create<GameState & GameActions>()(
           if (mods.singleTierId !== null && tierId !== mods.singleTierId) return state
           if (tierIndex >= mods.maxTiers) return state
 
+          const challengeMults = getChallengeMultipliers(
+            state.completedChallenges,
+            state.challengeBestTimes ?? {},
+            state.keepChallenges ?? false,
+          )
           const costMult = getEffectiveCostMultiplier(state, tierId)
 
           let sw = new Decimal(state.soundwaves)
@@ -298,7 +329,9 @@ export const useGameStore = create<GameState & GameActions>()(
                 ...t,
                 quantity: t.quantity.plus(bought),
                 purchased: newPurchased,
-                multiplier: mods.noMilestones ? new Decimal(1) : getMilestoneMultiplier(newPurchased),
+                multiplier: mods.noMilestones
+                  ? new Decimal(1)
+                  : getMilestoneMultiplier(newPurchased, challengeMults.milestoneStrength),
               }
             }
             return t
@@ -345,13 +378,14 @@ export const useGameStore = create<GameState & GameActions>()(
           if (state.soundwaves.lt(cost)) return state
 
           const newLevel = state.tempo.level + 1
+          const tempoBonus = getTotalTempoBonus(state)
           return {
             soundwaves: state.soundwaves.minus(cost),
             tempoPurchasesThisRun: (state.tempoPurchasesThisRun ?? 0) + 1,
             tempo: {
               level: newLevel,
-              tickInterval: getTempoTickInterval(newLevel),
-              baseBPM: getTempoBPM(newLevel),
+              tickInterval: getTempoTickInterval(newLevel, tempoBonus),
+              baseBPM: getTempoBPM(newLevel, tempoBonus),
             },
           }
         })
@@ -382,8 +416,8 @@ export const useGameStore = create<GameState & GameActions>()(
             tempoPurchasesThisRun: (state.tempoPurchasesThisRun ?? 0) + levels,
             tempo: {
               level,
-              tickInterval: getTempoTickInterval(level),
-              baseBPM: getTempoBPM(level),
+              tickInterval: getTempoTickInterval(level, getTotalTempoBonus(state)),
+              baseBPM: getTempoBPM(level, getTotalTempoBonus(state)),
             },
           }
         })
@@ -518,20 +552,30 @@ export const useGameStore = create<GameState & GameActions>()(
 
         // Check if target SW reached
         if (state.soundwaves.gte(challenge.targetSoundwaves)) {
-          // Complete the challenge
-          const newCompleted = [...state.completedChallenges, challenge.id]
-
-          // Unlock autobuyer
-          let newAutobuyers = { ...state.autobuyers }
-          if (!newAutobuyers[challenge.unlocksAutobuyer]) {
-            newAutobuyers[challenge.unlocksAutobuyer] = createDefaultAutobuyer()
+          const runTimeMs = Date.now() - state.activeChallenge.startTime
+          const prevBest = state.challengeBestTimes[challenge.id]
+          const newBestTimes = {
+            ...state.challengeBestTimes,
+            [challenge.id]: prevBest !== undefined ? Math.min(prevBest, runTimeMs) : runTimeMs,
           }
-          newAutobuyers = {
-            ...newAutobuyers,
-            [challenge.unlocksAutobuyer]: {
-              ...newAutobuyers[challenge.unlocksAutobuyer],
-              unlocked: true,
-            },
+
+          const newCompleted = state.completedChallenges.includes(challenge.id)
+            ? state.completedChallenges
+            : [...state.completedChallenges, challenge.id]
+
+          // Grant automation unlock only for challenges that have one (idempotent)
+          let newAutobuyers = { ...state.autobuyers }
+          if (challenge.unlocksAutobuyer) {
+            const key = challenge.unlocksAutobuyer
+            if (!newAutobuyers[key]) {
+              newAutobuyers[key] = createDefaultAutobuyer()
+            }
+            if (!newAutobuyers[key].unlocked) {
+              newAutobuyers = {
+                ...newAutobuyers,
+                [key]: { ...newAutobuyers[key], unlocked: true },
+              }
+            }
           }
 
           // Restore pre-challenge state
@@ -542,6 +586,7 @@ export const useGameStore = create<GameState & GameActions>()(
               tiers: pre.tiers,
               tempo: pre.tempo,
               completedChallenges: newCompleted,
+              challengeBestTimes: newBestTimes,
               autobuyers: newAutobuyers,
               activeChallenge: null,
               preChallengeState: null,
@@ -549,6 +594,7 @@ export const useGameStore = create<GameState & GameActions>()(
           } else {
             set({
               completedChallenges: newCompleted,
+              challengeBestTimes: newBestTimes,
               autobuyers: newAutobuyers,
               activeChallenge: null,
               preChallengeState: null,
@@ -560,7 +606,6 @@ export const useGameStore = create<GameState & GameActions>()(
       startChallenge: (id: string) => {
         const state = get()
         if (state.activeChallenge) return // already in a challenge
-        if (state.completedChallenges.includes(id)) return // already completed
 
         const challenge = getChallengeById(id)
         if (!challenge) return
@@ -645,7 +690,7 @@ export const useGameStore = create<GameState & GameActions>()(
         const overtureMult = getOvertureGainMultiplier(state.encoreUpgrades)
         const gain = Math.floor(getEncoreGain(state.peakSoundwaves) * overtureMult)
 
-        const reset = resetTiersAndSW(state.achievements)
+        const reset = resetTiersAndSW(state.achievements, getChallengeMilestoneStrength(state))
         // Sight-Reading head-start: begin the new run with SW = (this run's peak)^exp, so you skip the
         // tedious redundant re-climb (only on Encore — MO/Finale reset the multiplier, so a pre-reset
         // peak seed would be wildly out of regime). exp grows with the unlock + head-start achievements.
@@ -733,7 +778,7 @@ export const useGameStore = create<GameState & GameActions>()(
         const wasPlatinum = state.platinum || state.recordsSold >= PLATINUM_THRESHOLD
         const crescendoSeed = hasPerk(achSet, 'perk-crescendo-headstart') ? CRESCENDO_HEADSTART : 0
         const resetPatch: Partial<GameState> = {
-          ...resetTiersAndSW(state.achievements),
+          ...resetTiersAndSW(state.achievements, getChallengeMilestoneStrength(state)),
           peakSoundwaves: new Decimal(0),
           encorePoints: 0,
           lifetimeEncorePoints: 0,
@@ -861,7 +906,7 @@ export const useGameStore = create<GameState & GameActions>()(
         const newTourCount = state.tourCount + 1
 
         set({
-          ...resetTiersAndSW(state.achievements),
+          ...resetTiersAndSW(state.achievements, getChallengeMilestoneStrength(state)),
           peakSoundwaves: new Decimal(0),
           encorePoints: 0,
           lifetimeEncorePoints: 0,
@@ -910,7 +955,7 @@ export const useGameStore = create<GameState & GameActions>()(
 
         // Grand Finale resets the Encore + Magnum Opus layers.
         set({
-          ...resetTiersAndSW(state.achievements),
+          ...resetTiersAndSW(state.achievements, getChallengeMilestoneStrength(state)),
           peakSoundwaves: new Decimal(0),
           encorePoints: 0,
           lifetimeEncorePoints: 0,
@@ -950,6 +995,8 @@ export const useGameStore = create<GameState & GameActions>()(
           // Ensure new fields exist for saves from older versions
           if (!state.achievements) state.achievements = []
           if (!state.completedChallenges) state.completedChallenges = []
+          if (!state.challengeBestTimes) state.challengeBestTimes = {}
+          if (state.keepChallenges === undefined) state.keepChallenges = false
           if (!state.autobuyers) state.autobuyers = {}
           if (!state.encoreUpgrades) state.encoreUpgrades = {}
           if (state.layer1WallReached === undefined) state.layer1WallReached = false
@@ -1017,6 +1064,8 @@ export const useGameStore = create<GameState & GameActions>()(
               buyAmount: state.buyAmount,
               achievements: state.achievements,
               completedChallenges: state.completedChallenges,
+              challengeBestTimes: state.challengeBestTimes,
+              keepChallenges: state.keepChallenges,
               encoreUpgrades: state.encoreUpgrades,
               autobuyers: state.autobuyers,
               activeChallenge: state.activeChallenge,

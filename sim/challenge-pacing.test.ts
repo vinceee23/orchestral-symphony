@@ -55,8 +55,13 @@ import {
   getActiveChallengeModifiers,
   isChallengeUnlocked,
   getChallengeStartingSoundwaves,
+  getChallengeMultipliers,
+  speedScaledCapstone,
+  CAPSTONE_TIME_FLOOR_MS,
+  CAPSTONE_TIME_CAP_MS,
   type ChallengeConfig,
 } from '../src/core/challenges'
+import { getCoreProductionMultiplier } from '../src/core/formulas'
 import { canUnlockWorldTour } from '../src/core/worldTour'
 import type { GameState, AutobuyerState } from '../src/store/types'
 
@@ -95,6 +100,8 @@ function createInitialState(simTime: number): GameState {
     buyAmount: 1,
     achievements: [],
     completedChallenges: [],
+    challengeBestTimes: {},
+    keepChallenges: false,
     encoreUpgrades: {},
     autobuyers: {},
     activeChallenge: null,
@@ -163,6 +170,7 @@ function cloneGameState(state: GameState): GameState {
     })),
     achievements: [...state.achievements],
     completedChallenges: [...state.completedChallenges],
+    challengeBestTimes: { ...state.challengeBestTimes },
     encoreUpgrades: { ...state.encoreUpgrades },
     opusUpgrades: { ...state.opusUpgrades },
     components: { ...state.components },
@@ -905,4 +913,51 @@ describe('L3 challenge beatability instrument', () => {
 
     expect(results.length).toBe(12)
   }, 900_000)
+
+  it('challenge rewards stack and capstone scales with total best-time', () => {
+    const completed = ['ch_duet', 'ch_diminuendo', 'ch_inflation', 'ch_adagio', 'ch_flat', 'ch_unplugged']
+    const bestTimes: Record<string, number> = {
+      ch_unplugged: 30 * 60 * 1000,
+    }
+    const mults = getChallengeMultipliers(completed, bestTimes)
+    expect(mults.globalProdMult).toBeGreaterThan(1.15 * 1.5)
+    expect(mults.costMult).toBeCloseTo(0.90)
+    expect(mults.tempoBonus).toBeCloseTo(0.15)
+    expect(mults.milestoneStrength).toBeCloseTo(0.2)
+
+    const core = getCoreProductionMultiplier({
+      lifetimeEncorePoints: 100,
+      finalePoints: 0,
+      encoreUpgrades: {},
+      tempoLevel: 5,
+      tiers: [{ purchased: 20 }],
+      opusUpgrades: {},
+      crescendoLevel: 0.5,
+      recordsSold: 0,
+      platinum: false,
+      achievementTempoBonus: mults.tempoBonus,
+      challengeGlobalProdMult: mults.globalProdMult,
+      crescendoBonus: mults.crescendoBonus,
+    })
+    const baseline = getCoreProductionMultiplier({
+      lifetimeEncorePoints: 100,
+      finalePoints: 0,
+      encoreUpgrades: {},
+      tempoLevel: 5,
+      tiers: [{ purchased: 20 }],
+      opusUpgrades: {},
+      crescendoLevel: 0.5,
+      recordsSold: 0,
+      platinum: false,
+    })
+    expect(core.toNumber()).toBeGreaterThan(baseline.toNumber())
+
+    const slowCap = speedScaledCapstone(CAPSTONE_TIME_FLOOR_MS)
+    const fastCap = speedScaledCapstone(CAPSTONE_TIME_CAP_MS)
+    expect(slowCap).toBeLessThan(fastCap)
+    expect(speedScaledCapstone((CAPSTONE_TIME_FLOOR_MS + CAPSTONE_TIME_CAP_MS) / 2)).toBeCloseTo(
+      (slowCap + fastCap) / 2,
+      5,
+    )
+  })
 })
