@@ -16,8 +16,8 @@ produce → economy → space/automation → **identity → mastery → permanen
 | L5 Virtuoso | mastery | **Mastery** — Perfect Take (bank area-under-a-consistency-curve) | **designed** |
 | L6 Canon | immortalize | **Permanence** — The Palimpsest (accreting eternal score) | **designed** |
 | L7 Grand Finale | the triumph | **Convergence** — The Final Performance (commit-drain voices, evenness-scored, decrescendo) | **designed** |
-| L8 Redemption | the comeback | **Gauntlet** — 2–3 conditioned Grand-Finale re-climbs | sketched |
-| L9 The gods | confrontation | **Bosses** — Celestials pantheon (6 instrument-gods, Maestro final) | sketched |
+| L8 Redemption | the comeback | **Gauntlet** — 3 authored conditioned Finale re-climbs + growing Recognition | **designed** |
+| L9 The gods | confrontation | **Bosses** — bent-reality fights, Signature-mirror, any-order + Maestro last → join pantheon | **designed** |
 
 ---
 
@@ -63,6 +63,9 @@ produce → economy → space/automation → **identity → mastery → permanen
   (transient/re-earnable vs permanent). *Runner-up: Rubato (a time↔power tempo dial) — rejected as heaviest
   build + flirts with L3's manipulate-lower-layers axis.*
 - Build: all scalar Zustand state; the only subtle piece is the timestamp-driven band-widening function.
+- **Open tuning knob (build-time):** what "in tempo" means — *hold a flat steady rate* vs *grow smoothly*
+  (spikes/stalls are the sin, not growth). Leaning **grow-smoothly** (more natural for an idle game; keeps the
+  consistency soul). The core SOUL is locked: L5 rewards **control/consistency**, inverting L1–L4's brute-maximize.
 
 ## L6 — Canon (DESIGNED) — "The Palimpsest"
 **Fantasy:** immortalize your legacy into one eternal manuscript. New axis = **accrete-by-overwrite into
@@ -99,12 +102,29 @@ whole game's maximize-one-number instinct).
 - Build: trivial — read existing per-layer outputs, store committed fractions, harmonic-mean formula, one
   meter + a credits/ember component.
 
-## L8 — Redemption (SKETCHED) — "the Gauntlet"
-The fall (hiatus/flop), then the gods' "Come." Re-climb to the Grand Finale **2–3× under escalating
-conditions** — challenge-constraint DNA at the *layer* scale; re-climbs are faster ("recognized") but each
-gated by a harsher condition. (Detailed design in a later pass, before building L8.)
+## L8 — Redemption (DESIGNED) — "the Gauntlet"
+**Fantasy:** the fall (hiatus/a flop), then the gods' "Come" — prove the first time was no accident.
+- **The fall:** accepting "Come" triggers a deep reset (Finale-reset-like) — but **permanence stays**
+  (L6 Palimpsest) and a new **Recognition** stat carries your name forward.
+- **The gauntlet:** re-climb the whole ladder to the Grand Finale **3 times** (rule of three: fall →
+  comeback 1 → comeback 2 → triumphant 3rd that earns the gods), each under a **NEW authored comeback-
+  condition** — narrative industry-adversity (e.g. "the world forgot you" = reduced start; "critics circle"
+  = harsher gates), escalating. Built on the existing constraint ENGINE but **distinct from L3's side-
+  challenges** (these are the redemption story, not optional content).
+- **Recognition (the "recognized = faster" mechanic):** a multiplier that **grows each comeback and persists
+  across the re-climbs** (+ L6 permanence) — so each climb is faster even as the conditions harden. A
+  **tightening race**: faster you vs harder conditions. Clearing all three earns the L9 audience.
 
-## L9 — The gods (SKETCHED) — "the Bosses"
-Confront the **pantheon** (Lyra/Aeolia/Clarion/Timpana + the Twins of Harmony + the Maestro, final). Each god
-is a **Celestials-style boss**: a reality with bent rules themed to its domain + a unique meta-reward — the L3
-challenge DNA escalated to boss tier. (Detailed design in a later pass.)
+## L9 — The gods (DESIGNED) — "the Bosses"
+**Fantasy:** confront the **pantheon** (Lyra/Aeolia/Clarion/Timpana + the Twins of Harmony + the Maestro).
+- **The fight = a reality with bent rules** (AD-Celestials, escalated L3-challenge DNA): enter a god's domain
+  where the rules **warp toward what they rule** (Timpana → all rhythm/tempo, Lyra → all sustain, Clarion →
+  raw power, Aeolia → breath/decay, the Twins → a two-phase consonance/dissonance fight); hit a goal **under
+  that warp** to defeat them and **claim that domain's power**.
+- **Signature mirror (the L4 payoff):** the domain you most **embodied** in L4 is your **HARDEST** fight —
+  you face yourself / your patron ("you've been channeling me all along").
+- **Sequencing:** face the 5 domain-gods in **any order**; the **Maestro unlocks LAST** (the conductor who
+  commands all domains) as the true final fight.
+- **The ending:** beat the Maestro → **you join the pantheon** — become the newest god of music. "Stand with
+  us," fulfilled. The true completion.
+- (Detailed per-god goals/rewards = a later pass before building L9; the framework is locked.)
