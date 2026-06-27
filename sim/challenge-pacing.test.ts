@@ -920,7 +920,7 @@ describe('L3 challenge beatability instrument', () => {
       ch_unplugged: 30 * 60 * 1000,
     }
     const mults = getChallengeMultipliers(completed, bestTimes)
-    expect(mults.globalProdMult).toBeGreaterThan(1.15 * 1.5)
+    expect(mults.globalProdMult).toBeCloseTo(1.15 * 1.5)
     expect(mults.costMult).toBeCloseTo(0.90)
     expect(mults.tempoBonus).toBeCloseTo(0.15)
     expect(mults.milestoneStrength).toBeCloseTo(0.2)

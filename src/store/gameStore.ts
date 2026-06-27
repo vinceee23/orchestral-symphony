@@ -492,9 +492,11 @@ export const useGameStore = create<GameState & GameActions>()(
             [challenge.id]: prevBest !== undefined ? Math.min(prevBest, runTimeMs) : runTimeMs,
           }
 
-          const newCompleted = state.completedChallenges.includes(challenge.id)
-            ? state.completedChallenges
-            : [...state.completedChallenges, challenge.id]
+          const isFirstClear = !state.completedChallenges.includes(challenge.id)
+          const newCompleted = isFirstClear
+            ? [...state.completedChallenges, challenge.id]
+            : state.completedChallenges
+          const apGrant = isFirstClear ? challenge.reward.ap : 0
 
           // Grant automation unlock only for challenges that have one (idempotent)
           let newAutobuyers = { ...state.autobuyers }
@@ -511,6 +513,8 @@ export const useGameStore = create<GameState & GameActions>()(
             }
           }
 
+          const applausePoints = state.applausePoints + apGrant
+
           // Restore pre-challenge state
           const pre = state.preChallengeState
           if (pre) {
@@ -521,6 +525,7 @@ export const useGameStore = create<GameState & GameActions>()(
               completedChallenges: newCompleted,
               challengeBestTimes: newBestTimes,
               autobuyers: newAutobuyers,
+              applausePoints,
               activeChallenge: null,
               preChallengeState: null,
             })
@@ -529,6 +534,7 @@ export const useGameStore = create<GameState & GameActions>()(
               completedChallenges: newCompleted,
               challengeBestTimes: newBestTimes,
               autobuyers: newAutobuyers,
+              applausePoints,
               activeChallenge: null,
               preChallengeState: null,
             })

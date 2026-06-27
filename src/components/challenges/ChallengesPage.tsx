@@ -47,12 +47,11 @@ export function ChallengesPage() {
       )
   const hiddenCount = CHALLENGES.length - visibleChallenges.length
 
-  const totalBestMs = completedChallenges.reduce(
-    (sum, id) => sum + (challengeBestTimes[id] ?? 0),
-    0,
-  )
-  const unpluggedCleared = completedSet.has('ch_unplugged')
-  const capstoneMult = speedScaledCapstone(totalBestMs)
+  const allCleared = completedChallenges.length === CHALLENGES.length
+  const totalBestMs = allCleared
+    ? CHALLENGES.reduce((sum, ch) => sum + (challengeBestTimes[ch.id] ?? 0), 0)
+    : completedChallenges.reduce((sum, id) => sum + (challengeBestTimes[id] ?? 0), 0)
+  const capstoneMult = allCleared ? speedScaledCapstone(totalBestMs) : 1
 
   const activeCh = activeChallenge
     ? CHALLENGES.find((c) => c.id === activeChallenge.challengeId)
@@ -109,7 +108,7 @@ export function ChallengesPage() {
           </div>
           <div className="col-span-2 sm:col-span-1 rounded-xl border border-teal-500/30 bg-bg-secondary/40 p-3">
             <div className="text-[10px] text-text-muted uppercase tracking-wider">Capstone bonus</div>
-            {unpluggedCleared ? (
+            {allCleared ? (
               <>
                 <div className="text-sm font-semibold text-teal-400 tabular-nums mt-1">
                   ×{capstoneMult.toFixed(2)}
@@ -122,7 +121,7 @@ export function ChallengesPage() {
               </>
             ) : (
               <div className="text-[10px] text-text-muted mt-1 leading-snug">
-                Clear Unplugged Finale to activate
+                Clear all {CHALLENGES.length} challenges to activate
               </div>
             )}
           </div>
