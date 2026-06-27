@@ -36,29 +36,33 @@ export const STORY_BEATS: Record<StoryBeatId, StoryBeatDefinition> = {
     id: 'intro',
     goldLevel: 0.15,
     lines: [
-      'Before the first note, there was silence.',
-      'Then you reached into the dark — and the dark answered.',
+      'Before the first note: silence.',
+      'You reached into it.',
+      'Something reached back.',
     ],
   },
   encore: {
     id: 'encore',
     goldLevel: 0.25,
     lines: [
-      'You end. And you begin again. The mark of someone who means to be heard.',
+      'Again. You play it again.',
+      'The first sign of someone who refuses to be forgotten.',
     ],
   },
   magnum_opus: {
     id: 'magnum_opus',
     goldLevel: 0.4,
     lines: [
-      'Not a song now. A work — something that outlives its own playing.',
+      'Not a song this time. A work.',
+      'Something that outlives the hand that made it.',
     ],
   },
   platinum: {
     id: 'platinum',
     goldLevel: 0.55,
     lines: [
-      'A million voices carry your name.',
+      'A million voices sing your name.',
+      'Something in the dark turns to listen.',
       '…Who are you, young musician?',
     ],
   },
@@ -66,7 +70,9 @@ export const STORY_BEATS: Record<StoryBeatId, StoryBeatDefinition> = {
     id: 'world_tour',
     goldLevel: 0.7,
     lines: [
-      'The world learns your name. We have always known names. They fade.',
+      'The world is learning your name.',
+      'We have known a thousand names.',
+      'They are all quiet now.',
     ],
   },
   // --- L4–L9: registry placeholders for future wiring ---
@@ -74,41 +80,56 @@ export const STORY_BEATS: Record<StoryBeatId, StoryBeatDefinition> = {
     id: 'signature',
     goldLevel: 0.75,
     lines: [
-      'Now you sound like no one else. Now you sound like yourself. …Curious.',
+      'Now you sound like no one else.',
+      'Now you sound like… one of us.',
+      '…Curious.',
     ],
   },
   virtuoso: {
     id: 'virtuoso',
     goldLevel: 0.82,
-    lines: ['There is nothing left for the living to teach you.'],
+    lines: [
+      'There is nothing left for the living to teach you.',
+      '(We were never the living.)',
+    ],
   },
   canon: {
     id: 'canon',
     goldLevel: 0.88,
     lines: [
-      'They will play your work when you are dust. The mortals call that immortality. We call it a beginning.',
+      'They will play your work long after you are dust.',
+      'Mortals call that immortality.',
+      'We call it a beginning.',
     ],
   },
   grand_finale: {
     id: 'grand_finale',
     goldLevel: 1,
     lines: [
-      'This is the greatest performance of your life. The last note. The end of the song.',
+      'The greatest performance of your life.',
+      'The last note rings out, and fades.',
+      'This is the end of the song.',
     ],
   },
   redemption: {
     id: 'redemption',
     goldLevel: 0.12,
     lines: [
-      'Then — silence. The records gather dust. The world forgets your name.',
-      '…The applause was never theirs. It was ours. Rise again, young musician — show us the first time was no accident. Come.',
+      'Then: silence.',
+      'The records gather dust. The world forgets your name.',
+      '…But the applause never stopped.',
+      'It was never theirs. It was ours.',
+      'Rise. Show us the first time was no accident. Come.',
     ],
   },
   the_gods: {
     id: 'the_gods',
     goldLevel: 0.05,
     lines: [
-      'Anyone can rise once. You rose again. Now — stand with us.',
+      'Anyone can rise once.',
+      'You fell, and rose again.',
+      'Now you know our faces.',
+      'Stand with us.',
     ],
   },
 }

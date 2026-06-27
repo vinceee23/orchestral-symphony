@@ -73,26 +73,36 @@ milestone — first contact), **(c) each layer's first reset** (L1–L7), and (f
 (the fall/"Come" + a beat per conditioned re-climb) and **(e) L9** (the gods). First-time only per trigger
 + skippable; flag in localStorage.
 
-## 7. Beat copy — FIRST DRAFT (terse, gatekeeper voice; react + refine)
+## 7. Beat copy — v2 LOCKED (terse gatekeeper voice; "we/the living/mortals" breadcrumbs escalate to the reveal)
 - **Intro (birth, pre-recognition):**
-  > Before the first note, there was silence.
-  > Then you reached into the dark — and the dark answered.
+  > Before the first note: silence.
+  > You reached into it.
+  > Something reached back.
   *(→ tutorial nudge: the first button glows. "Play.")*
-- **L1 Encore:** > You end. And you begin again. The mark of someone who means to be heard.
-- **L2 Magnum Opus:** > Not a song now. A *work* — something that outlives its own playing.
-- **Platinum (FIRST DIRECT ADDRESS):** > A million voices carry your name. …Who are you, young musician?
-- **L3 World Tour:** > The world learns your name. We have always known names. They fade.
-- **L4 Signature:** > Now you sound like no one else. Now you sound like *yourself*. …Curious.
-- **L5 Virtuoso:** > There is nothing left for the living to teach you.
-- **L6 Canon:** > They will play your work when you are dust. The mortals call that immortality. *We* call it a beginning.
+- **L1 Encore:** > Again. You play it again. / The first sign of someone who refuses to be forgotten.
+- **L2 Magnum Opus:** > Not a song this time. A *work*. / Something that outlives the hand that made it.
+- **Platinum (FIRST DIRECT ADDRESS):** > A million voices sing your name. / Something in the dark turns to listen. / …Who are you, young musician?
+- **L3 World Tour:** > The world is learning your name. / We have known a thousand names. / They are all quiet now.
+- **L4 Signature:** > Now you sound like no one else. / Now you sound like… *one of us*. / …Curious. *(seeds the L9 Signature-mirror)*
+- **L5 Virtuoso:** > There is nothing left for the living to teach you. / *(We were never the living.)*
+- **L6 Canon:** > They will play your work long after you are dust. / Mortals call that immortality. / *We* call it a beginning.
 - **L7 Grand Finale (pure triumph — the apparent end):**
-  > This is the greatest performance of your life. The last note. The end of the song.
-  *(let it land as a real ending — silence, maybe fake credits.)*
+  > The greatest performance of your life.
+  > The last note rings out, and fades.
+  > This is the end of the song.
+  *(let it land — silence, fake credits.)*
 - **L8 Redemption — the fall, then "Come":**
-  > Then — silence. The records gather dust. The world forgets your name.
-  > …The applause was never theirs. It was *ours*. Rise again, young musician — show us the first time was no accident. **Come.**
-  *(→ the trial: 2–3 conditioned Grand-Finale re-climbs, faster because you're recognized, each harder.)*
-- **L9 The gods (reveal + confront):** > Anyone can rise once. You rose again. Now — *stand with us.* *(pantheon named here, first time)*
+  > Then: silence.
+  > The records gather dust. The world forgets your name.
+  > …But the applause never stopped.
+  > It was never theirs. It was *ours*.
+  > Rise. Show us the first time was no accident. **Come.**
+  *(→ the trial: 3 conditioned Grand-Finale re-climbs, faster as Recognition grows, each harder.)*
+- **L9 The gods (reveal + confront):**
+  > Anyone can rise once.
+  > You fell, and rose again.
+  > Now you know our faces. *(the pantheon revealed, first time)*
+  > Stand with us.
 
 ## 8. Build scope
 - **NOW:** cold-open intro + the reusable beat-system (triggers, gold/black arc param, skip, first-time
