@@ -41,9 +41,10 @@ import {
   canAutoPerformMagnumOpus, canAutoPerformTour, getUnlockFlagsFromComponent, buildVenueGraduationPatch,
 } from '../core/worldTour'
 import {
-  hasPreStoryProgress,
   seedSeenStoryBeatsFromProgress,
 } from '../components/story/beats'
+import { createInitialState } from './initialState'
+import { migratePersistedSave } from './saveMigration'
 
 function createDefaultAutobuyer(): AutobuyerState {
   return {
@@ -52,79 +53,6 @@ function createDefaultAutobuyer(): AutobuyerState {
     interval: AUTOBUYER_DEFAULT_INTERVAL,
     bulk: 1,
     lastTick: 0,
-  }
-}
-
-function createInitialState(): GameState {
-  return {
-    soundwaves: new Decimal(STARTING_SOUNDWAVES),
-    tiers: TIER_CONFIGS.map((config) => ({
-      id: config.id,
-      name: config.name,
-      quantity: new Decimal(0),
-      purchased: 0,
-      multiplier: new Decimal(1),
-      unlocked: config.id === 1,
-    })),
-    tempo: {
-      level: 0,
-      tickInterval: 1000,
-      baseBPM: 60,
-    },
-    buyAmount: 1,
-    achievements: [],
-    completedChallenges: [],
-    challengeBestTimes: {},
-    keepChallenges: false,
-    encoreUpgrades: {},
-    autobuyers: {},
-    activeChallenge: null,
-    preChallengeState: null,
-    encorePoints: 0,
-    lifetimeEncorePoints: 0,
-    encoreCount: 0,
-    lifetimeEncoreCount: 0,
-    applausePoints: 0,
-    layer1WallReached: false,
-    opusPoints: 0,
-    opusCount: 0,
-    opusUpgrades: {},
-    crescendo: 0,
-    peakCrescendoMult: 1,
-    recordsSold: 0,
-    platinum: false,
-    acclaim: new Decimal(0),
-    lifetimeAcclaim: new Decimal(0),
-    tourCount: 0,
-    currentVenue: 0,
-    venueBuffer: new Decimal(0),
-    venueSoldOut: false,
-    components: {},
-    catalogueSnapshot: new Decimal(1),
-    worldTourUnlocked: false,
-    autoCollect: false,
-    keepAutobuyers: false,
-    autoMO: false,
-    autoMOEnabled: true,
-    autoGraduate: false,
-    autoTour: false,
-    autoTourEnabled: true,
-    circuitComplete: false,
-    postPlatinumMoCount: 0,
-    finalePoints: 0,
-    finaleCount: 0,
-    peakSoundwaves: new Decimal(0),
-    producedThisRun: new Decimal(0),
-    tempoPurchasesThisRun: 0,
-    silentEncoresCompleted: 0,
-    wallReachedWithoutTempo: false,
-    wallReachedWithoutTempoAtActiveMs: 0,
-    totalTimePlayed: 0,
-    activeTimePlayed: 0,
-    lastSaveTimestamp: Date.now(),
-    currentRunStartTime: Date.now(),
-    version: '0.6.0',
-    seenStoryBeats: [],
   }
 }
 
@@ -1005,134 +933,14 @@ export const useGameStore = create<GameState & GameActions>()(
         return (state: (GameState & GameActions) | undefined) => {
           if (!state) return
 
-          // Ensure new fields exist for saves from older versions
-          if (!state.achievements) state.achievements = []
-          if (!state.completedChallenges) state.completedChallenges = []
-          if (!state.challengeBestTimes) state.challengeBestTimes = {}
-          if (state.keepChallenges === undefined) state.keepChallenges = false
-          if (!state.autobuyers) state.autobuyers = {}
-          if (!state.encoreUpgrades) state.encoreUpgrades = {}
-          if (state.layer1WallReached === undefined) state.layer1WallReached = false
-          if (!state.buyAmount) state.buyAmount = 1
-          if (state.activeChallenge === undefined) state.activeChallenge = null
-          if (state.preChallengeState === undefined) state.preChallengeState = null
-          if (state.encorePoints === undefined) state.encorePoints = 0
-          if (state.lifetimeEncorePoints === undefined) state.lifetimeEncorePoints = 0
-          if (state.encoreCount === undefined) state.encoreCount = 0
-          if (typeof state.lifetimeEncoreCount !== 'number' || !isFinite(state.lifetimeEncoreCount)) state.lifetimeEncoreCount = 0
-          if (typeof state.applausePoints !== 'number' || !isFinite(state.applausePoints)) state.applausePoints = 0
-          if (state.opusPoints === undefined) state.opusPoints = 0
-          if (state.opusCount === undefined) state.opusCount = 0
-          if (!state.opusUpgrades) state.opusUpgrades = {}
-          if (state.crescendo === undefined) state.crescendo = 0
-          if (state.peakCrescendoMult === undefined) state.peakCrescendoMult = 1
-          if (state.recordsSold === undefined) state.recordsSold = 0
-          if (state.platinum === undefined) state.platinum = false
-          if (state.acclaim === undefined) state.acclaim = new Decimal(0)
-          else state.acclaim = state.acclaim instanceof Decimal ? state.acclaim : new Decimal(state.acclaim ?? 0)
-          if (state.lifetimeAcclaim === undefined) state.lifetimeAcclaim = new Decimal(0)
-          else state.lifetimeAcclaim = state.lifetimeAcclaim instanceof Decimal ? state.lifetimeAcclaim : new Decimal(state.lifetimeAcclaim ?? 0)
-          if (state.tourCount === undefined) state.tourCount = 0
-          if (state.currentVenue === undefined) state.currentVenue = 0
-          if (state.venueBuffer === undefined) state.venueBuffer = new Decimal(0)
-          else state.venueBuffer = state.venueBuffer instanceof Decimal ? state.venueBuffer : new Decimal(state.venueBuffer ?? 0)
-          if (state.venueSoldOut === undefined) state.venueSoldOut = false
-          if (!state.components) state.components = {}
-          if (state.catalogueSnapshot === undefined) state.catalogueSnapshot = new Decimal(1)
-          else state.catalogueSnapshot = state.catalogueSnapshot instanceof Decimal ? state.catalogueSnapshot : new Decimal(state.catalogueSnapshot ?? 1)
-          if (state.worldTourUnlocked === undefined) state.worldTourUnlocked = false
-          if (state.autoCollect === undefined) state.autoCollect = false
-          if (state.keepAutobuyers === undefined) state.keepAutobuyers = false
-          if (state.autoMO === undefined) state.autoMO = false
-          if (state.autoMOEnabled === undefined) state.autoMOEnabled = true
-          if (state.autoGraduate === undefined) state.autoGraduate = false
-          if (state.autoTour === undefined) state.autoTour = false
-          if (state.autoTourEnabled === undefined) state.autoTourEnabled = true
-          if (state.circuitComplete === undefined) state.circuitComplete = false
-          if (state.postPlatinumMoCount === undefined) state.postPlatinumMoCount = 0
-          if (state.finalePoints === undefined) state.finalePoints = 0
-          if (state.finaleCount === undefined) state.finaleCount = 0
-          if (state.tempoPurchasesThisRun === undefined) state.tempoPurchasesThisRun = 0
-          if (state.silentEncoresCompleted === undefined) state.silentEncoresCompleted = 0
-          if (state.wallReachedWithoutTempo === undefined) state.wallReachedWithoutTempo = false
-          if (state.wallReachedWithoutTempoAtActiveMs === undefined) state.wallReachedWithoutTempoAtActiveMs = 0
-          if (state.activeTimePlayed === undefined) state.activeTimePlayed = 0
-          if (!state.seenStoryBeats) state.seenStoryBeats = []
-          if (state.seenStoryBeats.length === 0 && hasPreStoryProgress(state)) {
-            state.seenStoryBeats = seedSeenStoryBeatsFromProgress(state)
-          }
-          state.peakSoundwaves = state.peakSoundwaves instanceof Decimal
-            ? state.peakSoundwaves
-            : new Decimal(state.peakSoundwaves || 0)
-          if (!state.currentRunStartTime) state.currentRunStartTime = Date.now()
-          state.producedThisRun = state.producedThisRun instanceof Decimal
-            ? state.producedThisRun
-            : new Decimal(state.producedThisRun ?? 0)
+          migratePersistedSave(state)
 
           const now = Date.now()
           const offlineMs = Math.min(now - state.lastSaveTimestamp, MAX_OFFLINE_MS)
           if (offlineMs > 1000) {
             const chunkMs = 1000
             let remaining = offlineMs
-            let currentState: GameState = {
-              soundwaves: state.soundwaves,
-              tiers: state.tiers,
-              tempo: state.tempo,
-              buyAmount: state.buyAmount,
-              achievements: state.achievements,
-              completedChallenges: state.completedChallenges,
-              challengeBestTimes: state.challengeBestTimes,
-              keepChallenges: state.keepChallenges,
-              encoreUpgrades: state.encoreUpgrades,
-              autobuyers: state.autobuyers,
-              activeChallenge: state.activeChallenge,
-              preChallengeState: state.preChallengeState,
-              encorePoints: state.encorePoints,
-              lifetimeEncorePoints: state.lifetimeEncorePoints,
-              encoreCount: state.encoreCount,
-              lifetimeEncoreCount: state.lifetimeEncoreCount,
-              applausePoints: state.applausePoints,
-              layer1WallReached: state.layer1WallReached,
-              opusPoints: state.opusPoints,
-              opusCount: state.opusCount,
-              opusUpgrades: state.opusUpgrades,
-              crescendo: state.crescendo,
-              peakCrescendoMult: state.peakCrescendoMult,
-              recordsSold: state.recordsSold,
-              platinum: state.platinum,
-              acclaim: state.acclaim,
-              lifetimeAcclaim: state.lifetimeAcclaim,
-              tourCount: state.tourCount,
-              currentVenue: state.currentVenue,
-              venueBuffer: state.venueBuffer,
-              venueSoldOut: state.venueSoldOut,
-              components: state.components,
-              catalogueSnapshot: state.catalogueSnapshot,
-              worldTourUnlocked: state.worldTourUnlocked,
-              autoCollect: state.autoCollect,
-              keepAutobuyers: state.keepAutobuyers,
-              autoMO: state.autoMO,
-              autoMOEnabled: state.autoMOEnabled,
-              autoGraduate: state.autoGraduate,
-              autoTour: state.autoTour,
-              autoTourEnabled: state.autoTourEnabled,
-              circuitComplete: state.circuitComplete,
-              postPlatinumMoCount: state.postPlatinumMoCount,
-              finalePoints: state.finalePoints,
-              finaleCount: state.finaleCount,
-              peakSoundwaves: state.peakSoundwaves,
-              producedThisRun: state.producedThisRun,
-              tempoPurchasesThisRun: state.tempoPurchasesThisRun,
-              silentEncoresCompleted: state.silentEncoresCompleted,
-              wallReachedWithoutTempo: state.wallReachedWithoutTempo,
-              wallReachedWithoutTempoAtActiveMs: state.wallReachedWithoutTempoAtActiveMs,
-              totalTimePlayed: state.totalTimePlayed,
-              activeTimePlayed: state.activeTimePlayed,
-              lastSaveTimestamp: state.lastSaveTimestamp,
-              currentRunStartTime: state.currentRunStartTime,
-              version: state.version,
-              seenStoryBeats: state.seenStoryBeats,
-            }
+            let currentState: GameState = { ...state }
             while (remaining > 0) {
               const step = Math.min(remaining, chunkMs)
               const updates = calculateTick(currentState, step)
