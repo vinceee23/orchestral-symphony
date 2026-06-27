@@ -13,6 +13,8 @@ export function useStoryBeats() {
   const opusCount = useGameStore((s) => s.opusCount)
   const platinum = useGameStore((s) => s.platinum)
   const worldTourUnlocked = useGameStore((s) => s.worldTourUnlocked)
+  const layer1WallReached = useGameStore((s) => s.layer1WallReached)
+  const recordsSold = useGameStore((s) => s.recordsSold)
   const setStoryBeatSeen = useGameStore((s) => s.setStoryBeatSeen)
 
   const nextBeat = useMemo(
@@ -23,8 +25,13 @@ export function useStoryBeats() {
         opusCount,
         platinum,
         worldTourUnlocked,
+        layer1WallReached,
+        recordsSold,
       }),
-    [seenStoryBeats, encoreCount, lifetimeEncoreCount, opusCount, platinum, worldTourUnlocked],
+    [
+      seenStoryBeats, encoreCount, lifetimeEncoreCount, opusCount, platinum,
+      worldTourUnlocked, layer1WallReached, recordsSold,
+    ],
   )
 
   const [displayedBeat, setDisplayedBeat] = useState<StoryBeatDefinition | null>(null)

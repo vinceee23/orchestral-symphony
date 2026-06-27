@@ -4,7 +4,9 @@ import type { GameState } from '../../store/types'
 export type StoryBeatId =
   | 'intro'
   | 'encore'
+  | 'first_wall'
   | 'magnum_opus'
+  | 'first_records'
   | 'platinum'
   | 'world_tour'
   // Future (copy in STORY-SPEC §7; triggers not wired yet):
@@ -26,7 +28,9 @@ export interface StoryBeatDefinition {
 export const STORY_BEAT_ORDER: StoryBeatId[] = [
   'intro',
   'encore',
+  'first_wall',
   'magnum_opus',
+  'first_records',
   'platinum',
   'world_tour',
 ]
@@ -50,6 +54,15 @@ export const STORY_BEATS: Record<StoryBeatId, StoryBeatDefinition> = {
       'Something in the dark keeps time with you. You do not hear it yet.',
     ],
   },
+  first_wall: {
+    id: 'first_wall',
+    goldLevel: 0.32,
+    lines: [
+      'You have pushed this as far as it will go.',
+      'Every musician meets this wall. Most turn back.',
+      'Become something larger.',
+    ],
+  },
   magnum_opus: {
     id: 'magnum_opus',
     goldLevel: 0.4,
@@ -57,6 +70,15 @@ export const STORY_BEATS: Record<StoryBeatId, StoryBeatDefinition> = {
       'Not a song this time. A work.',
       'Something that outlives the hand that made it.',
       'A breath moves through it that was never yours.',
+    ],
+  },
+  first_records: {
+    id: 'first_records',
+    goldLevel: 0.48,
+    lines: [
+      'Your work leaves your hands now.',
+      'Somewhere a stranger hears it, and goes still.',
+      'This is how a name begins.',
     ],
   },
   platinum: {
@@ -139,6 +161,7 @@ export const STORY_BEATS: Record<StoryBeatId, StoryBeatDefinition> = {
 type BeatGateState = Pick<
   GameState,
   'encoreCount' | 'lifetimeEncoreCount' | 'opusCount' | 'platinum' | 'worldTourUnlocked'
+  | 'layer1WallReached' | 'recordsSold'
 >
 
 /** Whether a beat's milestone condition is satisfied (independent of seenStoryBeats). */
@@ -148,8 +171,12 @@ export function isBeatConditionMet(id: StoryBeatId, state: BeatGateState): boole
       return true
     case 'encore':
       return state.encoreCount >= 1 || state.lifetimeEncoreCount >= 1
+    case 'first_wall':
+      return state.layer1WallReached
     case 'magnum_opus':
       return state.opusCount >= 1
+    case 'first_records':
+      return state.recordsSold >= 1
     case 'platinum':
       return state.platinum
     case 'world_tour':
@@ -181,6 +208,8 @@ type MigrationState = Pick<
   | 'opusCount'
   | 'platinum'
   | 'worldTourUnlocked'
+  | 'layer1WallReached'
+  | 'recordsSold'
 >
 
 /** True when a save predates story beats and already has meaningful progress. */
@@ -203,7 +232,9 @@ export function seedSeenStoryBeatsFromProgress(state: MigrationState): string[] 
   const seen: StoryBeatId[] = []
   if (hasPreStoryProgress(state)) seen.push('intro')
   if (state.lifetimeEncoreCount >= 1 || state.encoreCount >= 1) seen.push('encore')
+  if (state.layer1WallReached) seen.push('first_wall')
   if (state.opusCount >= 1) seen.push('magnum_opus')
+  if (state.recordsSold >= 1) seen.push('first_records')
   if (state.platinum) seen.push('platinum')
   if (state.worldTourUnlocked) seen.push('world_tour')
   return seen
