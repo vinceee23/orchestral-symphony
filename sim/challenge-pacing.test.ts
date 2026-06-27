@@ -15,6 +15,8 @@ import {
   ENCORE_WALL_COUNT,
   AUTOBUYER_DEFAULT_INTERVAL,
   PLATINUM_THRESHOLD,
+  AP_UNLOCK,
+  AP_UNLOCK_AUTO_TOUR,
 } from '../src/core/constants'
 import {
   getTierCost,
@@ -59,6 +61,8 @@ import {
   speedScaledCapstone,
   CAPSTONE_TIME_FLOOR_MS,
   CAPSTONE_TIME_CAP_MS,
+  CAPSTONE_MULT_FLOOR,
+  CAPSTONE_MULT_CAP,
   type ChallengeConfig,
 } from '../src/core/challenges'
 import { getCoreProductionMultiplier } from '../src/core/formulas'
@@ -72,8 +76,15 @@ const MAX_CLIMB_STEPS = 500_000
 
 const MAX_CHALLENGE_ACTIVE_MS = 6 * 60 * 60 * 1000 // 6h active sim-time per challenge
 const MAX_CHALLENGE_STEPS = 500_000
-const TRIVIAL_THRESHOLD_MIN = 1 // meaningful first-clear floor (~1 min)
-const MEANINGFUL_MAX_MIN = 8 // design target ceiling at unlock-point
+const TARGET_BAND_MIN = 2 // §2.8 tuning target: first clear should feel meaningful, not instant
+const TARGET_BAND_MAX = 8 // §2.8 tuning target: unlock-point clears should not become stalls
+const HARD_MIN_MIN = 1 // fail below this: challenge is structurally trivial at unlock
+const HARD_MAX_MIN = 10 // fail above this: challenge is too slow/unfair at unlock
+
+// Direct global-production challenge budget. Cost/tempo/crescendo/milestone rewards are separate
+// levers whose realized value depends on purchases/conducting; keep the capped direct global x in
+// the §2.8 target band (roughly x8-12), above achievements (<=x3) and below Acclaim's x49 cap.
+const CHALLENGE_GLOBAL_PROD_BUDGET_CEILING = 12
 
 function createDefaultAutobuyer(): AutobuyerState {
   return {
@@ -853,19 +864,33 @@ describe('L3 challenge beatability instrument', () => {
     console.log('')
     console.log(`TOTAL time-at-unlock (all 12): ${totalMin.toFixed(2)} min (${(totalMin / 60).toFixed(2)} h)`)
 
-    const trivial = results.filter((r) => r.beatable && r.timeMin < TRIVIAL_THRESHOLD_MIN)
-    const tooLong = results.filter((r) => r.beatable && r.timeMin > MEANINGFUL_MAX_MIN)
+    const belowTarget = results.filter((r) => r.beatable && r.timeMin < TARGET_BAND_MIN)
+    const aboveTarget = results.filter((r) => r.beatable && r.timeMin > TARGET_BAND_MAX)
+    const trivial = results.filter((r) => r.beatable && r.timeMin < HARD_MIN_MIN)
+    const tooLong = results.filter((r) => r.beatable && r.timeMin > HARD_MAX_MIN)
     const failed = results.filter((r) => !r.beatable)
+    if (belowTarget.length > 0) {
+      console.log(`\nBelow target band (<~${TARGET_BAND_MIN} min at unlock):`)
+      for (const r of belowTarget) {
+        console.log(`  ${r.id}: ${(r.timeMin * 60).toFixed(1)}s - consider raising targetSoundwaves`)
+      }
+    }
+    if (aboveTarget.length > 0) {
+      console.log(`\nAbove target band (>~${TARGET_BAND_MAX} min at unlock):`)
+      for (const r of aboveTarget) {
+        console.log(`  ${r.id}: ${r.timeMin.toFixed(2)} min`)
+      }
+    }
     if (trivial.length > 0) {
-      console.log('\nTrivially fast (<~1 min at unlock):')
+      console.log(`\nHARD FAIL - trivial (<~${HARD_MIN_MIN} min at unlock):`)
       for (const r of trivial) {
-        console.log(`  ${r.id}: ${(r.timeMin * 60).toFixed(1)}s — raise targetSoundwaves`)
+        console.log(`  ${r.id}: ${(r.timeMin * 60).toFixed(1)}s - raise targetSoundwaves`)
       }
     }
     if (tooLong.length > 0) {
-      console.log('\nSlow at unlock (>~8 min — consider lowering target):')
+      console.log(`\nHARD FAIL - too slow (>~${HARD_MAX_MIN} min at unlock):`)
       for (const r of tooLong) {
-        console.log(`  ${r.id}: ${r.timeMin.toFixed(2)} min`)
+        console.log(`  ${r.id}: ${r.timeMin.toFixed(2)} min - lower targetSoundwaves`)
       }
     }
     if (failed.length > 0) {
@@ -908,10 +933,38 @@ describe('L3 challenge beatability instrument', () => {
       expect(
         r.timeMin,
         `${r.id}: ${(r.timeMin * 60).toFixed(1)}s at unlock is trivial — raise targetSoundwaves`,
-      ).toBeGreaterThanOrEqual(TRIVIAL_THRESHOLD_MIN)
+      ).toBeGreaterThanOrEqual(HARD_MIN_MIN)
+    }
+
+    for (const r of tooLong) {
+      expect(
+        r.timeMin,
+        `${r.id}: ${r.timeMin.toFixed(2)} min at unlock is too slow - lower targetSoundwaves`,
+      ).toBeLessThanOrEqual(HARD_MAX_MIN)
     }
 
     expect(results.length).toBe(12)
+
+    const completedIds = results.map((r) => r.id)
+    const measuredBestTimes = Object.fromEntries(results.map((r) => [r.id, r.timeMin * 60_000]))
+    const allMeasuredMults = getChallengeMultipliers(completedIds, measuredBestTimes)
+    console.log('')
+    console.log(
+      `Measured all-12 capstone global x: ${allMeasuredMults.globalProdMult.toFixed(2)} ` +
+        `(total best-time ${totalMin.toFixed(2)} min)`,
+    )
+
+    for (const ch of CHALLENGES) {
+      const skippedIds = completedIds.filter((id) => id !== ch.id)
+      const skippedTimes = Object.fromEntries(
+        Object.entries(measuredBestTimes).filter(([id]) => id !== ch.id),
+      )
+      const skippedMults = getChallengeMultipliers(skippedIds, skippedTimes)
+      expect(
+        allMeasuredMults.globalProdMult,
+        `all-12 measured stack must beat skipping ${ch.id}; capstone should reward full clears`,
+      ).toBeGreaterThan(skippedMults.globalProdMult)
+    }
   }, 900_000)
 
   it('challenge rewards stack and capstone scales with total best-time', () => {
@@ -952,8 +1005,45 @@ describe('L3 challenge beatability instrument', () => {
     })
     expect(core.toNumber()).toBeGreaterThan(baseline.toNumber())
 
+    const allIds = CHALLENGES.map((c) => c.id)
+    const flatGlobalProd = 1.15 * 1.5 * 1.25 * 1.3
+    const cappedSuiteTimes = Object.fromEntries(
+      allIds.map((id) => [id, CAPSTONE_TIME_CAP_MS / CHALLENGES.length]),
+    )
+    const floorSuiteTimes = Object.fromEntries(
+      allIds.map((id) => [id, CAPSTONE_TIME_FLOOR_MS / CHALLENGES.length]),
+    )
+    const cappedSuite = getChallengeMultipliers(allIds, cappedSuiteTimes)
+    const floorSuite = getChallengeMultipliers(allIds, floorSuiteTimes)
+
+    expect(floorSuite.globalProdMult).toBeCloseTo(flatGlobalProd * CAPSTONE_MULT_FLOOR)
+    expect(cappedSuite.globalProdMult).toBeCloseTo(flatGlobalProd * CAPSTONE_MULT_CAP)
+    expect(cappedSuite.globalProdMult).toBeLessThanOrEqual(CHALLENGE_GLOBAL_PROD_BUDGET_CEILING)
+    expect(cappedSuite.costMult).toBeCloseTo(0.90 * 0.90 * 0.92)
+    expect(cappedSuite.tempoBonus).toBeCloseTo(0.15 + 0.05)
+    expect(cappedSuite.crescendoBonus).toBeCloseTo(0.5)
+    expect(cappedSuite.milestoneStrength).toBeCloseTo(0.2)
+
+    for (const ch of CHALLENGES) {
+      const skippedIds = allIds.filter((id) => id !== ch.id)
+      const skipped = getChallengeMultipliers(skippedIds, cappedSuiteTimes)
+      expect(
+        cappedSuite.globalProdMult,
+        `capped all-12 stack must be better than skipping ${ch.id}`,
+      ).toBeGreaterThan(skipped.globalProdMult)
+    }
+
+    const totalChallengeAp = CHALLENGES.reduce((sum, ch) => sum + ch.reward.ap, 0)
+    // 145 AP is meaningful next to the 5-AP auto-encore SKU, but does not by itself buy
+    // the L4-only 200-AP auto-tour SKU. Precise AP pacing is TBD after the L2 idle AP model.
+    expect(totalChallengeAp).toBe(145)
+    expect(totalChallengeAp).toBeGreaterThan(AP_UNLOCK.encore.cost)
+    expect(totalChallengeAp).toBeLessThan(AP_UNLOCK_AUTO_TOUR.cost)
+
     const slowCap = speedScaledCapstone(CAPSTONE_TIME_FLOOR_MS)
     const fastCap = speedScaledCapstone(CAPSTONE_TIME_CAP_MS)
+    expect(slowCap).toBe(CAPSTONE_MULT_FLOOR)
+    expect(fastCap).toBe(CAPSTONE_MULT_CAP)
     expect(slowCap).toBeLessThan(fastCap)
     expect(speedScaledCapstone((CAPSTONE_TIME_FLOOR_MS + CAPSTONE_TIME_CAP_MS) / 2)).toBeCloseTo(
       (slowCap + fastCap) / 2,
