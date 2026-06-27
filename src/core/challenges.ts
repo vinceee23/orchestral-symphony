@@ -36,8 +36,10 @@ export interface ChallengeReward {
   crescendoBonus?: number
   /** Raises per-milestone base above MILESTONE_MULTIPLIER (stacked additively). */
   milestoneStrength?: number
-  /** Speed-scaled global × capstone (ch_unplugged only). */
+  /** Speed-scaled global × capstone (suite-wide; activates only when all 12 cleared). */
   capstone?: boolean
+  /** Applause Points granted on first clear only — TUNE in §2.8 sim. */
+  ap: number
 }
 
 export interface ChallengeConfig {
@@ -113,13 +115,15 @@ export function getChallengeMultipliers(
     if (r.tempoBonus !== undefined) tempoBonus += r.tempoBonus
     if (r.crescendoBonus !== undefined) crescendoBonus += r.crescendoBonus
     if (r.milestoneStrength !== undefined) milestoneStrength += r.milestoneStrength
-    if (r.capstone) {
-      let totalTime = 0
-      for (const id of completed) {
-        totalTime += challengeBestTimes[id] ?? 0
-      }
-      globalProdMult *= speedScaledCapstone(totalTime)
+  }
+
+  // Capstone: suite reward — only when all 12 cleared; total = sum of all 12 best-times.
+  if (completed.size === CHALLENGES.length) {
+    let totalTime = 0
+    for (const ch of CHALLENGES) {
+      totalTime += challengeBestTimes[ch.id] ?? 0
     }
+    globalProdMult *= speedScaledCapstone(totalTime)
   }
 
   return { globalProdMult, costMult, tempoBonus, crescendoBonus, milestoneStrength }
@@ -248,7 +252,7 @@ export const CHALLENGES: ChallengeConfig[] = [
     icon: '\u{1F3B5}',
     targetSoundwaves: new Decimal(5e7),
     constraint: { type: 'singleTier', tierId: 1 },
-    reward: { crescendoBonus: 0.5 },
+    reward: { crescendoBonus: 0.5, ap: 5 }, // TUNE §2.8 sim
     unlocksAutobuyer: null,
     unlockThreshold: {},
   },
@@ -259,7 +263,7 @@ export const CHALLENGES: ChallengeConfig[] = [
     icon: '\u{1F46F}',
     targetSoundwaves: new Decimal(2.5e15),
     constraint: { type: 'maxTiers', count: 2 },
-    reward: { globalProdMult: 1.15 },
+    reward: { globalProdMult: 1.15, ap: 5 }, // TUNE §2.8 sim
     unlocksAutobuyer: null,
     unlockThreshold: { opusCount: 4 },
   },
@@ -268,9 +272,9 @@ export const CHALLENGES: ChallengeConfig[] = [
     name: 'Inflation Etude',
     description: 'Reach the target with all costs multiplied by 10x.',
     icon: '\u{1F4B8}',
-    targetSoundwaves: new Decimal('1.6e58'),
+    targetSoundwaves: new Decimal('1e55'),
     constraint: { type: 'inflatedCosts', factor: 10 },
-    reward: { costMult: 0.90 },
+    reward: { costMult: 0.90, ap: 5 }, // TUNE §2.8 sim
     unlocksAutobuyer: null,
     unlockThreshold: { opusCount: 5 },
   },
@@ -279,9 +283,9 @@ export const CHALLENGES: ChallengeConfig[] = [
     name: 'Diminuendo',
     description: 'Reach the target with all production divided by 100.',
     icon: '\u{1F509}',
-    targetSoundwaves: new Decimal('5e25'),
+    targetSoundwaves: new Decimal('1e34'),
     constraint: { type: 'nerfedProduction', factor: 100 },
-    reward: { globalProdMult: 1.5 },
+    reward: { globalProdMult: 1.5, ap: 5 }, // TUNE §2.8 sim
     unlocksAutobuyer: null,
     unlockThreshold: { opusCount: 6 },
   },
@@ -290,9 +294,9 @@ export const CHALLENGES: ChallengeConfig[] = [
     name: 'Opening Night Jitters',
     description: 'Reach the target while costs increase by 1% every second.',
     icon: '\u{1F630}',
-    targetSoundwaves: new Decimal('4e57'),
+    targetSoundwaves: new Decimal('2e56'),
     constraint: { type: 'risingCosts', ratePerSec: 1.01 },
-    reward: { costMult: 0.90 },
+    reward: { costMult: 0.90, ap: 5 }, // TUNE §2.8 sim
     unlocksAutobuyer: null,
     unlockThreshold: { opusCount: 7 },
   },
@@ -301,9 +305,9 @@ export const CHALLENGES: ChallengeConfig[] = [
     name: 'Super SLOOOW!',
     description: 'Reach the target with tick speed reduced by 10x.',
     icon: '\u{1F40C}',
-    targetSoundwaves: new Decimal('1e132'),
+    targetSoundwaves: new Decimal('1e140'),
     constraint: { type: 'nerfedTickspeed', factor: 10 },
-    reward: { tempoBonus: 0.15 },
+    reward: { tempoBonus: 0.15, ap: 10 }, // TUNE §2.8 sim
     unlocksAutobuyer: null,
     unlockThreshold: { encoreCount: 8 },
   },
@@ -312,9 +316,9 @@ export const CHALLENGES: ChallengeConfig[] = [
     name: 'One-Hit Wonder',
     description: 'Reach the target with a max of 10 purchases per tier.',
     icon: '\u{261D}',
-    targetSoundwaves: new Decimal('1e62'),
+    targetSoundwaves: new Decimal('1e66'),
     constraint: { type: 'maxPerTier', limit: 10 },
-    reward: { costMult: 0.92 },
+    reward: { costMult: 0.92, ap: 10 }, // TUNE §2.8 sim
     unlocksAutobuyer: null,
     unlockThreshold: { encoreCount: 9 },
   },
@@ -325,7 +329,7 @@ export const CHALLENGES: ChallengeConfig[] = [
     icon: '\u{1F3B8}',
     targetSoundwaves: new Decimal(2e21),
     constraint: { type: 'noTempo' },
-    reward: { tempoBonus: 0.05 },
+    reward: { tempoBonus: 0.05, ap: 10 }, // TUNE §2.8 sim
     unlocksAutobuyer: 'tempo',
     unlockThreshold: { encoreCount: 10 },
   },
@@ -336,7 +340,7 @@ export const CHALLENGES: ChallengeConfig[] = [
     icon: '\u{1F4A7}',
     targetSoundwaves: new Decimal('1e165'),
     constraint: { type: 'swDecay', percentPerTick: 2 },
-    reward: { globalProdMult: 1.25 },
+    reward: { globalProdMult: 1.25, ap: 10 }, // TUNE §2.8 sim
     unlocksAutobuyer: null,
     unlockThreshold: { encoreCount: 12 },
   },
@@ -345,9 +349,9 @@ export const CHALLENGES: ChallengeConfig[] = [
     name: 'Playing It Flat',
     description: 'Reach the target without milestone multipliers (no x2 per 10).',
     icon: '\u{266D}',
-    targetSoundwaves: new Decimal('1.2e62'),
+    targetSoundwaves: new Decimal('5e59'),
     constraint: { type: 'noMilestones' },
-    reward: { milestoneStrength: 0.2 },
+    reward: { milestoneStrength: 0.2, ap: 20 }, // TUNE §2.8 sim
     unlocksAutobuyer: null,
     unlockThreshold: { peakSoundwaves: '1e65' },
   },
@@ -356,9 +360,9 @@ export const CHALLENGES: ChallengeConfig[] = [
     name: 'Reverse Rehearsal',
     description: 'Reach the target with reversed production (lower tiers produce higher).',
     icon: '\u{1F500}',
-    targetSoundwaves: new Decimal('8e63'),
+    targetSoundwaves: new Decimal('3e60'),
     constraint: { type: 'reversedProduction' },
-    reward: { globalProdMult: 1.3 },
+    reward: { globalProdMult: 1.3, ap: 20 }, // TUNE §2.8 sim
     unlocksAutobuyer: 'finale_auto',
     unlockThreshold: { peakSoundwaves: '1e68' },
   },
@@ -367,9 +371,9 @@ export const CHALLENGES: ChallengeConfig[] = [
     name: 'Unplugged Finale',
     description: 'Reach the target without any prestige bonuses (EP/OP/FP ignored).',
     icon: '\u{1F50C}',
-    targetSoundwaves: new Decimal('1e90'),
+    targetSoundwaves: new Decimal('1e94'),
     constraint: { type: 'noPrestige' },
-    reward: { capstone: true },
+    reward: { capstone: true, ap: 40 }, // TUNE §2.8 sim
     unlocksAutobuyer: 'all_auto',
     unlockThreshold: { peakSoundwaves: '1e72' },
   },

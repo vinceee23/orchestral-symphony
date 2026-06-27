@@ -12,21 +12,23 @@ export function formatChallengeTimeMs(ms: number): string {
 }
 
 export function formatChallengeReward(reward: ChallengeReward): string {
-  if (reward.capstone) return 'Speed bonus (scales with total time)'
+  const parts: string[] = []
+  if (reward.ap > 0) parts.push(`+${reward.ap} AP`)
+  if (reward.capstone) parts.push('Speed bonus (scales with total time)')
   if (reward.globalProdMult !== undefined) {
     const pct = Math.round((reward.globalProdMult - 1) * 100)
-    return `+${pct}% production`
+    parts.push(`+${pct}% production`)
   }
   if (reward.costMult !== undefined) {
     const pct = Math.round((1 - reward.costMult) * 100)
-    return `−${pct}% cost`
+    parts.push(`−${pct}% cost`)
   }
-  if (reward.tempoBonus !== undefined) return `+${reward.tempoBonus} tempo`
-  if (reward.crescendoBonus !== undefined) return `+${reward.crescendoBonus} crescendo ceiling`
+  if (reward.tempoBonus !== undefined) parts.push(`+${reward.tempoBonus} tempo`)
+  if (reward.crescendoBonus !== undefined) parts.push(`+${reward.crescendoBonus} crescendo ceiling`)
   if (reward.milestoneStrength !== undefined) {
-    return `Milestones ×${MILESTONE_MULTIPLIER + reward.milestoneStrength}`
+    parts.push(`Milestones ×${MILESTONE_MULTIPLIER + reward.milestoneStrength}`)
   }
-  return ''
+  return parts.join(' · ')
 }
 
 export function formatAutobuyerUnlock(key: string): string {

@@ -132,7 +132,13 @@ export interface GameState {
   activeTimePlayed: number
   lastSaveTimestamp: number
   currentRunStartTime: number
+  /** Human-readable release tag (display only; not used for migrations). */
   version: string
+  /** Numeric save schema — drives ordered migrations on load (absent on pre-B5 saves until rehydrate). */
+  saveSchemaVersion?: number
+
+  /** Story beat ids already shown (first-time only; persists with save). */
+  seenStoryBeats: string[]
 }
 
 export interface GameActions {
@@ -162,5 +168,6 @@ export interface GameActions {
   unlockWorldTour: () => void
   bankVenueAcclaim: () => void
   setAutoMOEnabled: (enabled: boolean) => void
+  setStoryBeatSeen: (id: string) => void
   hardReset: () => void
 }

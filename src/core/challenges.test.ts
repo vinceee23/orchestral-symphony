@@ -74,21 +74,27 @@ describe('getChallengeMultipliers', () => {
     expect(mults.crescendoBonus).toBe(0)
   })
 
-  it('applies speed-scaled capstone from ch_unplugged best-times', () => {
-    const completed = CHALLENGES.map((c) => c.id)
-    const slowTimes = Object.fromEntries(completed.map((id) => [id, 10 * 60 * 1000]))
-    expect(getChallengeMultipliers(completed, slowTimes).globalProdMult).toBeGreaterThan(5)
+  it('capstone inactive until all 12 cleared; fast full suite earns max bonus', () => {
+    const skipped = ['ch_unplugged']
+    expect(getChallengeMultipliers(skipped, { ch_unplugged: CAPSTONE_TIME_CAP_MS }).globalProdMult).toBe(1)
+
+    const all12 = CHALLENGES.map((c) => c.id)
+    const perFast = CAPSTONE_TIME_CAP_MS / 12
+    const perSlow = CAPSTONE_TIME_FLOOR_MS / 12
+    const fastTimes = Object.fromEntries(all12.map((id) => [id, perFast]))
+    const slowTimes = Object.fromEntries(all12.map((id) => [id, perSlow]))
+    const fast = getChallengeMultipliers(all12, fastTimes)
+    const slow = getChallengeMultipliers(all12, slowTimes)
+    expect(fast.globalProdMult).toBeGreaterThan(slow.globalProdMult)
+    expect(speedScaledCapstone(CAPSTONE_TIME_CAP_MS)).toBe(CAPSTONE_MULT_CAP)
+    expect(fast.globalProdMult).toBeGreaterThan(5)
+  })
+
+  it('speedScaledCapstone curve hits floor and cap at bounds', () => {
     expect(speedScaledCapstone(CAPSTONE_TIME_FLOOR_MS)).toBe(CAPSTONE_MULT_FLOOR)
     expect(speedScaledCapstone(CAPSTONE_TIME_CAP_MS)).toBe(CAPSTONE_MULT_CAP)
     const mid = speedScaledCapstone((CAPSTONE_TIME_FLOOR_MS + CAPSTONE_TIME_CAP_MS) / 2)
     expect(mid).toBeCloseTo((CAPSTONE_MULT_FLOOR + CAPSTONE_MULT_CAP) / 2, 5)
-  })
-
-  it('grows capstone mult when total best-time drops', () => {
-    const completed = ['ch_unplugged']
-    const slow = getChallengeMultipliers(completed, { ch_unplugged: CAPSTONE_TIME_FLOOR_MS })
-    const fast = getChallengeMultipliers(completed, { ch_unplugged: CAPSTONE_TIME_CAP_MS })
-    expect(fast.globalProdMult).toBeGreaterThan(slow.globalProdMult)
   })
 })
 

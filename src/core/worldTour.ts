@@ -40,6 +40,11 @@ export const L3 = {
   GATE_POST_PLAT_MO: 2,
   GATE_MIN_PEAK_SW_LOG10: 0,
   LEGACY_RECORDS_FRACTION: 0.12,
+  // Auto-MO should ease re-climbs down instead of turning a tour into a single instant reset.
+  AUTO_MO_RECLIMB_FLOOR_MS: 45_000,
+  AUTO_MO_EASE_START_TOUR: 8,
+  AUTO_MO_EASE_START_MS: 450_000,
+  AUTO_MO_EASE_DECAY: 0.8,
   // Auto-Tour capstone: re-tour when the LIVE catalogue has regrown to this multiple of the frozen
   // touring snapshot. Calibrated in sim/l3-pacing.test.ts (AFK circuit) — 1.12 completes the full circuit
   // hands-free in ~24h over ~6 auto-tours with a lengthening, never-stalling cadence. TUNED in resim.
@@ -380,9 +385,18 @@ export function canAutoPerformMagnumOpus(state: GameState): boolean {
   if (!state.autoMO || !state.autoMOEnabled) return false
   if (!state.layer1WallReached) return false
   if (state.activeChallenge) return false
+  const elapsedMs = Date.now() - state.currentRunStartTime
+  if (elapsedMs < getAutoMOReclimbDelayMs(state.tourCount ?? 0)) return false
   const moCost = getMagnumOpusCost(state.opusCount)
   const moPurchased = state.tiers[moCost.tierIndex]?.purchased ?? 0
   return moPurchased >= moCost.amount
+}
+
+export function getAutoMOReclimbDelayMs(tourCount: number): number {
+  if (tourCount <= 0) return L3.AUTO_MO_RECLIMB_FLOOR_MS
+  const easedTours = Math.max(0, tourCount - L3.AUTO_MO_EASE_START_TOUR)
+  const easedDelay = L3.AUTO_MO_EASE_START_MS * Math.pow(L3.AUTO_MO_EASE_DECAY, easedTours)
+  return Math.max(L3.AUTO_MO_RECLIMB_FLOOR_MS, easedDelay)
 }
 
 export function getAcclaimMultiplier(lifetimeAcclaim: Decimal | number): number {

@@ -34,6 +34,7 @@ function freshState(overrides: Partial<GameState> = {}): GameState {
     wallReachedWithoutTempoAtActiveMs: 0,
     totalTimePlayed: 0, activeTimePlayed: 0,
     lastSaveTimestamp: 0, currentRunStartTime: 0, version: 'test',
+    seenStoryBeats: [],
     ...overrides,
   }
 }

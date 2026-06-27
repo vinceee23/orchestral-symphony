@@ -79,6 +79,7 @@ function minimalState(overrides: Partial<GameState> = {}): GameState {
     lastSaveTimestamp: 0,
     currentRunStartTime: 0,
     version: '0.6.0',
+    seenStoryBeats: [],
     ...overrides,
   }
 }
