@@ -32,7 +32,7 @@ import {
   getEncoreGain,
 } from '../core/formulas'
 import { ACHIEVEMENTS, getAchievementStartingSW, getAchievementCostReduction, getAchievementTierCostReduction, getAchievementHeadStartBoost } from '../core/achievements'
-import { getChallengeById, getActiveChallengeModifiers, isChallengeUnlocked } from '../core/challenges'
+import { getChallengeById, getActiveChallengeModifiers, isChallengeUnlocked, getChallengeStartingSoundwaves } from '../core/challenges'
 import { createDecimalStorage } from '../core/save'
 import { useUiStore } from './uiStore'
 import {
@@ -593,7 +593,7 @@ export const useGameStore = create<GameState & GameActions>()(
         set({
           activeChallenge: { challengeId: id, startTime: Date.now() },
           preChallengeState: snapshot,
-          soundwaves: new Decimal(STARTING_SOUNDWAVES),
+          soundwaves: getChallengeStartingSoundwaves(challenge, state.achievements),
           tiers: challengeTiers,
           tempo: { level: 0, tickInterval: 1000, baseBPM: 60 },
           currentRunStartTime: Date.now(),

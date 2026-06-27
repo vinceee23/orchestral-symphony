@@ -35,6 +35,10 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
     : null
   const mods: ChallengeModifiers = getActiveChallengeModifiers(activeChallenge)
 
+  // nerfedTickspeed: slow production and crescendo accrual (challenge-only)
+  const effectiveDeltaMs =
+    mods.tickspeedDivisor > 1 ? deltaMs / mods.tickspeedDivisor : deltaMs
+
   const newTiers = state.tiers.map((t) => ({
     ...t,
     quantity: new Decimal(t.quantity),
@@ -57,7 +61,7 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
   const noP = mods.noPrestige
 
   // === Layer 2: crescendo + records ===
-  const nextCresc = advanceCrescendo(state.crescendo, conducting, deltaMs / 1000, state.opusUpgrades)
+  const nextCresc = advanceCrescendo(state.crescendo, conducting, effectiveDeltaMs / 1000, state.opusUpgrades)
   const crescendoMult = getCrescendoMultiplier(nextCresc, state.opusUpgrades)
   const peakCrescendoMult = Math.max(state.peakCrescendoMult, crescendoMult)
   // perk-platinum-press: records sell PLATINUM_PRESS_MULT× faster (injected via the records-per-sec
@@ -67,7 +71,7 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
     state.recordsSold,
     state.opusCount,
     crescendoMult * recordsMult,
-    deltaMs / 1000,
+    effectiveDeltaMs / 1000,
     state.opusUpgrades,
   )
   const platinum = state.platinum || isPlatinum(recordsSold)
@@ -129,7 +133,7 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
         .times(config.baseProduction)
         .times(tierMult)
         .times(fullMult)
-        .times(deltaMs / 1000)
+        .times(effectiveDeltaMs / 1000)
 
       if (i === newTiers.length - 1) {
         // Highest tier produces Soundwaves in reversed mode
@@ -161,7 +165,7 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
         : tier
       const fullMult = globalMult.times(tierAchMult)
 
-      const production = getTierProductionPerTick(effectiveTier, config, deltaMs, fullMult)
+      const production = getTierProductionPerTick(effectiveTier, config, effectiveDeltaMs, fullMult)
 
       if (i === 0) {
         newSoundwaves = newSoundwaves.plus(production)
@@ -272,10 +276,14 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
   }
 
   // Check unlock conditions: tier unlocks when previous tier has ≥1 purchased
+  // (reversedProduction: quantity>0 — purchases don't feed the cascade)
   // Tier 6 additionally requires at least 1 Encore
   for (let i = 1; i < newTiers.length; i++) {
     if (!newTiers[i].unlocked) {
-      if (newTiers[i - 1].purchased >= 1) {
+      const priorTierReady = mods.reversedProduction
+        ? newTiers[i - 1].quantity.gt(0)
+        : newTiers[i - 1].purchased >= 1
+      if (priorTierReady) {
         // Challenge: only unlock if within allowed tiers
         if (mods.singleTierId === null && i < mods.maxTiers) {
           // Reveal pacing: Movements (idx 5) after the 1st Encore; Symphonies (idx 6) held until

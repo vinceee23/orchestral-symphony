@@ -22,19 +22,21 @@ describe('isChallengeUnlocked', () => {
   })
 
   it('spreads harder challenges across encore, MO, and peak SW', () => {
-    expect(isChallengeUnlocked(l3Gate, getChallengeById('ch_adagio')!)).toBe(false)
+    expect(
+      isChallengeUnlocked({ ...l3Gate, opusCount: 5 }, getChallengeById('ch_inflation')!),
+    ).toBe(true)
     expect(
       isChallengeUnlocked({ ...l3Gate, encoreCount: 8 }, getChallengeById('ch_adagio')!),
     ).toBe(true)
     expect(
       isChallengeUnlocked(
         { ...l3Gate, peakSoundwaves: new Decimal('1e65') },
-        getChallengeById('ch_one_hit')!,
+        getChallengeById('ch_flat')!,
       ),
     ).toBe(true)
     expect(
       isChallengeUnlocked(
-        { ...l3Gate, opusCount: 8, encoreCount: 15 },
+        { ...l3Gate, peakSoundwaves: new Decimal('1e72') },
         getChallengeById('ch_unplugged')!,
       ),
     ).toBe(true)
