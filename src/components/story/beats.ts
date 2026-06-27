@@ -47,6 +47,7 @@ export const STORY_BEATS: Record<StoryBeatId, StoryBeatDefinition> = {
     lines: [
       'Again. You play it again.',
       'The first sign of someone who refuses to be forgotten.',
+      'Something in the dark keeps time with you. You do not hear it yet.',
     ],
   },
   magnum_opus: {
@@ -55,6 +56,7 @@ export const STORY_BEATS: Record<StoryBeatId, StoryBeatDefinition> = {
     lines: [
       'Not a song this time. A work.',
       'Something that outlives the hand that made it.',
+      'A breath moves through it that was never yours.',
     ],
   },
   platinum: {

@@ -94,7 +94,10 @@ challenge panel until 1–2 venues graduate); accessibility (toggle-conduct, no 
 ## ⭐ SESSION SCOPE + WORKLIST (2026-06-28) — LOCKED
 **This session = L0–L3 only.** L4+ is handled by FUTURE FRESH SESSIONS (bulkier, needs more context) —
 armed by `docs/bible/`. L0 = the cold-open + era-0 onboarding (pre-Encore base, intro, light tutorial).
-Decisions: **M9 + M11 refactors = THIS session** (hand the L4 session a clean registry); **venue art =
+Decisions: **M9 + M11 refactors = DEFERRED to the L4 fresh session** (Vince, 2026-06-28 — they are L4's
+documented first prereq in `build-specs/README`; done fresh + full-care beats rushing the central
+production/reset code on a deep session. L0–L3 plays fine without them — funnel is in-budget at this scale);
+**venue art =
 deferred** (document the approach in the bible, do in a later visual pass); **balancing = a FULL sim-tuned
 pass.**
 
@@ -112,8 +115,8 @@ pass.**
   verify-don't-blind-fix, lock-plans-first, tap-batch decisions, no mid-build pivots, account/data policy). Ordered worklist (one Cursor code-task at a time on the tree):
 
 1. **B5** save-migration refactor *(in progress)* → gate + commit.
-2. **M9** multiplier-registry + declarative resets (after B5 — both touch gameStore/formulas).
-3. **M11** Decimal-overflow guards (NaN/Infinity throw in calculateTick) — fold with M9 or right after.
+2. ~~**M9** multiplier-registry + declarative resets~~ → **DEFERRED to L4 session** (its documented prereq).
+3. ~~**M11** Decimal-overflow guards~~ → **DEFERRED to L4 session** (fold with M9 there).
 4. **Capstone exploit fix** + build the **§2.8 challenge sim** → tune challenge magnitudes + autoMO cost.
 5. **L3 re-climb soft-floor** + the "profitable-MO" auto-trigger (kill the 46→21→2 collapse).
 6. **Onboarding (L0–L3):** cold-open light-tutorial (first-button highlight); gate the challenge panel until
