@@ -119,20 +119,22 @@ Replaces the old autobuyer-unlock rewards, which **redundantly duplicated** the 
 
 | # | Challenge (constraint) | Unique permanent reward (L3-scoped) | Automation | AP |
 |---|---|---|---|---|
-| 1 | Solo (only Notes) | Tier-1 (Notes) production ×1.5 | — | small |
+| 1 | Solo (only Notes) | Crescendo boost (higher ceiling/rate) | — | small |
 | 2 | Duet (2 tiers) | Global production ×1.15 | — | small |
 | 3 | Adagio (10× slow tick) | Permanent tempo-speed +X% | — | low |
 | 4 | Inflation (10× costs) | Tier cost ×0.9 (cheaper) | — | low |
-| 5 | One-Hit (max 10/tier) | Production-per-purchase bonus | — | mid |
+| 5 | One-Hit (max 10/tier) | Tier cost ×<1 (cheaper, efficiency) | — | mid |
 | 6 | Acoustic (no tempo) | small tempo bonus | **Tempo autobuyer** | mid |
 | 7 | Diminuendo (÷100 prod) | Global production ×1.5 | — | mid |
 | 8 | Flat (no milestones) | Milestone strength ×2→×2.2 | — | mid |
 | 9 | Leaky (2%/tick decay) | Production ×1.25 | — | mid |
-| 10 | Opening Night (rising costs) | Cost-growth scaling −X% | — | high |
+| 10 | Opening Night (rising costs) | Tier cost ×<1 (cheaper) | — | high |
 | 11 | Reverse (reversed prod) | Global production ×1.3 | **finale_auto** | high |
 | 12 | Unplugged (no prestige, 1e15) | **Big global ×, speed-scaled (below)** | **all_auto** | highest |
 
-All ×magnitudes + AP amounts are **sim-tuned** (challenge-sim gate below), not final. Mapping is thematic — the reward is the *inverse* of the constraint (beat no-tempo → tempo mastery; beat ÷100 production → production ×; beat rising-costs → cost-scaling cut).
+All ×magnitudes + AP amounts are **sim-tuned** (challenge-sim gate below), not final. Mapping is thematic — the reward is the *inverse* of the constraint (beat no-tempo → tempo mastery; beat ÷100 production → production ×; beat the cost-clock → cheaper costs).
+
+**Reward-type palette (keeps rewards varied, minimizes new plumbing — decided 2026-06-27):** global production × (Duet, Diminuendo, Leaky, Reverse + capstone), tempo bonus (Adagio, Acoustic — existing `achievementTempoBonus` channel), tier cost ×<1 (Inflation, One-Hit, Opening Night — existing `getTierCost` costMultiplier), **+2 small new hooks**: a **crescendo boost** (Solo) and **milestone strength** on `getMilestoneMultiplier` (Flat). All fold into a new `getChallengeMultipliers(completed, bestTimes)` following the `getAchievementGlobalMultiplier` precedent. (Rejected as traps: Solo's literal tier-1 × = dead late-game; Opening's cost-growth reduction = exponential balance landmine; One-Hit's per-purchase = awkward hook.)
 
 #### Speed-scaled capstone — driven by TOTAL challenge time (all 12)
 - **All 12 challenges are re-runnable** and each stores a **best completion time**. The single speed metric is the **sum of best-times across every challenge — lower is better.**
