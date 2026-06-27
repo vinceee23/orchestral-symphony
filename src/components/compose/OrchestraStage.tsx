@@ -6,6 +6,7 @@ import {
   getTierProductionPerSec, getTierBatchCost, getMaxBuyable, getCoreProductionMultiplier,
 } from '../../core/formulas'
 import { getAchievementGlobalMultiplier, getAchievementTierMultiplier, getAchievementTempoBonus } from '../../core/achievements'
+import { getChallengeMultipliers } from '../../core/challenges'
 import { hasPerk } from '../../core/perks'
 import { getAcclaimMultiplier } from '../../core/worldTour'
 import { formatNumber, formatCost } from '../../core/format'
@@ -83,6 +84,9 @@ export function OrchestraStage() {
   const finalePoints = useGameStore((s) => s.finalePoints)
   const worldTourUnlocked = useGameStore((s) => s.worldTourUnlocked)
   const lifetimeAcclaim = useGameStore((s) => s.lifetimeAcclaim)
+  const completedChallenges = useGameStore((s) => s.completedChallenges)
+  const challengeBestTimes = useGameStore((s) => s.challengeBestTimes)
+  const keepChallenges = useGameStore((s) => s.keepChallenges)
   const buyTier = useGameStore((s) => s.buyTier)
   const buyMaxTier = useGameStore((s) => s.buyMaxTier)
 
@@ -110,12 +114,15 @@ export function OrchestraStage() {
   }, [unlockKey])
 
   const achievementSet = new Set(achievements)
+  const challengeMults = getChallengeMultipliers(completedChallenges, challengeBestTimes, keepChallenges)
   const globalMult = getAchievementGlobalMultiplier(achievementSet).times(getCoreProductionMultiplier({
     lifetimeEncorePoints, finalePoints, encoreUpgrades, tempoLevel: tempo.level, tiers,
     opusUpgrades, crescendoLevel: crescendo, recordsSold, platinum,
     massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
-    achievementTempoBonus: getAchievementTempoBonus(achievementSet),
+    achievementTempoBonus: getAchievementTempoBonus(achievementSet) + challengeMults.tempoBonus,
     acclaimMult: worldTourUnlocked ? getAcclaimMultiplier(lifetimeAcclaim) : 1,
+    challengeGlobalProdMult: challengeMults.globalProdMult,
+    crescendoBonus: challengeMults.crescendoBonus,
   }))
 
   return (

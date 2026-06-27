@@ -47,10 +47,12 @@ export function getTierBatchCost(config: TierConfig, purchased: number, amount: 
   return total
 }
 
-/** Multiplier from milestone bonuses (every 10 purchased = x2, capped at 4 milestones = x16) */
-export function getMilestoneMultiplier(purchased: number): Decimal {
+/** Multiplier from milestone bonuses (every 10 purchased = base^x, capped at 4 milestones).
+ *  milestoneStrength raises the per-milestone base above MILESTONE_MULTIPLIER (challenge Flat: +0.2 → ×2.2). */
+export function getMilestoneMultiplier(purchased: number, milestoneStrength = 0): Decimal {
+  const base = MILESTONE_MULTIPLIER + milestoneStrength
   const milestones = Math.min(Math.floor(purchased / MILESTONE_INTERVAL), MILESTONE_PROD_CAP)
-  return Decimal.pow(MILESTONE_MULTIPLIER, milestones)
+  return Decimal.pow(base, milestones)
 }
 
 /** Total milestone rows completed across all tiers */
@@ -212,8 +214,12 @@ export function getCoreProductionMultiplier(p: {
   achievementTempoBonus?: number
   /** lifetimeAcclaim production snowball (Layer 3 World Tour). */
   acclaimMult?: number
+  /** Challenge reward: stacked global production × (default 1 = no-op). */
+  challengeGlobalProdMult?: number
+  /** Challenge reward: additive crescendo ceiling boost (default 0 = no-op). */
+  crescendoBonus?: number
 }): Decimal {
-  const crescendoMult = getCrescendoMultiplier(p.crescendoLevel, p.opusUpgrades)
+  const crescendoMult = getCrescendoMultiplier(p.crescendoLevel, p.opusUpgrades, p.crescendoBonus ?? 0)
   const fameMult = p.platinum ? getFameMultiplier(p.recordsSold, p.opusUpgrades) : 1
   // Mass Production perk: each tier you own 1,000+ of contributes a x2 (sim-tuned in formulas.test).
   const massMult = p.massProduction
@@ -231,4 +237,5 @@ export function getCoreProductionMultiplier(p: {
     .times(getMilestoneTickspeedMultiplier(p.tiers))
     .times(massMult)
     .times(p.acclaimMult ?? 1)
+    .times(p.challengeGlobalProdMult ?? 1)
 }

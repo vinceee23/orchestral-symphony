@@ -41,8 +41,12 @@ export interface GameState {
   tempo: TempoState
   buyAmount: BuyAmount
   achievements: string[]
-  /** L3 challenge clears — TODO(L4): reset on Signature ascension (LAYER3-SPEC §2.8). */
+  /** L3 challenge clears — resets on L4 ascension unless keepChallenges (LAYER3-SPEC §2.8). */
   completedChallenges: string[]
+  /** Best completion time (ms) per challenge id — persists across L4 ascension. */
+  challengeBestTimes: Record<string, number>
+  /** L4-era unlock: preserve completed-challenge reward multipliers across Signature ascension. */
+  keepChallenges: boolean
 
   // Layer 1 Encore shop — id -> level (spends encorePoints)
   encoreUpgrades: Record<string, number>

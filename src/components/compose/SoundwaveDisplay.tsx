@@ -4,6 +4,7 @@ import { formatNumber } from '../../core/format'
 import { TIER_CONFIGS } from '../../core/constants'
 import { getTierProductionPerSec, getEncoreMultiplier, getFinaleMultiplier, getCoreProductionMultiplier } from '../../core/formulas'
 import { getAchievementGlobalMultiplier, getAchievementTierMultiplier, getAchievementTempoBonus } from '../../core/achievements'
+import { getChallengeMultipliers } from '../../core/challenges'
 import { hasPerk } from '../../core/perks'
 import { getAcclaimMultiplier } from '../../core/worldTour'
 import { SmoothNumber } from '../shared/SmoothNumber'
@@ -23,17 +24,23 @@ export function SoundwaveDisplay() {
   const finalePoints = useGameStore((s) => s.finalePoints)
   const worldTourUnlocked = useGameStore((s) => s.worldTourUnlocked)
   const lifetimeAcclaim = useGameStore((s) => s.lifetimeAcclaim)
+  const completedChallenges = useGameStore((s) => s.completedChallenges)
+  const challengeBestTimes = useGameStore((s) => s.challengeBestTimes)
+  const keepChallenges = useGameStore((s) => s.keepChallenges)
 
   const achievementSet = new Set(achievements)
   const achievementGlobal = getAchievementGlobalMultiplier(achievementSet)
+  const challengeMults = getChallengeMultipliers(completedChallenges, challengeBestTimes, keepChallenges)
   // Production multiplier shared with the tick (prevents the displayed rate from drifting).
   const encoreMult = getEncoreMultiplier(lifetimeEncorePoints) // for the EP label below
   const globalMult = achievementGlobal.times(getCoreProductionMultiplier({
     lifetimeEncorePoints, finalePoints, encoreUpgrades, tempoLevel: tempo.level, tiers,
     opusUpgrades, crescendoLevel: crescendo, recordsSold, platinum,
     massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
-    achievementTempoBonus: getAchievementTempoBonus(achievementSet),
+    achievementTempoBonus: getAchievementTempoBonus(achievementSet) + challengeMults.tempoBonus,
     acclaimMult: worldTourUnlocked ? getAcclaimMultiplier(lifetimeAcclaim) : 1,
+    challengeGlobalProdMult: challengeMults.globalProdMult,
+    crescendoBonus: challengeMults.crescendoBonus,
   }))
 
   const tier1 = tiers[0]
