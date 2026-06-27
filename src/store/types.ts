@@ -133,6 +133,9 @@ export interface GameState {
   lastSaveTimestamp: number
   currentRunStartTime: number
   version: string
+
+  /** Story beat ids already shown (first-time only; persists with save). */
+  seenStoryBeats: string[]
 }
 
 export interface GameActions {
@@ -162,5 +165,6 @@ export interface GameActions {
   unlockWorldTour: () => void
   bankVenueAcclaim: () => void
   setAutoMOEnabled: (enabled: boolean) => void
+  setStoryBeatSeen: (id: string) => void
   hardReset: () => void
 }

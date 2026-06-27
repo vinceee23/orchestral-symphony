@@ -40,6 +40,10 @@ import {
   canUnlockWorldTour, getVenue, getComponentMaxTier,
   canAutoPerformMagnumOpus, canAutoPerformTour, getUnlockFlagsFromComponent, buildVenueGraduationPatch,
 } from '../core/worldTour'
+import {
+  hasPreStoryProgress,
+  seedSeenStoryBeatsFromProgress,
+} from '../components/story/beats'
 
 function createDefaultAutobuyer(): AutobuyerState {
   return {
@@ -120,6 +124,7 @@ function createInitialState(): GameState {
     lastSaveTimestamp: Date.now(),
     currentRunStartTime: Date.now(),
     version: '0.6.0',
+    seenStoryBeats: [],
   }
 }
 
@@ -968,6 +973,13 @@ export const useGameStore = create<GameState & GameActions>()(
         })
       },
 
+      setStoryBeatSeen: (id) => {
+        set((state) => {
+          if (state.seenStoryBeats.includes(id)) return state
+          return { seenStoryBeats: [...state.seenStoryBeats, id] }
+        })
+      },
+
       hardReset: () => {
         set(createInitialState())
       },
@@ -983,6 +995,7 @@ export const useGameStore = create<GameState & GameActions>()(
           performEncore, performMagnumOpus, performGrandFinale,
           buyComponent, buyKeepAutobuyers, graduateVenue, performTour, unlockWorldTour, bankVenueAcclaim,
           setAutoMOEnabled, setAutoTourEnabled,
+          setStoryBeatSeen,
           hardReset,
           ...data
         } = state
@@ -1044,6 +1057,10 @@ export const useGameStore = create<GameState & GameActions>()(
           if (state.wallReachedWithoutTempo === undefined) state.wallReachedWithoutTempo = false
           if (state.wallReachedWithoutTempoAtActiveMs === undefined) state.wallReachedWithoutTempoAtActiveMs = 0
           if (state.activeTimePlayed === undefined) state.activeTimePlayed = 0
+          if (!state.seenStoryBeats) state.seenStoryBeats = []
+          if (state.seenStoryBeats.length === 0 && hasPreStoryProgress(state)) {
+            state.seenStoryBeats = seedSeenStoryBeatsFromProgress(state)
+          }
           state.peakSoundwaves = state.peakSoundwaves instanceof Decimal
             ? state.peakSoundwaves
             : new Decimal(state.peakSoundwaves || 0)
@@ -1114,6 +1131,7 @@ export const useGameStore = create<GameState & GameActions>()(
               lastSaveTimestamp: state.lastSaveTimestamp,
               currentRunStartTime: state.currentRunStartTime,
               version: state.version,
+              seenStoryBeats: state.seenStoryBeats,
             }
             while (remaining > 0) {
               const step = Math.min(remaining, chunkMs)
@@ -1152,6 +1170,7 @@ export const useGameStore = create<GameState & GameActions>()(
             state.platinum = true
             state.recordsSold = Math.max(state.recordsSold, 750_000)
             state.postPlatinumMoCount = Math.max(state.postPlatinumMoCount, L3.GATE_POST_PLAT_MO)
+            state.seenStoryBeats = seedSeenStoryBeatsFromProgress(state)
             try {
               const url = new URL(location.href)
               url.searchParams.delete('l3')
