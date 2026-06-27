@@ -126,6 +126,24 @@ pass.**
     any doc/code divergences found.
 11. **Final gate** (tsc + full suite + build) → merge `feat/layer3` → master → deploy.
 
+## REVIEW-DRIVEN STATUS + LOCKED CALLS (2026-06-28)
+**Two candid outside reviewers (appeal + balance) both verdict: a good game worth building; L0–L3
+fundamentally healthy, just needs tuning.** Verified strengths: idle-first economy (24h buffer ratio 1.00,
+hands-free Platinum, active ≈1.4–1.75× idle), the cold-open, L3 World Tour, the axis-ladder design. The
+uncapped funnel is the lone STRUCTURAL risk — correctly deferred behind M9 (sequenced before L4).
+- **Done:** B1 reconcile · B5 save-migration · the bible (`docs/bible/`).
+- **Locked calls:** Platinum target = **~16h** (realistic optimal; old 22h was a suboptimal-buy artifact +
+  pushing back to 22h would deepen the mid-L2 coast). Mid-L2 coast fix = **reward-drip the SW-OOM gap**
+  (preserves the post-Platinum auto-MO design). Early-loop = **BOTH** more early narrative beats/fingerprints
+  AND one early active decision/verb.
+- **Worklist ADDITIONS (from the reviews):** (a) wire the missing per-clear **AP payout** (challenges grant
+  0 AP today); (b) **level the challenge difficulty spread** (1–17 min) via the §2.8 sim; (c) **mid-L2
+  reward-drip**; (d) **more early narrative beats**; (e) **an early active verb**; (f) set Platinum ~16h in
+  code/docs; (g) bake **"mechanic = story beat"** + **"L4 = the differentiator; public demo = L1–L4, not
+  L1–L3"** into the bible + build-specs.
+- **For the L4 fresh session (no action here):** L1–L3 alone reads as "AD reskinned" — the differentiation
+  IS L4+; L4 is the priority first build + the demo floor.
+
 ## SEQUENCE
 1. **B1** reconcile (docs + code + the one 9-layer reset matrix) + **B4** milestone-cap contract.
 2. **B2** lock Recognition/Palimpsest forms + the L8 sim invariant; **B3** permanent-power budget/channels.
