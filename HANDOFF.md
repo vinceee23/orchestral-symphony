@@ -27,7 +27,18 @@ resonance that answers when you reach into the silence — the gods) is **"the S
   wraps the funnel as the `core` channel (funnel internals unchanged) + new capped channels per layer;
   `resets.ts` `applyReset(state, tier)` migrated all 4 `perform*` onto the reset matrix; 12 characterization
   snapshots + ALL pacing sims byte-identical (19 files, 85 pass/1 skip). Both built by Codex, gated by Claude.
-  **L4 Signature is NEXT** (task #4) — now unblocked.
+- **L4 Signature STRUCTURE DONE** — gated green + committed (`47a47b2`): `signature*` state (resetTier
+  never) + save schema v2, `src/core/signature.ts` (identity at zero alloc = the no-op invariant; Harmony =
+  allocation-evenness; bounded capped-log efficiency), folds via the M9 `domain` channel + tempo/crescendo/
+  cost hooks (no funnel widening), `performSignature` via `applyReset('signature')`, circuit-break unlock
+  (flips `signatureUnlocked`, turns on auto-tour), Signature UI page, era theming, `signature` beat wired.
+  Gate: 20 files, 91 pass/1 skip/2 todo — untouched pacing sims pass (no-op invariant intact). Built by
+  Codex, gated by Claude. **ALL magnitudes are `// TBD-tune` placeholders.**
+- **L4 REMAINING (needs Vince + sims — task #6):** the magnitude-tuning pass per the **P0 list in
+  `docs/MECHANICS-BACKLOG.md`** (set `CHANNEL_CAPS.domain`; Harmony-vs-mono band; Percussion tempo-cap
+  diminish; Woodwinds combined cost floor; efficiency early-commit; post-Signature re-climb; auto-tour×
+  Acclaim) + a visual review of the Signature panel. Plus a ranked **mechanics backlog** (`docs/MECHANICS-
+  BACKLOG.md`) of L4-enrichment / L0–L3-polish / cohesion ideas to graduate deliberately.
 
 ### Locked decisions this session (don't re-open)
 - **Both balance calls CONFIRMED keep-as-is** (no code change): L3 late re-climbs stay **floored** (not
