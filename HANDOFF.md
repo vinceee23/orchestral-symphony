@@ -34,11 +34,18 @@ resonance that answers when you reach into the silence — the gods) is **"the S
   (flips `signatureUnlocked`, turns on auto-tour), Signature UI page, era theming, `signature` beat wired.
   Gate: 20 files, 91 pass/1 skip/2 todo — untouched pacing sims pass (no-op invariant intact). Built by
   Codex, gated by Claude. **ALL magnitudes are `// TBD-tune` placeholders.**
-- **L4 REMAINING (needs Vince + sims — task #6):** the magnitude-tuning pass per the **P0 list in
-  `docs/MECHANICS-BACKLOG.md`** (set `CHANNEL_CAPS.domain`; Harmony-vs-mono band; Percussion tempo-cap
-  diminish; Woodwinds combined cost floor; efficiency early-commit; post-Signature re-climb; auto-tour×
-  Acclaim) + a visual review of the Signature panel. Plus a ranked **mechanics backlog** (`docs/MECHANICS-
-  BACKLOG.md`) of L4-enrichment / L0–L3-polish / cohesion ideas to graduate deliberately.
+- **L4 FIRST-PASS TUNING DONE** — gated green + committed (`5a9aa2c`, done on Claude as Codex ran out of
+  credits): a real **balance oracle** in `sim/l4-signature.test.ts` (deterministic mini-climb w/ autobuyers,
+  scored as SW-exponents gained — captures all 5 bends) proves the **"diverse but viable"** target is MET by
+  the placeholder magnitudes (every build live, max spread ~1.18 ≤ the 1.30 band, Brass ~10% ahead, none
+  dead/dominant) — so NO magnitude churn was needed. `CHANNEL_CAPS.domain = 1.0` safety ceiling set (P0 #1).
+  Idle:active assertion DEFERRED to playtest (synthetic harness can't measure the locked window; documented).
+- **L4 REMAINING (needs Vince — task #6):** the **feel** review (is the allocation choice satisfying?) +
+  the **Signature UI** review (sims prove not-degenerate, not fun); finer magnitude/feel tuning + the
+  deferred idle:active check are a playtest pass (cheap once Codex credits refill). Plus the ranked
+  **mechanics backlog** (`docs/MECHANICS-BACKLOG.md`) of enrichment/polish/cohesion ideas to graduate.
+- **⚠ External CLI delegation is DOWN** (Codex out of credits + Cursor maxed, 2026-06-28) — Claude is the
+  sole builder until refill. Prefer waiting for a refill for large/iterative builds.
 
 ### Locked decisions this session (don't re-open)
 - **Both balance calls CONFIRMED keep-as-is** (no code change): L3 late re-climbs stay **floored** (not
