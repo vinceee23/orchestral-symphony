@@ -1,12 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import Decimal from 'break_infinity.js'
 import {
+  AUTOBUYER_DEFAULT_INTERVAL,
   PLATINUM_THRESHOLD,
   TIER_CONFIGS,
   getEncoreCost,
   getMagnumOpusCost,
 } from '../src/core/constants'
-import { getMilestoneMultiplier } from '../src/core/formulas'
+import { getMilestoneMultiplier, getTempoBPM, getTempoTickInterval } from '../src/core/formulas'
+import { calculateTick } from '../src/core/tick'
 import {
   L3,
   VENUES,
@@ -136,6 +138,83 @@ function alloc(overrides: Partial<Record<SignatureDomain, number>>): Record<Sign
   return { ...ZERO_SIGNATURE_ALLOCATION, ...overrides }
 }
 
+// === L4 balance oracle: deterministic timed mini-climb ===
+// Drives the REAL calculateTick (production + autobuyers) under a fixed mid-L4 baseline, advancing the
+// fake clock each step so autobuyer intervals elapse — so cost-reduction (Woodwinds) speeds the climb
+// just like in-game. Measures ticks-to-target; lower = stronger. Captures all 4 bend channels.
+const CLIMB_STEP_MS = 1000
+const CLIMB_START_SW = '1e9'
+const CLIMB_TEMPO_LEVEL = 12
+// "Diverse but viable" (Vince): the strongest build stays within ~30% of the weakest; none dead/dominant.
+const DOMINANCE_BAND = 1.30
+
+function midL4Tiers(): TierState[] {
+  return TIER_CONFIGS.map((config) => ({
+    id: config.id,
+    name: config.name,
+    quantity: new Decimal(25),
+    purchased: 25,
+    multiplier: getMilestoneMultiplier(25),
+    unlocked: true,
+  }))
+}
+
+function midL4Autobuyers(): GameState['autobuyers'] {
+  const ab: GameState['autobuyers'] = {}
+  for (let i = 1; i <= 7; i++) {
+    ab[`tier_${i}`] = {
+      unlocked: true, enabled: true, interval: AUTOBUYER_DEFAULT_INTERVAL, bulk: 'max', lastTick: 0,
+    }
+  }
+  return ab
+}
+
+const CLIMB_WINDOW_STEPS = 40
+/**
+ * Build "strength" = SW-exponents gained over a FIXED window of ticks from an identical mid-L4 baseline.
+ * Continuous (no integer-step granularity), captures all four bend channels (production via the domain
+ * channel, Percussion->tempo, Strings->crescendo when conducting, Woodwinds->cheaper autobuyer buys).
+ * Higher = stronger.
+ */
+function buildStrength(
+  allocation: Record<SignatureDomain, number>,
+  signatureCount: number,
+  conducting: boolean,
+): number {
+  useGameStore.getState().hardReset()
+  useGameStore.setState({
+    signatureUnlocked: true,
+    signatureAllocation: allocation,
+    signatureCount,
+    opusCount: 5,
+    tiers: midL4Tiers(),
+    tempo: {
+      level: CLIMB_TEMPO_LEVEL,
+      tickInterval: getTempoTickInterval(CLIMB_TEMPO_LEVEL),
+      baseBPM: getTempoBPM(CLIMB_TEMPO_LEVEL),
+    },
+    autobuyers: midL4Autobuyers(),
+    soundwaves: new Decimal(CLIMB_START_SW),
+    crescendo: 0,
+  })
+  const start = useGameStore.getState().soundwaves.log10()
+  for (let i = 0; i < CLIMB_WINDOW_STEPS; i++) {
+    vi.setSystemTime(PINNED_NOW + i * CLIMB_STEP_MS)
+    useGameStore.setState(calculateTick(useGameStore.getState(), CLIMB_STEP_MS, conducting))
+  }
+  return useGameStore.getState().soundwaves.log10() - start
+}
+
+const CLIMB_BUILDS: Array<[string, Record<SignatureDomain, number>]> = [
+  ['percussion', alloc({ percussion: 1 })],
+  ['strings', alloc({ strings: 1 })],
+  ['brass', alloc({ brass: 1 })],
+  ['woodwinds', alloc({ woodwinds: 1 })],
+  ['harmony', alloc({ harmony: 1 })],
+  ['blend', alloc({ percussion: 0.2, strings: 0.2, brass: 0.2, woodwinds: 0.2, harmony: 0.2 })],
+  ['brass60harmony40', alloc({ brass: 0.6, harmony: 0.4 })],
+]
+
 describe('L4 Signature', () => {
   beforeEach(() => {
     vi.useFakeTimers()
@@ -245,11 +324,33 @@ describe('L4 Signature', () => {
     }
   })
 
-  // tune at sim pass: magnitude-dependent dominance target is intentionally not locked in this build.
-  it.todo('no mono domain strictly dominates every representative climb regime')
+  it('no build strictly dominates — all 5 monos + blend stay in the diverse-but-viable band', () => {
+    for (const count of [1, 5, 40]) {
+      const strengths = CLIMB_BUILDS.map(([name, a]) => ({ name, s: buildStrength(a, count, true) }))
+      for (const { name, s } of strengths) {
+        expect(s, `${name} @count${count} must be a live build (>0 exponents)`).toBeGreaterThan(0)
+      }
+      const vals = strengths.map((x) => x.s)
+      const ratio = Math.max(...vals) / Math.min(...vals)
+      expect(ratio, `dominance band @count${count}`).toBeLessThanOrEqual(DOMINANCE_BAND)
+      // the balanced blend must itself be viable (inside the band, not a lone outlier either way)
+      const blend = strengths.find((x) => x.name === 'blend')!.s
+      expect(blend / Math.min(...vals)).toBeLessThanOrEqual(DOMINANCE_BAND)
+      expect(Math.max(...vals) / blend).toBeLessThanOrEqual(DOMINANCE_BAND)
+    }
+  })
 
-  // tune at sim pass: active/idle balance belongs with the later balance sweep.
-  it.todo('idle-to-active ratio remains inside the global target for each domain main')
+  it('no overflow: brass / brass+harmony at extreme signatureCount stays finite (M11)', () => {
+    expect(Number.isFinite(buildStrength(alloc({ brass: 1 }), 1_000_000, true))).toBe(true)
+    expect(buildStrength(alloc({ brass: 0.6, harmony: 0.4 }), 1_000_000, true)).toBeGreaterThan(0)
+  })
+
+  // DEFERRED to the playtest/feel pass. The global idle:active window (1.4-1.75x) is already gated by the
+  // existing pacing sims. Percussion->tempo is ratio-NEUTRAL (tempo applies to idle + active equally);
+  // Strings->crescendo is the only ratio-affecting bend. A faithful idle:active assertion needs the real
+  // auto-conduct floor (0.7) + warm-up dynamics, which the synthetic mid-L4 climb harness doesn't model
+  // (it ramps crescendo from 0, over-stating the active advantage).
+  it.todo('idle:active with a Strings main stays in the locked 1.4-1.75x window (needs real crescendo floor)')
 
   it('tracks every Signature domain in the fixed domain list', () => {
     expect([...SIGNATURE_DOMAINS].sort()).toEqual([

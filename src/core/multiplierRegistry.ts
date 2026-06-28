@@ -23,8 +23,13 @@ export interface MultEntry {
   channel: MultChannel
 }
 
-/** Per-channel hard caps. L4 will define the domain cap; M9 keeps every channel uncapped. */
-export const CHANNEL_CAPS: Partial<Record<MultChannel, number>> = {}
+/** Per-channel hard caps (add form: a channel's product is capped at 1 + cap). 'core' stays uncapped
+ *  (the funnel has its own internal caps). 'domain' (L4 Signature) gets a SAFETY ceiling well above its
+ *  legit max (~×1.44 at full Brass × the efficiency cap) so a future magnitude/efficiency change can't
+ *  run the channel away (the B3 runaway the registry exists to prevent). */
+export const CHANNEL_CAPS: Partial<Record<MultChannel, number>> = {
+  domain: 1.0, // TBD-tune (sim/playtest) — ×2.0 ceiling; raise only if a sim shows a legit need
+}
 
 export function composeMultiplier(entries: MultEntry[]): Decimal {
   if (entries.length === 0) return new Decimal(1)
