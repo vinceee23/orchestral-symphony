@@ -3,14 +3,12 @@ import Decimal from 'break_infinity.js'
 import { useGameStore } from '../../store/gameStore'
 import { TIER_CONFIGS } from '../../core/constants'
 import {
-  getTierProductionPerSec, getTierBatchCost, getMaxBuyable, getCoreProductionMultiplier,
+  getTierProductionPerSec, getTierBatchCost, getMaxBuyable,
 } from '../../core/formulas'
-import { getAchievementGlobalMultiplier, getAchievementTierMultiplier, getAchievementTempoBonus } from '../../core/achievements'
-import { getChallengeMultipliers } from '../../core/challenges'
-import { hasPerk } from '../../core/perks'
-import { getAcclaimMultiplier } from '../../core/worldTour'
+import { getAchievementTierMultiplier } from '../../core/achievements'
 import { formatNumber, formatCost } from '../../core/format'
 import { playBuySound } from '../../core/audio'
+import { getProductionMultiplier } from '../../core/multiplierRegistry'
 import { SmoothNumber } from '../shared/SmoothNumber'
 
 // Cache processed (background-keyed) emblem data URLs so we only do canvas work once per emblem.
@@ -87,6 +85,8 @@ export function OrchestraStage() {
   const completedChallenges = useGameStore((s) => s.completedChallenges)
   const challengeBestTimes = useGameStore((s) => s.challengeBestTimes)
   const keepChallenges = useGameStore((s) => s.keepChallenges)
+  const activeChallenge = useGameStore((s) => s.activeChallenge)
+  const warmUpLevel = useGameStore((s) => s.warmUpLevel)
   const buyTier = useGameStore((s) => s.buyTier)
   const buyMaxTier = useGameStore((s) => s.buyMaxTier)
 
@@ -114,16 +114,25 @@ export function OrchestraStage() {
   }, [unlockKey])
 
   const achievementSet = new Set(achievements)
-  const challengeMults = getChallengeMultipliers(completedChallenges, challengeBestTimes, keepChallenges)
-  const globalMult = getAchievementGlobalMultiplier(achievementSet).times(getCoreProductionMultiplier({
-    lifetimeEncorePoints, finalePoints, encoreUpgrades, tempoLevel: tempo.level, tiers,
-    opusUpgrades, crescendoLevel: crescendo, recordsSold, platinum,
-    massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
-    achievementTempoBonus: getAchievementTempoBonus(achievementSet) + challengeMults.tempoBonus,
-    acclaimMult: worldTourUnlocked ? getAcclaimMultiplier(lifetimeAcclaim) : 1,
-    challengeGlobalProdMult: challengeMults.globalProdMult,
-    crescendoBonus: challengeMults.crescendoBonus,
-  }))
+  const globalMult = getProductionMultiplier({
+    achievements,
+    completedChallenges,
+    challengeBestTimes,
+    keepChallenges,
+    activeChallenge,
+    lifetimeEncorePoints,
+    finalePoints,
+    encoreUpgrades,
+    tempo,
+    tiers,
+    opusUpgrades,
+    crescendo,
+    recordsSold,
+    platinum,
+    worldTourUnlocked,
+    lifetimeAcclaim,
+    warmUpLevel,
+  })
 
   return (
     <div className="flex items-end justify-center gap-3 sm:gap-5 pb-16">

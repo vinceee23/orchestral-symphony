@@ -9,14 +9,12 @@ import {
   getTempoTickInterval,
   getTempoBPM,
   getMaxBuyable,
-  getCoreProductionMultiplier,
 } from './formulas'
 import { advanceCrescendo, getCrescendoMultiplier } from './crescendo'
 import { accrueRecords, isPlatinum } from './records'
 import { getAutomatorInterval, getAutomatorBulk, clampAutobuyerBulk } from './opusUpgrades'
 import { hasPerk, FAST_AUTOMATOR_SPEED_TIERS, PLATINUM_PRESS_MULT } from './perks'
 import {
-  getAchievementGlobalMultiplier,
   getAchievementTierMultiplier,
   getAchievementCostReduction,
   getAchievementTierCostReduction,
@@ -24,9 +22,10 @@ import {
 } from './achievements'
 import { getChallengeById, getActiveChallengeModifiers, getChallengeMultipliers } from './challenges'
 import type { ChallengeModifiers } from './challenges'
-import { getAcclaimMultiplier, calculateWorldTourTick } from './worldTour'
+import { calculateWorldTourTick } from './worldTour'
 import { advanceWarmUp, isWarmUpUnlocked, warmUpMultiplier } from './warmup'
 import { assertFiniteDecimal } from './guards'
+import { getProductionMultiplier } from './multiplierRegistry'
 
 export function calculateTick(state: GameState, deltaMs: number, conducting = false): Partial<GameState> {
   const achievementSet = new Set(state.achievements)
@@ -62,7 +61,6 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
   let newAutobuyers = { ...state.autobuyers }
 
   // === Global multiplier stack ===
-  const achievementGlobal = getAchievementGlobalMultiplier(achievementSet)
   const achievementTempoBonus = getAchievementTempoBonus(achievementSet)
   const challengeMults = getChallengeMultipliers(
     state.completedChallenges,
@@ -92,27 +90,13 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
   )
   const platinum = state.platinum || isPlatinum(recordsSold)
 
-  const acclaimMult = state.worldTourUnlocked && !noP
-    ? getAcclaimMultiplier(state.lifetimeAcclaim)
-    : 1
-
-  let globalMult = achievementGlobal.times(getCoreProductionMultiplier({
-    lifetimeEncorePoints: noP ? 0 : state.lifetimeEncorePoints,
-    finalePoints: noP ? 0 : state.finalePoints,
-    encoreUpgrades: state.encoreUpgrades,
-    tempoLevel: state.tempo.level,
-    tiers: state.tiers,
-    opusUpgrades: state.opusUpgrades,
+  let globalMult = getProductionMultiplier(state, {
+    noPrestige: noP,
     crescendoLevel: nextCresc,
     recordsSold,
     platinum,
-    massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
-    achievementTempoBonus: totalTempoBonus,
-    acclaimMult,
-    challengeGlobalProdMult: challengeMults.globalProdMult,
     warmUpMult: warmUpMultiplier(warmUpLevel),
-    crescendoBonus: challengeMults.crescendoBonus,
-  }))
+  })
 
   // Apply production divisor from challenge
   if (mods.productionDivisor > 1) {

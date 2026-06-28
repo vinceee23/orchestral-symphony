@@ -19,7 +19,7 @@ import {
   getHeadStartExponent, getRehearsalCostReduction, getOvertureGainMultiplier,
 } from '../core/encoreUpgrades'
 import { OPUS_UPGRADES, OPUS_UPGRADE_MAP, getOpusUpgradeCost } from '../core/opusUpgrades'
-import { hasPerk, WARMUP_TIERS, WARMUP_BONUS_SW, TEMPO_HEADSTART_LEVEL, CRESCENDO_HEADSTART, ENCORE_UPGRADE_DISCOUNT } from '../core/perks'
+import { hasPerk, ENCORE_UPGRADE_DISCOUNT } from '../core/perks'
 import { getOpusGain } from '../core/records'
 import { calculateTick } from '../core/tick'
 import {
@@ -32,7 +32,7 @@ import {
   getMaxTempoLevels,
   getEncoreGain,
 } from '../core/formulas'
-import { ACHIEVEMENTS, getAchievementStartingSW, getAchievementCostReduction, getAchievementTierCostReduction, getAchievementHeadStartBoost, getAchievementTempoBonus } from '../core/achievements'
+import { ACHIEVEMENTS, getAchievementCostReduction, getAchievementTierCostReduction, getAchievementHeadStartBoost, getAchievementTempoBonus } from '../core/achievements'
 import { getChallengeById, getActiveChallengeModifiers, isChallengeUnlocked, getChallengeStartingSoundwaves, getChallengeMultipliers } from '../core/challenges'
 import { createDecimalStorage } from '../core/save'
 import { useUiStore } from './uiStore'
@@ -47,6 +47,7 @@ import {
 import { seedSeenHintsFromProgress } from '../components/onboarding/hints'
 import { createInitialState } from './initialState'
 import { migratePersistedSave } from './saveMigration'
+import { applyReset } from '../core/resets'
 
 function createDefaultAutobuyer(): AutobuyerState {
   return {
@@ -67,43 +68,6 @@ function mergeSeenHintIds(existing: string[] | undefined, seeded: string[]): str
 
 function seedSeenHintsForCurrentProgress(state: GameState): void {
   state.seenHints = mergeSeenHintIds(state.seenHints, seedSeenHintsFromProgress(state))
-}
-
-/** Reset tiers, soundwaves, and tempo to initial state, with achievement starting SW bonus */
-function resetTiersAndSW(achievementIds: string[], milestoneStrength = 0): Partial<GameState> {
-  const achSet = new Set(achievementIds)
-  const bonusSW = getAchievementStartingSW(achSet)
-  // Distinct head-start perks (all gated behind their achievements):
-  // - warmup: first WARMUP_TIERS tiers pre-bought (a milestone bracket each) + bonus SW
-  // - tempo-headstart: begin each run at Tempo level TEMPO_HEADSTART_LEVEL
-  // - crescendo-headstart: begin each run with Crescendo seeded (only added when the perk is owned, so
-  //   non-perk Encore behaviour — crescendo persisting across the reset — is unchanged)
-  const warmup = hasPerk(achSet, 'perk-warmup')
-  const tempoLevel = hasPerk(achSet, 'perk-tempo-headstart') ? TEMPO_HEADSTART_LEVEL : 0
-  const crescHeadstart = hasPerk(achSet, 'perk-crescendo-headstart')
-  return {
-    soundwaves: STARTING_SOUNDWAVES.plus(bonusSW).plus(warmup ? WARMUP_BONUS_SW : 0),
-    tiers: TIER_CONFIGS.map((config, idx) => {
-      const preBought = warmup && idx < WARMUP_TIERS
-      return {
-        id: config.id,
-        name: config.name,
-        quantity: new Decimal(preBought ? 10 : 0),
-        purchased: preBought ? 10 : 0,
-        multiplier: preBought ? getMilestoneMultiplier(10, milestoneStrength) : new Decimal(1),
-        unlocked: config.id === 1 || (warmup && idx <= WARMUP_TIERS),
-      }
-    }),
-    tempo: {
-      level: tempoLevel,
-      tickInterval: getTempoTickInterval(tempoLevel),
-      baseBPM: getTempoBPM(tempoLevel),
-    },
-    ...(crescHeadstart ? { crescendo: CRESCENDO_HEADSTART } : {}),
-    currentRunStartTime: Date.now(),
-    producedThisRun: new Decimal(0),
-    tempoPurchasesThisRun: 0,
-  }
 }
 
 /** Get effective cost multiplier for buying tiers */
@@ -134,14 +98,6 @@ function getEffectiveCostMultiplier(state: GameState, tierId: number): number {
   }
 
   return mods.costMultiplier * globalCostRed * tierCostRed * rehearsal * risingFactor * challengeMults.costMult
-}
-
-function getChallengeMilestoneStrength(state: GameState): number {
-  return getChallengeMultipliers(
-    state.completedChallenges,
-    state.challengeBestTimes ?? {},
-    state.keepChallenges ?? false,
-  ).milestoneStrength
 }
 
 function getTotalTempoBonus(state: GameState): number {
@@ -644,7 +600,7 @@ export const useGameStore = create<GameState & GameActions>()(
         const overtureMult = getOvertureGainMultiplier(state.encoreUpgrades)
         const gain = Math.floor(getEncoreGain(state.peakSoundwaves) * overtureMult)
 
-        const reset = resetTiersAndSW(state.achievements, getChallengeMilestoneStrength(state))
+        const reset = applyReset(state, 'encore')
         // Sight-Reading head-start: begin the new run with SW = (this run's peak)^exp, so you skip the
         // tedious redundant re-climb (only on Encore — MO/Finale reset the multiplier, so a pre-reset
         // peak seed would be wildly out of regime). exp grows with the unlock + head-start achievements.
@@ -727,23 +683,8 @@ export const useGameStore = create<GameState & GameActions>()(
         // takes effect from the next prestige cycle after its achievement unlocks (the unlock fires on the
         // ~300ms achievement tick AFTER opusCount increments). For warmup that's invisible (it re-applies on
         // the next Encore reset); for skip-wall it costs one final wall-climb at the unlock boundary. Accepted.
-        const achSet = new Set(state.achievements)
-        const skipWall = hasPerk(achSet, 'perk-skip-wall')
-        const keepEncoreUpgrades = hasPerk(achSet, 'perk-keep-encore-upgrades')
         const wasPlatinum = state.platinum || state.recordsSold >= PLATINUM_THRESHOLD
-        const crescendoSeed = hasPerk(achSet, 'perk-crescendo-headstart') ? CRESCENDO_HEADSTART : 0
-        const resetPatch: Partial<GameState> = {
-          ...resetTiersAndSW(state.achievements, getChallengeMilestoneStrength(state)),
-          peakSoundwaves: new Decimal(0),
-          encorePoints: 0,
-          lifetimeEncorePoints: 0,
-          encoreCount: 0,
-          encoreUpgrades: keepEncoreUpgrades ? state.encoreUpgrades : {},
-          layer1WallReached: skipWall,
-          // honor perk-crescendo-headstart (resetTiersAndSW's value is overridden by this explicit key)
-          crescendo: crescendoSeed,
-          peakCrescendoMult: 1,
-        }
+        const resetPatch = applyReset(state, 'magnumOpus')
         set({
           ...resetPatch,
           opusPoints: state.opusPoints + gain,
@@ -855,28 +796,14 @@ export const useGameStore = create<GameState & GameActions>()(
         if (!state.worldTourUnlocked) return
 
         const carriedRecords = Math.floor(state.recordsSold * L3.LEGACY_RECORDS_FRACTION)
-        const achSet = new Set(state.achievements)
-        const keepEncoreUpgrades = hasPerk(achSet, 'perk-keep-encore-upgrades')
         const opusCount = state.opusCount
-        const keptAutobuyers = state.keepAutobuyers ? { ...state.autobuyers } : {}
         const newTourCount = state.tourCount + 1
 
         set({
-          ...resetTiersAndSW(state.achievements, getChallengeMilestoneStrength(state)),
-          peakSoundwaves: new Decimal(0),
-          encorePoints: 0,
-          lifetimeEncorePoints: 0,
-          encoreCount: 3,
-          encoreUpgrades: keepEncoreUpgrades ? state.encoreUpgrades : {},
-          layer1WallReached: true,
-          opusPoints: 0,
+          ...applyReset(state, 'tour'),
           opusCount,
-          opusUpgrades: {},
-          crescendo: hasPerk(achSet, 'perk-crescendo-headstart') ? CRESCENDO_HEADSTART : 0,
-          peakCrescendoMult: 1,
           recordsSold: carriedRecords,
           platinum: carriedRecords >= PLATINUM_THRESHOLD,
-          autobuyers: keptAutobuyers,
           // Automations reset unless Roadies (keepAutobuyers) — re-buy with persisted AP. auto-MO is a
           // separate boolean (not in the autobuyers map), so it needs the same reset as auto-encore above.
           // (AP, lifetimeEncoreCount, opusCount + the venue ladder/Acclaim all persist by omission.)
@@ -911,14 +838,7 @@ export const useGameStore = create<GameState & GameActions>()(
 
         // Grand Finale resets the Encore + Magnum Opus layers.
         set({
-          ...resetTiersAndSW(state.achievements, getChallengeMilestoneStrength(state)),
-          peakSoundwaves: new Decimal(0),
-          encorePoints: 0,
-          lifetimeEncorePoints: 0,
-          encoreCount: 0,
-          encoreUpgrades: {},
-          opusPoints: 0,
-          opusCount: 0,
+          ...applyReset(state, 'grandFinale'),
           finalePoints: state.finalePoints + 1,
           finaleCount: state.finaleCount + 1,
         })
