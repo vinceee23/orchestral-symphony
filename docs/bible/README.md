@@ -6,9 +6,13 @@
 > The player conducts an orchestra, grows production through a tiered economy, and climbs a **9-layer
 > prestige ladder** — each layer resets the layers below it but grants a new permanent currency and a new
 > automation that runs the layer beneath it. The arc is also a *story*: a birth→rise→apotheosis→fall→
-> redemption→confrontation spine told through cold-open story beats. As of branch `feat/layer3`, **Layers
-> 1–3 are fully built and balance-gated** (Encore → Magnum Opus → World Tour); **Layers 4–9 are
-> design-locked but not yet implemented** (only inert story-beat placeholders exist in code).
+> redemption→confrontation spine told through cold-open story beats. As of 2026-06-28, **Layers 0–3 are
+> feature-complete, balance-gated, and deployed to `master`/Pages** — Encore → Magnum Opus → World Tour, plus
+> the early **Warm-Up** active verb, light **first-run onboarding**, and the cold-open + per-layer story
+> beats; full suite green (17/17 sim files). **Layers 4–9 are design-locked but not yet implemented** (only
+> inert story-beat placeholders exist in code). See **`HANDOFF.md`** (repo root) for the live snapshot and
+> two balance calls awaiting Vince's confirmation. (Citations below still reference `feat/layer3`, now merged
+> to `master` — the code is identical.)
 
 This bible is **code-grounded**: every load-bearing claim is cited to a `file:line` on `feat/layer3`, and
 every known place where the **design docs and the live code diverge** is flagged explicitly. Trust the code
