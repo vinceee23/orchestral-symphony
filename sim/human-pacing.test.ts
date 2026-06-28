@@ -883,8 +883,11 @@ function buildVerdicts(results: RunResult[]): PacingVerdict[] {
 
   return [
     {
-      criterion: 'L1+L2 active-play achievement gaps ≤ ~15–20 min',
-      pass: pctGap20 <= 0.25 && median(l1Gaps) <= 18 && median(l2Gaps) <= 18,
+      // REPORT-ONLY since the 2026-06-29 achievement cull: gaps naturally widened (101 achievements, not
+      // 376) and that's fine — pacing is the economy's job, not the achievement-drip's. Kept as an
+      // always-"pass" info line so the number stays visible without reading as a gate failure.
+      criterion: 'L1+L2 achievement gaps (report-only since cull — not a gate)',
+      pass: true,
       detail: `L1 median worst-gap ${median(l1Gaps).toFixed(1)} min, worst ${Math.max(...l1Gaps).toFixed(1)} min | L2 median ${median(l2Gaps).toFixed(1)} min, worst ${Math.max(...l2Gaps).toFixed(1)} min | ${(pctGap15 * 100).toFixed(0)}% runs >15 min, ${(pctGap20 * 100).toFixed(0)}% runs >20 min`,
     },
     {
@@ -1105,11 +1108,10 @@ describe('human pacing instrument', () => {
     expect(platMedianH, 'Platinum median active-play hours').toBeGreaterThanOrEqual(12)
     expect(platMedianH, 'Platinum median active-play hours').toBeLessThanOrEqual(22)
 
-    expect(median(l1Gaps), 'L1 median worst achievement gap').toBeLessThanOrEqual(20)
-    expect(Math.max(...l1Gaps), 'L1 worst achievement gap across seeds').toBeLessThanOrEqual(25)
-    expect(median(l2Gaps), 'L2 median worst achievement gap').toBeLessThanOrEqual(20)
-    expect(Math.max(...l2Gaps), 'L2 worst achievement gap across seeds').toBeLessThanOrEqual(25)
-    expect(pctGap20, 'Runs with L1/L2 gap >20 min').toBeLessThanOrEqual(0.25)
+    // NOTE (2026-06-29): the achievement-gap assertions were RETIRED with the achievement cull. They forced
+    // ~285 filler achievements into existence purely to keep unlocks ≤20 min apart — gaming this metric, not
+    // designing. Pacing is the economy's job now; achievements reward firsts/feats/mastery. The gap numbers
+    // are still computed + logged above for visibility, just no longer a pass/fail bar.
 
     expect(restraintAutos, 'restraint auto-unlocks same-tick as a prestige (trivially handed)').toHaveLength(0)
     expect(allUnlocked.has('ach_perk_patron'), 'Sound of Silence reachable').toBe(true)
@@ -1118,37 +1120,31 @@ describe('human pacing instrument', () => {
       'Speed of Sound reachable in at least one seed',
     ).toBe(true)
 
-    const midGameStranded = neverUnlocked.filter((a) =>
-      !['ach_around_world', 'ach_final_countdown', 'ach_grand_finale', 'ach_back_in_black',
-        'ach_twinkle', 'ach_night_fever', 'ach_free_bird', 'ach_smooth_criminal', 'ach_rush',
-        'ach_stardust', 'ach_vivaldi', 'ach_speed_demon', 'ach_diamond_hands', 'ach_set_forget',
-        'ach_second_movement', 'ach_five_million', 'ach_fifteen_venues', 'ach_twenty_pieces',
-        'ach_third_movement', 'ach_tree_legacy', 'ach_platinum_jubilee', 'ach_cultural_icon',
-        'ach_diamond_certified', 'ach_opus_eight', 'ach_opus_ten', 'ach_tree_twelve',
-        'ach_tree_twenty', 'ach_tree_eleven', 'ach_whole_catalogue', 'ach_ode_to_joy',
-        'ach_perk_session_musicians', 'ach_perk_mass_production', 'ach_tree_climber',
-        'ach_one_more_really', 'ach_royalty_check', 'ach_second_universe', 'ach_a_side',
-        // Deliberate-grind: 10 Encores after the 1st MO — auto-MO ends each cycle at the 8-encore wall,
-        // so the auto-player legitimately skips it (an achievement-hunter turns auto-MO off to grind it).
-        'ach_grind_encore_10',
-        // Reachable by a THOROUGH/long-playing player but missed by the sim's efficient auto-model +
-        // short horizon (Platinum+3 MOs). ⚠️ MANUALLY VERIFY EACH IS REACHABLE IN THE REAL GAME during
-        // playtest: opus_seven (7 MOs — horizon; sits next to the excluded opus_eight/ten), harmony_bot
-        // & melody_machine (buy automator-unlock-5/-4 — OP-budget), ach_hello (own 500 of a tier — needs
-        // a long single run / the reset-softening perks).
-        'ach_opus_seven', 'ach_harmony_bot', 'ach_melody_machine', 'ach_hello',
-        // Mid-L2 reward-drip collectibles (zero-bonus, 1e72–1e82 SW): the higher-SW ones sit just past the
-        // efficient sim's short horizon (Platinum + a few MOs) but are reachable over a full real climb —
-        // ⚠️ manually verify in playtest, same coverage-gap caveat as the achievements above.
-        'ach_post_mo_sw_72', 'ach_post_mo_sw_74', 'ach_post_mo_sw_76', 'ach_post_mo_sw_78',
-        'ach_post_mo_sw_80', 'ach_post_mo_sw_82'].includes(a.id),
-    )
-    expect(midGameStranded, 'mid-game achievements stranded under human play').toHaveLength(0)
+    // Reworked (2026-06-29) from a brittle "everything-except-this-denylist must unlock" into a robust
+    // positive allow-list: these CORE early/mid achievements gate on milestones the sim definitely crosses
+    // by Platinum + a few MOs (all tiers unlocked, 7+ Encores, 1e22+ SW, 1M records, 3+ MOs). If any is
+    // missing, a real progression spine broke. Endgame/feat/discovery achievements (deep MO/GF counts,
+    // 1e100+ SW, all-challenge, speed feats) are intentionally NOT listed — they live past the sim horizon
+    // and are verified in real play.
+    const MUST_UNLOCK_BY_HORIZON = [
+      'ach_real_life', 'ach_let_it_be', 'ach_dont_stop', 'ach_sweet_child', 'ach_dust',
+      'ach_pressure', 'ach_take_on_me', 'ach_stairway', 'ach_thunder', 'ach_rock_you',
+      'ach_fur_elise', 'ach_mass_b_minor', 'ach_hotel', 'ach_beat_it', 'ach_teen_spirit',
+      'ach_seven_nation', 'ach_feeling', 'ach_all_star', 'ach_higher_ground', 'ach_one_more',
+      'ach_champions', 'ach_symphony_no5', 'ach_love_you', 'ach_imagine', 'ach_purple_rain',
+      'ach_magnum', 'ach_raise_baton', 'ach_studio_time', 'ach_gold_record', 'ach_going_platinum',
+      'ach_double_feature', 'ach_opus_three', 'ach_perk_muscle_memory',
+    ]
+    const coreStranded = MUST_UNLOCK_BY_HORIZON.filter((id) => !allUnlocked.has(id))
+    expect(coreStranded, 'core early/mid achievements stranded under human play').toHaveLength(0)
 
     const globalAtPlat = results
       .map((r) => r.milestones.platinumGlobalMult)
       .filter((v): v is number => v !== null)
-    expect(median(globalAtPlat), 'global mult at Platinum').toBeGreaterThanOrEqual(2.4)
+    // Lower bound relaxed 2.4→2.25 with the achievement cull (2026-06-29): ~285 filler achievements, each a
+    // small +%, were deleted and their production folded into the kept milestones — net achievement-mult at
+    // Platinum lands a touch lower but the Platinum-timing band (12–22h) above is the real production guard.
+    expect(median(globalAtPlat), 'global mult at Platinum').toBeGreaterThanOrEqual(2.25)
     expect(median(globalAtPlat), 'global mult at Platinum').toBeLessThanOrEqual(3.3)
   }, 600_000)
 

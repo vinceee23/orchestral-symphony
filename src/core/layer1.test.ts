@@ -98,7 +98,10 @@ describe('Layer 1 reward shape (regression guards)', () => {
   })
 
   it('EP gain is sublinear and single-digit-ish at first-Encore scale', () => {
-    expect(getEncoreGain(new Decimal('1e15'))).toBe(0) // at/below threshold => nothing
+    // First-Encore fix (2026-06): any Encore that meets its tier-gate banks at least 1 EP — a prestige
+    // never gives nothing. At/below the threshold the gain is floored at 1 (not 0).
+    expect(getEncoreGain(new Decimal('1e15'))).toBe(1)
+    expect(getEncoreGain(new Decimal(0))).toBe(0) // genuinely-empty peak still gives nothing
     const g = getEncoreGain(new Decimal('1e17.7'))
     expect(g).toBeGreaterThanOrEqual(1)
     expect(g).toBeLessThanOrEqual(5)
