@@ -6,6 +6,7 @@ import { AchievementToast } from './components/shared/AchievementToast'
 import { HelpModal } from './components/shared/HelpModal'
 import { EncoreCelebration } from './components/compose/EncoreCelebration'
 import { StoryBeatOverlay } from './components/story/StoryBeatOverlay'
+import { OfflineSummary } from './components/shared/OfflineSummary'
 import { DevPanel } from './dev/DevPanel'
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
   return (
     <>
       <AchievementToast />
+      <OfflineSummary />
       <StoryBeatOverlay />
       <AppShell />
       <HelpModal />
