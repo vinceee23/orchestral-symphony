@@ -1,8 +1,65 @@
-# HANDOFF — Sonance (updated 2026-06-28, overnight autonomous session)
+# HANDOFF — Sonance (updated 2026-06-29)
 
 > **READ FIRST for a fresh session:** this block + then `docs/bible/` (method→architecture→economy→world)
 > and `docs/build-specs/` (L4–L9). The 9-layer ladder + full context live there. This file is the
 > "where we left off + what I changed + what needs your call" snapshot.
+
+## ⭐ THIS SESSION (2026-06-29) — Playtest pass: Warm-Up retired · achievements culled · sim honesty
+
+Live-playtest iteration on `feat/layer4` (nothing deployed; master untouched — Vince: keep iterating, deploy
+later). All items below gated green + committed.
+
+- **Warm-Up RETIRED** (`bba0415`) — redundant with Conduct/Crescendo (both reward active presence; post-MO
+  they showed at once). `isWarmUpUnlocked → false` at the source: bar auto-hides (WarmUpBar returns null when
+  inactive), zero production effect, no wasted ticks. Plumbing kept for save-compat + easy revert. The
+  separate head-start perk (`perk-warmup`) is unaffected. **⚠ This SUPERSEDES the Warm-Up feature described in
+  the 2026-06-28 block below — that section is now historical.**
+- **Achievements CULLED 376 → 100** (`fb18542`) — ~285 were number/time padding (132 generated "play N min",
+  ~40 "Nth Set" ladders, 36 "Own N Symphonies", 37 "Sell N records", 15 "N Zeros", MO-ramp/grind drip),
+  auto-generated only to satisfy the pacing sim's "reward every ≤20 min" rule. Cut all (nearly all no-bonus →
+  balance-neutral; deleted IDs are save-safe). Kept the meaningful spine + all **10 load-bearing perk
+  achievements** (`perks.ts`) + `ach_vivaldi` (`challenges.test`); ADDED 13 depth achievements (Purist, Flash
+  Encore, Prodigy, Autopilot, Blitz Platinum, Maestro, Polymath, The Long Game, Encore of Encores,
+  Renaissance, The Sonance, Big Bang, Grand Tour). REBALANCED: folded deleted filler's production into beefier
+  kept milestones (achievement-mult @ Platinum ×2.86 → ×2.59, still in band; pacing curve unchanged — wall
+  95.7m, MO 151.6m, Platinum 16.4h). ROOT CAUSE FIXED: retired human-pacing's gap assertions (now
+  report-only) + flipped the brittle stranding denylist to a robust must-unlock allow-list; relaxed
+  globalAtPlat lower 2.4→2.25. **Design rule: no filler achievements — meaningful only (memory:
+  `achievements-no-filler`).**
+- **Trial playtest fixes** (`f3a0371`) — first Encore now banks **≥1 EP** (was 0 below the 1e15 threshold —
+  "first encore gave nothing"); story-beat cold-open **fade-in** (no instant black-pop); Encore goal shows the
+  **tier name** ("0/12 Harmonies"). Stale `layer1.test` assertion updated to the EP-min-1 contract.
+- **Sim honesty fix** (`57863b8`) — conducting unlocks **only post-MO** (UI gates the button + Spacebar on
+  `opusCount > 0`; the core tick never gated it, so the lock was UI-only). The achievement-/era-/challenge-
+  pacing instruments were conducting pre-MO (`layer1WallReached || ...`), over-crediting the wall→MO climb.
+  Gated all three to `opusCount > 0` (human-/l3-pacing were already correct).
+- **Fast first-MO investigated → NOT a bug.** A fresh-save 30-min first MO (vs the model's 151 min) is driven
+  by **buying efficiency, not conducting** (conducting is post-MO). Optimal ≈7.6 min, casual ≈151 min, a
+  focused player ≈30 min — squarely between. **Vince's call: 30 min is fine (reward active play); no nerf.**
+- **Branding reviewed + signed off (#5 closed)** — Sonance rename is 100% complete (title / `package.json` /
+  save-key `sonance-v1` / Header); logo v1 + intro (3 cold-open quotes → orb-O bloom → game) confirmed via
+  fresh 2× screenshots (`drafts/review-*.png`).
+
+### Open / awaiting Vince (next session)
+- **⚠ ONE RED SIM (deliberately left for you — L4 balance, your #6):** `sim/l4-signature.test.ts > "no domain
+  main worsens the idle:active balance vs baseline (P0 #3)"` — **percussion = 1.2609 vs the 1.25 guard**
+  (0.9% over; deterministic, percussion-only, other 8 tests pass). **Root cause:** retiring Warm-Up (this
+  session). `buildStrength` climbs at `opusCount=5`/tier-3-owned, so at the last-green L4 commit (`20dde8c`)
+  its *active* climb included Warm-Up — a common active-side term that compressed the idle:active quotient
+  across builds. Removing Warm-Up removed that compression, so `percussion→tempo`'s intrinsic active-skew now
+  reads 26%. **The new number is more honest**, not a bug; whether 26% is acceptable is a balance call (and
+  this harness is already documented as synthetic / deferred-to-playtest, line ~42). **Options for you:**
+  (a) accept + widen the guard 1.25→~1.30 (matches the DOMINANCE_BAND elsewhere), (b) trim percussion's
+  domain magnitude in `src/core/signature.ts`, or (c) leave until the L4 playtest tuning pass. I did NOT
+  touch it (your reserved L4 balance + "wait for me on big things"). **Everything L0-L3 / trial is GREEN —
+  this is unreleased, gated-off L4 only.**
+- **#6 — L4 magnitude tuning + feel/UI review** — still the main L4 to-do (see the 2026-06-28 block).
+- **Deploy — DEFERRED** ("keep iterating"). When ready: port the **6 trial-safe commits** (`8dedeba` rename,
+  `89a96ad` logo+offline, `f3a0371`, `bba0415`, `fb18542`, `57863b8` — none depend on L4 code) to `master`,
+  OR push-everything-with-an-L4-lock. **⚠ deploying master wipes existing public trial saves.**
+- Tooling note: `puppeteer-core` was used for the screenshots then reverted from `package.json` (kept locally
+  in `node_modules` only) to keep the tree clean — re-`npm i -D puppeteer-core` if a standing shot script is
+  wanted.
 
 ## ⭐ THIS SESSION (2026-06-28) — Renamed to SONANCE + L4 prerequisites started
 
