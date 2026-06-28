@@ -345,12 +345,19 @@ describe('L4 Signature', () => {
     expect(buildStrength(alloc({ brass: 0.6, harmony: 0.4 }), 1_000_000, true)).toBeGreaterThan(0)
   })
 
-  // DEFERRED to the playtest/feel pass. The global idle:active window (1.4-1.75x) is already gated by the
-  // existing pacing sims. Percussion->tempo is ratio-NEUTRAL (tempo applies to idle + active equally);
-  // Strings->crescendo is the only ratio-affecting bend. A faithful idle:active assertion needs the real
-  // auto-conduct floor (0.7) + warm-up dynamics, which the synthetic mid-L4 climb harness doesn't model
-  // (it ramps crescendo from 0, over-stating the active advantage).
-  it.todo('idle:active with a Strings main stays in the locked 1.4-1.75x window (needs real crescendo floor)')
+  // P0 #3: no signature build may WORSEN the idle:active balance vs the zero-allocation baseline.
+  // (The absolute 1.4-1.75x window is gated globally by the existing pacing sims; here we isolate the
+  // signature's MARGINAL effect — Percussion->tempo should be ~ratio-neutral, Strings->crescendo is the
+  // risk since it amplifies the active crescendo advantage.) Same harness, conducting on vs off.
+  it('no domain main worsens the idle:active balance vs baseline (P0 #3)', () => {
+    const ratio = (a: Record<SignatureDomain, number>) =>
+      buildStrength(a, 5, true) / buildStrength(a, 5, false)
+    const baseline = ratio(ZERO_SIGNATURE_ALLOCATION)
+    for (const [name, a] of CLIMB_BUILDS) {
+      expect(ratio(a) / baseline, `${name} must not widen idle:active >25% vs baseline`)
+        .toBeLessThanOrEqual(1.25)
+    }
+  })
 
   it('tracks every Signature domain in the fixed domain list', () => {
     expect([...SIGNATURE_DOMAINS].sort()).toEqual([
