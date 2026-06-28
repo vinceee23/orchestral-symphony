@@ -22,9 +22,12 @@ resonance that answers when you reach into the silence — the gods) is **"the S
 - **Intro flow:** the 3 cold-open quotes → the SONANCE logo **zooms in + blooms (~2s)** → fades into the
   game (`StoryBeat.tsx` `logo` phase; respects `prefers-reduced-motion`). First intro line reworded to
   "Before the first note, there was silence."
-- **L4 prereqs (on branch `feat/layer4`):** **M11** Decimal-overflow guard is **DONE + gated green +
-  committed** (`src/core/guards.ts` `assertFiniteDecimal`, wired in `calculateTick`). **M9 is NEXT**
-  (see below). Then L4 Signature.
+- **L4 prereqs (on branch `feat/layer4`):** **M11** Decimal-overflow guard **DONE** (`src/core/guards.ts`,
+  wired in `calculateTick`). **M9 DONE** — gated green + committed (`7553dfe`): `multiplierRegistry.ts`
+  wraps the funnel as the `core` channel (funnel internals unchanged) + new capped channels per layer;
+  `resets.ts` `applyReset(state, tier)` migrated all 4 `perform*` onto the reset matrix; 12 characterization
+  snapshots + ALL pacing sims byte-identical (19 files, 85 pass/1 skip). Both built by Codex, gated by Claude.
+  **L4 Signature is NEXT** (task #4) — now unblocked.
 
 ### Locked decisions this session (don't re-open)
 - **Both balance calls CONFIRMED keep-as-is** (no code change): L3 late re-climbs stay **floored** (not
