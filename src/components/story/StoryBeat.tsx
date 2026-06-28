@@ -138,7 +138,7 @@ export function StoryBeat({ lines, goldLevel, onDone }: StoryBeatProps) {
       <div className="relative max-w-lg px-8 text-center pointer-events-none">
         <p
           key={lineIndex}
-          className={`font-display text-lg md:text-xl leading-relaxed tracking-wide text-text-primary/90 ${
+          className={`font-narrative text-xl md:text-2xl leading-relaxed text-text-primary/90 ${
             lineVisible ? 'story-line-in' : 'opacity-0'
           }`}
           style={{
