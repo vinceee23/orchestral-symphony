@@ -1,10 +1,54 @@
-# HANDOFF — Orchestral Symphony (updated 2026-06-28, overnight autonomous session)
+# HANDOFF — Sonance (updated 2026-06-28, overnight autonomous session)
 
 > **READ FIRST for a fresh session:** this block + then `docs/bible/` (method→architecture→economy→world)
 > and `docs/build-specs/` (L4–L9). The 9-layer ladder + full context live there. This file is the
 > "where we left off + what I changed + what needs your call" snapshot.
 
-## ⭐ WHERE WE LEFT OFF
+## ⭐ THIS SESSION (2026-06-28) — Renamed to SONANCE + L4 prerequisites started
+
+**The game is now SONANCE** (was "Orchestral Symphony"). Title = "Sonance"; the in-world phenomenon (the
+resonance that answers when you reach into the silence — the gods) is **"the Sonance"** in the lore.
+
+- **Full rename** across code + config + docs: `package.json` (name/appId/productName), `index.html`
+  (title + SVG favicon), `electron/main.cjs`, `Header.tsx`, and the **localStorage save key →
+  `sonance-v1`** (`gameStore.ts`) which **orphans old saves by design** (`freshStart.ts` clears both old
+  + new keys). Docs display name swept "Orchestral Symphony" → "Sonance". **Repo name KEPT** as
+  `orchestral-symphony` for now, so the Pages URL (`vinceee23.github.io/orchestral-symphony/`) still works.
+- **Logo = hand-built CSS** `src/components/shared/SonanceLogo.tsx` (NOT an AI raster — deliberately, to
+  match the game's art): the wordmark in **Hanken Grotesk** (`--font-body`) + the game gold `#d4a843`, the
+  O is an orb with **one** restrained glow. Used in the header + the intro. **Subtle reactive glow** swells
+  with crescendo / while conducting (Header passes `glow={resonance}`). Favicon = `public/sonance-icon.svg`
+  (game-palette orb). AI logo explorations are in `./drafts/` (gitignored) — exploration only.
+- **Intro flow:** the 3 cold-open quotes → the SONANCE logo **zooms in + blooms (~2s)** → fades into the
+  game (`StoryBeat.tsx` `logo` phase; respects `prefers-reduced-motion`). First intro line reworded to
+  "Before the first note, there was silence."
+- **L4 prereqs (on branch `feat/layer4`):** **M11** Decimal-overflow guard is **DONE + gated green +
+  committed** (`src/core/guards.ts` `assertFiniteDecimal`, wired in `calculateTick`). **M9 is NEXT**
+  (see below). Then L4 Signature.
+
+### Locked decisions this session (don't re-open)
+- **Both balance calls CONFIRMED keep-as-is** (no code change): L3 late re-climbs stay **floored** (not
+  near-instant); **Warm-Up stays OFF during challenges**.
+- **L4 design forks LOCKED** — see the ⭐ LOCKED DECISIONS block in `docs/build-specs/L4-signature.md`:
+  build the **full declarative `applyReset` engine**; L4 ascension **resets all L3 progress**; respec
+  **only at ascension**; **Harmony rewards allocation-evenness**; L4 **unlocks at the L3 circuit break**.
+- **M9 plan:** a real **multiplier registry** where the existing 12-factor funnel rides in as ONE `core`
+  channel (internals untouched, still sim-balanced) and each new layer adds its own capped channel
+  (`domain` for L4, etc.) — NOT exploding the funnel. Plus `applyReset(state, tier)` from the reset matrix,
+  **migrating all 4 existing resets** onto it, gated **byte-identical via characterization tests written
+  first**. **Delegated to Codex** (workspace-write, separate quota); **Claude writes the spec + runs the gate.**
+- **Branch/deploy policy:** `master` = the **public L3 trial** (auto-deploys). **ALL L4 work stays on
+  `feat/layer4`, never merged to master** until Vince says so. L4 access = **gate-later** (ship L4 on master
+  behind a client-side unlock — like the `?l3` flag — only once polished; caveat: a static SPA can't do real
+  auth, the gate only stops casual players).
+
+### Pending / awaiting Vince
+- Rename is gating; once green, **screenshot the intro + header for review → then push master (deploys the
+  renamed trial + wipes existing saves)** on Vince's go. Deploy NOT done yet.
+
+---
+
+## ⭐ WHERE WE LEFT OFF (prior session — historical)
 **L0–L3 is hardened, sim-balanced, and deployed.** This overnight session added the early **Warm-Up**
 active verb, **first-run onboarding**, and **two new story beats**, then re-paced two sims for the new
 balance. Branch `feat/layer3`. **L4+ remains reserved for fresh sessions** (per Vince).

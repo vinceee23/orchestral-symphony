@@ -944,7 +944,7 @@ export const useGameStore = create<GameState & GameActions>()(
       },
     }),
     {
-      name: 'orchestral-symphony-v6',
+      name: 'sonance-v1',
       storage: createDecimalStorage(),
       partialize: (state): GameState => {
         const {

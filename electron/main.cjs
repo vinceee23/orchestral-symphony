@@ -9,7 +9,7 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     backgroundColor: '#0a0a0f',
-    title: 'Orchestral Symphony',
+    title: 'Sonance',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,

@@ -1,4 +1,4 @@
-# Orchestral Symphony — Design Doc
+# Sonance — Design Doc
 
 > Status: **v1 proposal** (2026-06-24). Build order: finish the whole-game design on paper, then
 > build **Layer 1 only**, fully. Each layer ships complete and ends on a cliffhanger into the next.

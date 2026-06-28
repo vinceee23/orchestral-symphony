@@ -1,4 +1,4 @@
-# Build-Specs — L4–L9 (Orchestral Symphony)
+# Build-Specs — L4–L9 (Sonance)
 
 > **Status:** the six per-layer build-specs (`L4-signature.md` … `L9-the-gods.md`) are
 > **implementation-ready**, written for a *fresh* future session to build from with minimal re-design.

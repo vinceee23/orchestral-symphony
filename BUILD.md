@@ -1,4 +1,4 @@
-# Building Orchestral Symphony
+# Building Sonance
 
 ## Run it
 - **Web dev:** `npm run dev` → http://localhost:5173
@@ -6,8 +6,8 @@
 
 ## Desktop builds
 - **`npm run electron:build`** → `tsc -b` + `vite build` + `electron-builder`.
-  - Produces the **runnable app** at `release/win-unpacked/Orchestral Symphony.exe` (just run it — no install).
-  - Then tries to package a one-click **NSIS installer** at `release/Orchestral Symphony Setup <ver>.exe`.
+  - Produces the **runnable app** at `release/win-unpacked/Sonance.exe` (just run it — no install).
+  - Then tries to package a one-click **NSIS installer** at `release/Sonance Setup <ver>.exe`.
 
 ### The installer needs Windows Developer Mode (one-time)
 electron-builder extracts a `winCodeSign` toolset whose archive contains macOS symlinks. Creating symlinks
@@ -20,7 +20,7 @@ installer cleanly. The `win-unpacked` app builds fine regardless.
 
 ### Shareable without the installer
 `powershell Compress-Archive -Path "release/win-unpacked/*" -DestinationPath "release/OrchestralSymphony-win.zip" -Force`
-→ a single zip; extract and run `Orchestral Symphony.exe` inside.
+→ a single zip; extract and run `Sonance.exe` inside.
 
 ## Icon
 The Windows icon is currently the Electron default — electron-builder can't rasterize `public/favicon.svg`

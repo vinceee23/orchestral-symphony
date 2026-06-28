@@ -1,4 +1,4 @@
-# Monetization — strategy (Orchestral Symphony)
+# Monetization — strategy (Sonance)
 
 Status: **plan, not implemented.** Captures the decided model (2026-06-25). Implement later; for the
 early community playtest the only live channel is **Ko-fi donations**.

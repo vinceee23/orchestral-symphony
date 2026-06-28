@@ -40,7 +40,7 @@ export const STORY_BEATS: Record<StoryBeatId, StoryBeatDefinition> = {
     id: 'intro',
     goldLevel: 0.15,
     lines: [
-      'Before the first note: silence.',
+      'Before the first note, there was silence.',
       'You reached into it.',
       'Something reached back.',
     ],
