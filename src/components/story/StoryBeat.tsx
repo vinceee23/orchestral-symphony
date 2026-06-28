@@ -138,7 +138,7 @@ export function StoryBeat({ lines, goldLevel, onDone, logo }: StoryBeatProps) {
               : 'opacity 900ms ease-out, transform 1600ms cubic-bezier(0.16,1,0.3,1), filter 1600ms ease-out',
           }}
         >
-          <SonanceLogo size="clamp(2.5rem, 11vw, 7.5rem)" glow={logoIn ? 0.5 : 0.12} />
+          <SonanceLogo size="clamp(2.5rem, 11vw, 7.5rem)" glow={logoIn ? 0.5 : 0.12} hero />
         </div>
       ) : (
         <>
