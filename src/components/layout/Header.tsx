@@ -12,7 +12,7 @@ import { getCrescendoMultiplier } from '../../core/crescendo'
 import { hasPerk } from '../../core/perks'
 import { getEra, eraTintCss } from '../../core/eraTheme'
 import { SmoothNumber } from '../shared/SmoothNumber'
-import { Icon } from '../shared/Icon'
+import { SonanceLogo } from '../shared/SonanceLogo'
 
 export function Header() {
   const soundwaves = useGameStore((s) => s.soundwaves)
@@ -44,6 +44,9 @@ export function Header() {
   )
   const showCrescendo = opusCount > 0 && (conducting || crescendo > 0.02)
 
+  // Reactive logo: the wordmark glow SWELLS with crescendo / while conducting — the logo resonates as you play.
+  const resonance = Math.min(1, crescendo + (conducting ? 0.15 : 0))
+
   const era = getEra(lifetimeEncorePoints, opusCount, finalePoints, worldTourUnlocked)
   const achievementSet = new Set(achievements)
   const challengeMults = getChallengeMultipliers(completedChallenges, challengeBestTimes, keepChallenges)
@@ -72,9 +75,8 @@ export function Header() {
       style={{ backgroundImage: eraTintCss(era) }}
     >
       <div className="flex items-center gap-3">
-        <Icon name="brand" size={24} className="text-accent-gold" />
-        <h1 className="text-lg font-display font-semibold text-accent-gold tracking-[0.04em]">
-          Orchestral Symphony
+        <h1 className="m-0 leading-none">
+          <SonanceLogo size={20} glow={resonance} />
         </h1>
       </div>
       <div className="flex items-center gap-5">

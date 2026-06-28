@@ -1,6 +1,6 @@
-# Orchestral Symphony — Game Bible
+# Sonance — Game Bible
 
-> **What this game is.** Orchestral Symphony is an orchestral-themed **idle/incremental** (clicker /
+> **What this game is.** Sonance is an orchestral-themed **idle/incremental** (clicker /
 > prestige) game built as a React 19 + TypeScript + Vite single-page app with a Zustand store and
 > `break_infinity.js` for big numbers, shipped to both **GitHub Pages** (web) and **Electron** (desktop).
 > The player conducts an orchestra, grows production through a tiered economy, and climbs a **9-layer

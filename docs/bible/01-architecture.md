@@ -1,6 +1,6 @@
 # 01 — Architecture, Conventions & the Build/Gate/Deploy Process
 
-> **Scope.** This is the "how the machine works" chapter of the Orchestral Symphony bible. It documents
+> **Scope.** This is the "how the machine works" chapter of the Sonance bible. It documents
 > the stack, the file layout, the Zustand store shape + persistence/migration, the tick loop + offline
 > replay, `break_infinity.js` (Decimal) usage and gotchas, how to run/build/test, the **sim suite as the
 > balance gate**, the GitHub Pages deploy, and the `?fresh` / `?l3` / `?dev` dev flags.

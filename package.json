@@ -1,5 +1,5 @@
 {
-  "name": "orchestral-symphony",
+  "name": "sonance",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -43,8 +43,8 @@
     "wait-on": "^9.0.4"
   },
   "build": {
-    "appId": "com.orchestralsymphony.app",
-    "productName": "Orchestral Symphony",
+    "appId": "com.sonance.app",
+    "productName": "Sonance",
     "directories": {
       "output": "release"
     },

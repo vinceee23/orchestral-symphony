@@ -13,6 +13,7 @@ export function StoryBeatOverlay() {
       lines={activeBeat.lines}
       goldLevel={activeBeat.goldLevel}
       onDone={dismiss}
+      logo={activeBeat.id === 'intro'}
     />
   )
 }

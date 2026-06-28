@@ -3,7 +3,7 @@
 //   ?l3    — handled in gameStore onRehydrate: unlock World Tour + seed catalogue (see gameStore.ts)
 if (/(?:[?&#])fresh\b/.test(location.search + location.hash)) {
   for (const k of Object.keys(localStorage)) {
-    if (k.startsWith('orchestral-symphony')) localStorage.removeItem(k)
+    if (k.startsWith('sonance') || k.startsWith('orchestral-symphony')) localStorage.removeItem(k)
   }
   try {
     const url = new URL(location.href)
