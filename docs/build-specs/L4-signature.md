@@ -18,6 +18,26 @@
 
 ---
 
+## ⭐ LOCKED DECISIONS (2026-06-28, Vince) — do not re-open
+
+These resolve the design forks in §9's TBD list. **Magnitudes remain sim-tuned; these are the structural locks.**
+
+| # | Decision | Locked choice | Resolves |
+|---|---|---|---|
+| L1 | **M9 scope** | Build the **full declarative `applyReset(state, tier)` engine** + multiplier registry now (not a 5th imperative reset). L4 is the cheapest moment. | §9.10, §3.5 note |
+| L2 | **L4 ascension reset depth** | **Resets ALL L3 progress:** `opusCount`, `lifetimeAcclaim`, `acclaim`, the venue ladder (`currentVenue`/`components`/`keepAutobuyers`/`autoMO`/`autoCollect`/`autoGraduate`/`tourCount`), and `completedChallenges` (unless `keepChallenges`). The four `signature*` fields + `challengeBestTimes` + `seenStoryBeats` + `lifetimeEncoreCount` survive. | §3.5 table, §9.7 |
+| L3 | **Respec timing** | **Only at each ascension** (the "choose your voice" moment). Fully reversible run-to-run, no wrong-choice trap, no mid-run min-maxing. | §3.5(a), §9.8 |
+| L4 | **Harmony breadth rule** | Harmony's synergy scales with **allocation evenness** — you must genuinely spread the budget to make it pay (real generalist archetype vs the zero-sum specialists). The anti-mono-dominance keystone. | §3.2 Harmony row, §9.2 |
+| L5 | **L4 unlock trigger** | The **L3 circuit break** (`circuitComplete`, graduating the World Stage) flips `signatureUnlocked`. The `performSignature` gate threshold itself stays sim-tuned. | §3.6, §9.5 |
+| L6 | **Domain→lever kit** | Confirmed as specced: Percussion→tempo, Strings→crescendo ceiling, Brass→flat `domain`-channel ×, Woodwinds→cost reduction, Harmony→evenness synergy. | §3.2 |
+
+**Workflow locks (carry into the build):**
+- **Branch policy:** `master` = the public L3 trial (auto-deploys). **All L4 work — M11, M9, L4 — lands on `feat/layer4` and is NEVER merged to `master`** until Vince says so. Gate on the branch; commit to the branch only, when asked.
+- **Build model:** Claude refines/locks the spec → delegates the M11→M9→L4 *build* to **Codex** (`codex exec -s workspace-write`, separate quota) → **Claude runs the gate** (`tsc -b` + full `vitest` + `vite build`, real exit) before any commit. Cursor stays off.
+- **Still-sim-tuned (do NOT invent):** all domain bend magnitudes/curves, Harmony's evenness curve, `getSignatureEfficiency` shape + cap, `SIGNATURE_BUDGET` (default 1.0), the `performSignature` gate threshold, the mono-vs-blend balance target, era re-map index.
+
+---
+
 ## 0. PREREQUISITE — M9 multiplier-registry must exist first (HARD dependency)
 
 `LADDER-MECHANICS.md` and `HARDENING-PLAN.md:46-50` assume an **M9 multiplier registry + declarative

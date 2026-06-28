@@ -26,6 +26,7 @@ import { getChallengeById, getActiveChallengeModifiers, getChallengeMultipliers 
 import type { ChallengeModifiers } from './challenges'
 import { getAcclaimMultiplier, calculateWorldTourTick } from './worldTour'
 import { advanceWarmUp, isWarmUpUnlocked, warmUpMultiplier } from './warmup'
+import { assertFiniteDecimal } from './guards'
 
 export function calculateTick(state: GameState, deltaMs: number, conducting = false): Partial<GameState> {
   const achievementSet = new Set(state.achievements)
@@ -117,6 +118,10 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
   if (mods.productionDivisor > 1) {
     globalMult = globalMult.div(mods.productionDivisor)
   }
+
+  // M11: dev/test-build overflow guard — a non-finite production multiplier is always a bug
+  // (genuine corruption, not a big-but-valid Decimal). Fires in the sims, no-op in prod.
+  assertFiniteDecimal(globalMult, 'calculateTick:globalMult')
 
   // Cost multiplier from challenge + achievement cost reductions + challenge reward costMult
   const achCostReduction = getAchievementCostReduction(achievementSet)
