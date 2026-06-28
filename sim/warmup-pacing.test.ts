@@ -31,8 +31,11 @@ describe('warm-up channel', () => {
     expect(advanceWarmUp(0.5, true, 0)).toBeCloseTo(0.5) // zero dt = no change
   })
 
-  it('unlock gate: opens once the 3rd tier is owned (a few tiers in, pre-Encore)', () => {
-    expect(isWarmUpUnlocked({ tiers: [{ purchased: 0 }, { purchased: 0 }, { purchased: 1 }] } as never)).toBe(true)
+  // RETIRED (2026-06-29): Warm-Up was redundant with Conduct/Crescendo, so isWarmUpUnlocked is now inert
+  // (always false). The pure-function shape tests above still hold (plumbing kept for save-compat), but the
+  // unlock gate never opens — that's the contract now.
+  it('unlock gate: RETIRED — never opens (inert, redundant with Conduct)', () => {
+    expect(isWarmUpUnlocked({ tiers: [{ purchased: 0 }, { purchased: 0 }, { purchased: 1 }] } as never)).toBe(false)
     expect(isWarmUpUnlocked({ tiers: [{ purchased: 9 }, { purchased: 9 }, { purchased: 0 }] } as never)).toBe(false)
   })
 })

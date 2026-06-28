@@ -6,8 +6,13 @@ function clampWarmUpLevel(level: number): number {
   return Math.max(0, Math.min(1, level))
 }
 
-export function isWarmUpUnlocked(state: Pick<GameState, 'tiers'>): boolean {
-  return (state.tiers[2]?.purchased ?? 0) >= 1
+// RETIRED (2026-06-29): Warm-Up was redundant with Conduct/Crescendo — both reward active presence with a
+// production multiplier, and post-MO they showed at the same time. Inerted at the source so it never
+// engages, never shows (WarmUpBar returns null when inactive), and has zero production effect. The plumbing
+// stays for save-compat + easy revert; it can be fully removed in a later cleanup. (perk-warmup, the
+// head-start tier-prebuy, is a SEPARATE mechanic and is unaffected.)
+export function isWarmUpUnlocked(_state: Pick<GameState, 'tiers'>): boolean {
+  return false
 }
 
 export function advanceWarmUp(level: number, activeNow: boolean, dtSec: number): number {
