@@ -1000,6 +1000,9 @@ export const useGameStore = create<GameState & GameActions>()(
           const now = Date.now()
           const offlineMs = Math.min(now - state.lastSaveTimestamp, MAX_OFFLINE_MS)
           if (offlineMs > 1000) {
+            const beforeSoundwaves = new Decimal(state.soundwaves)
+            const beforeRecords = state.recordsSold
+            const beforeAcclaim = new Decimal(state.lifetimeAcclaim ?? 0)
             const chunkMs = 1000
             let remaining = offlineMs
             let currentState: GameState = { ...state }
@@ -1027,6 +1030,19 @@ export const useGameStore = create<GameState & GameActions>()(
             state.venueBuffer = currentState.venueBuffer
             state.venueSoldOut = currentState.venueSoldOut
             seedSeenHintsForCurrentProgress(state)
+
+            // "Welcome back" offline-earnings summary — only for a meaningful absence with real gains.
+            const swGained = state.soundwaves.minus(beforeSoundwaves)
+            const recGained = state.recordsSold - beforeRecords
+            const accGained = new Decimal(state.lifetimeAcclaim ?? 0).minus(beforeAcclaim)
+            if (offlineMs > 60_000 && (swGained.gt(0) || recGained > 0 || accGained.gt(0))) {
+              useUiStore.getState().setOfflineSummary({
+                awayMs: offlineMs,
+                soundwaves: swGained,
+                records: recGained,
+                acclaim: accGained,
+              })
+            }
           }
 
           // Dev shortcut: ?l3 seeds World Tour for instant playtesting
