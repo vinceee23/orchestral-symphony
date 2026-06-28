@@ -1,5 +1,5 @@
 import Decimal from 'break_infinity.js'
-import { PLATINUM_THRESHOLD, L4_UNLOCKED, getMagnumOpusCost } from './constants'
+import { PLATINUM_THRESHOLD, getMagnumOpusCost } from './constants'
 import type { GameState } from '../store/types'
 
 export type ComponentTarget =
@@ -354,7 +354,8 @@ export function buildVenueGraduationPatch(
   }
 
   if (state.currentVenue >= LAST_VENUE_ID) {
-    return { ...base, circuitComplete: true }
+    // TBD-tune (sim/playtest): L4 unlock currently uses the locked L3 circuit-break anchor.
+    return { ...base, circuitComplete: true, signatureUnlocked: true }
   }
 
   return { ...base, currentVenue: state.currentVenue + 1 }
@@ -370,7 +371,7 @@ export function isAutoMOUnlocked(state: Pick<GameState, 'autoMO'>): boolean {
  * snapshot is moot (Acclaim uses the live catalogue) and re-touring would just reset L1/L2 for nothing.
  */
 export function canAutoPerformTour(state: GameState): boolean {
-  if (!L4_UNLOCKED) return false
+  if (!state.signatureUnlocked) return false
   if (!state.autoTour || !state.autoTourEnabled) return false
   if (!state.worldTourUnlocked || state.circuitComplete) return false
   if (state.activeChallenge) return false

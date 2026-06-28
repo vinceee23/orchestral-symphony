@@ -1,12 +1,12 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import Decimal from 'break_infinity.js'
-import type { GameState, GameActions, AutobuyerState } from './types'
+import type { GameState, GameActions, AutobuyerState, SignatureDomain } from './types'
 import type { BuyAmount } from '../core/constants'
 import {
   TIER_CONFIGS, STARTING_SOUNDWAVES, MAX_OFFLINE_MS,
   getEncoreCost, getMagnumOpusCost, getApplauseGain, getAutoEncoreInterval,
-  AP_UNLOCK, AP_UNLOCK_AUTO_TOUR, L4_UNLOCKED,
+  AP_UNLOCK, AP_UNLOCK_AUTO_TOUR,
   GRAND_FINALE_SW_THRESHOLD,
   ENCORE_EP_THRESHOLD,
   AUTOBUYER_DEFAULT_INTERVAL,
@@ -48,6 +48,13 @@ import { seedSeenHintsFromProgress } from '../components/onboarding/hints'
 import { createInitialState } from './initialState'
 import { migratePersistedSave } from './saveMigration'
 import { applyReset } from '../core/resets'
+import {
+  SIGNATURE_BUDGET,
+  SIGNATURE_DOMAINS,
+  ZERO_SIGNATURE_ALLOCATION,
+  getSignatureEffects,
+  getSignatureEfficiency,
+} from '../core/signature'
 
 function createDefaultAutobuyer(): AutobuyerState {
   return {
@@ -68,6 +75,61 @@ function mergeSeenHintIds(existing: string[] | undefined, seeded: string[]): str
 
 function seedSeenHintsForCurrentProgress(state: GameState): void {
   state.seenHints = mergeSeenHintIds(state.seenHints, seedSeenHintsFromProgress(state))
+}
+
+function isNoPrestigeBlocked(state: GameState): boolean {
+  if (!state.activeChallenge) return false
+  const ch = getChallengeById(state.activeChallenge.challengeId)
+  return ch ? getActiveChallengeModifiers(ch).noPrestige : false
+}
+
+function getSignatureEffectsForState(state: GameState) {
+  const noPrestige = isNoPrestigeBlocked(state)
+  return getSignatureEffects(
+    noPrestige ? ZERO_SIGNATURE_ALLOCATION : (state.signatureAllocation ?? ZERO_SIGNATURE_ALLOCATION),
+    getSignatureEfficiency(noPrestige ? 0 : (state.signatureCount ?? 0)),
+  )
+}
+
+function isAtSignatureRespecPoint(state: GameState): boolean {
+  if (!state.signatureUnlocked || state.activeChallenge) return false
+  const produced = state.producedThisRun instanceof Decimal
+    ? state.producedThisRun
+    : new Decimal(state.producedThisRun ?? 0)
+  const peak = state.peakSoundwaves instanceof Decimal
+    ? state.peakSoundwaves
+    : new Decimal(state.peakSoundwaves ?? 0)
+  return produced.lte(0) && peak.lte(0)
+}
+
+function validateSignatureAllocation(
+  alloc: Record<SignatureDomain, number>,
+): Record<SignatureDomain, number> | null {
+  const keys = Object.keys(alloc)
+  if (keys.some((key) => !SIGNATURE_DOMAINS.includes(key as SignatureDomain))) return null
+
+  const next = { ...ZERO_SIGNATURE_ALLOCATION }
+  let total = 0
+  for (const domain of SIGNATURE_DOMAINS) {
+    const value = alloc[domain]
+    if (typeof value !== 'number' || !Number.isFinite(value)) return null
+    if (value < 0 || value > 1) return null
+    next[domain] = value
+    total += value
+  }
+
+  return total <= SIGNATURE_BUDGET + 1e-9 ? next : null
+}
+
+function capturePeakDomainAlignment(
+  previous: Record<SignatureDomain, number>,
+  alloc: Record<SignatureDomain, number>,
+): Record<SignatureDomain, number> {
+  const next = { ...previous }
+  for (const domain of SIGNATURE_DOMAINS) {
+    next[domain] = Math.max(previous[domain] ?? 0, alloc[domain] ?? 0)
+  }
+  return next
 }
 
 /** Get effective cost multiplier for buying tiers */
@@ -97,7 +159,13 @@ function getEffectiveCostMultiplier(state: GameState, tierId: number): number {
     risingFactor = Math.pow(mods.risingCostRate, elapsedSec)
   }
 
-  return mods.costMultiplier * globalCostRed * tierCostRed * rehearsal * risingFactor * challengeMults.costMult
+  return mods.costMultiplier
+    * globalCostRed
+    * tierCostRed
+    * rehearsal
+    * risingFactor
+    * challengeMults.costMult
+    * getSignatureEffectsForState(state).costMult
 }
 
 function getTotalTempoBonus(state: GameState): number {
@@ -107,7 +175,7 @@ function getTotalTempoBonus(state: GameState): number {
     state.challengeBestTimes ?? {},
     state.keepChallenges ?? false,
   ).tempoBonus
-  return achBonus + chBonus
+  return achBonus + chBonus + getSignatureEffectsForState(state).tempoBonus
 }
 
 export const useGameStore = create<GameState & GameActions>()(
@@ -172,6 +240,10 @@ export const useGameStore = create<GameState & GameActions>()(
         ) {
           const gradPatch = buildVenueGraduationPatch(after)
           if (gradPatch) set(gradPatch)
+        }
+        const afterGrad = get()
+        if (afterGrad.circuitComplete && !afterGrad.signatureUnlocked) {
+          set({ signatureUnlocked: true })
         }
         const postGrad = get()
         if (canAutoPerformMagnumOpus(postGrad)) {
@@ -362,7 +434,7 @@ export const useGameStore = create<GameState & GameActions>()(
       unlockWithApplause: (key: 'encore' | 'autoTour') => {
         set((state) => {
           if (key === 'autoTour') {
-            if (!L4_UNLOCKED || state.autoTour || !state.worldTourUnlocked) return state
+            if (!state.signatureUnlocked || state.autoTour || !state.worldTourUnlocked) return state
             const cfg = AP_UNLOCK_AUTO_TOUR
             if (state.opusCount < cfg.minOpusCount || state.applausePoints < cfg.cost) return state
             return { applausePoints: state.applausePoints - cfg.cost, autoTour: true, autoTourEnabled: true }
@@ -820,6 +892,40 @@ export const useGameStore = create<GameState & GameActions>()(
         })
       },
 
+      // === Layer 4: Signature (identity) ===
+      setSignatureAllocation: (alloc) => {
+        set((state) => {
+          if (!isAtSignatureRespecPoint(state)) return state
+          const nextAllocation = validateSignatureAllocation(alloc)
+          if (!nextAllocation) return state
+
+          return {
+            signatureAllocation: nextAllocation,
+            peakDomainAlignment: capturePeakDomainAlignment(
+              state.peakDomainAlignment,
+              nextAllocation,
+            ),
+          }
+        })
+      },
+
+      performSignature: () => {
+        const state = get()
+        if (!state.signatureUnlocked) return
+        // TBD-tune (sim/playtest): the first placeholder gate is the L3 circuit break itself.
+        if (!state.circuitComplete) return
+        if (isNoPrestigeBlocked(state)) return
+
+        set({
+          ...applyReset(state, 'signature'),
+          signatureCount: state.signatureCount + 1,
+          peakDomainAlignment: capturePeakDomainAlignment(
+            state.peakDomainAlignment,
+            state.signatureAllocation,
+          ),
+        })
+      },
+
       // === Prestige Layer 6: Grand Finale (the "infinity" at 1.79e308, resets EP+OP) ===
       performGrandFinale: () => {
         const state = get()
@@ -872,7 +978,8 @@ export const useGameStore = create<GameState & GameActions>()(
           toggleAutobuyer, setAutobuyerBulk, unlockWithApplause, buyEncoreUpgrade, buyOpusUpgrade, checkAchievements, checkChallengeCompletion,
           startChallenge, abandonChallenge,
           performEncore, performMagnumOpus, performGrandFinale,
-          buyComponent, buyKeepAutobuyers, graduateVenue, performTour, unlockWorldTour, bankVenueAcclaim,
+          buyComponent, buyKeepAutobuyers, graduateVenue, performTour, performSignature, setSignatureAllocation,
+          unlockWorldTour, bankVenueAcclaim,
           setAutoMOEnabled, setAutoTourEnabled,
           setStoryBeatSeen, markHintSeen,
           hardReset,

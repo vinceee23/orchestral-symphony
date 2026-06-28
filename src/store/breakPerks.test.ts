@@ -41,18 +41,24 @@ describe('World Tour reset persistence', () => {
 describe('Auto-Tour is gated to L4 (not reachable in L3)', () => {
   beforeEach(() => useGameStore.getState().hardReset())
 
-  it('canAutoPerformTour never fires in L3, even past the catalogue ratio', () => {
+  it('canAutoPerformTour follows the per-save signature unlock flag', () => {
     const snap = getCatalogueSnapshot(4, 100_000)
     useGameStore.setState({
       worldTourUnlocked: true, autoTour: true, autoTourEnabled: true, circuitComplete: false,
       catalogueSnapshot: new Decimal(snap), opusCount: 12, recordsSold: 2_000_000,
+      signatureUnlocked: false,
     })
-    expect(canAutoPerformTour(useGameStore.getState())).toBe(false) // L4_UNLOCKED === false
+    expect(canAutoPerformTour(useGameStore.getState())).toBe(false)
+    useGameStore.setState({ signatureUnlocked: true })
+    expect(canAutoPerformTour(useGameStore.getState())).toBe(true)
   })
 
-  it('unlockWithApplause(autoTour) is a no-op in L3', () => {
-    useGameStore.setState({ worldTourUnlocked: true, opusCount: 10, applausePoints: 9999 })
+  it('unlockWithApplause(autoTour) is gated by signatureUnlocked', () => {
+    useGameStore.setState({ worldTourUnlocked: true, opusCount: 10, applausePoints: 9999, signatureUnlocked: false })
     useGameStore.getState().unlockWithApplause('autoTour')
     expect(useGameStore.getState().autoTour).toBe(false)
+    useGameStore.setState({ signatureUnlocked: true })
+    useGameStore.getState().unlockWithApplause('autoTour')
+    expect(useGameStore.getState().autoTour).toBe(true)
   })
 })

@@ -26,6 +26,7 @@ import { calculateWorldTourTick } from './worldTour'
 import { advanceWarmUp, isWarmUpUnlocked, warmUpMultiplier } from './warmup'
 import { assertFiniteDecimal } from './guards'
 import { getProductionMultiplier } from './multiplierRegistry'
+import { ZERO_SIGNATURE_ALLOCATION, getSignatureEffects, getSignatureEfficiency } from './signature'
 
 export function calculateTick(state: GameState, deltaMs: number, conducting = false): Partial<GameState> {
   const achievementSet = new Set(state.achievements)
@@ -61,19 +62,22 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
   let newAutobuyers = { ...state.autobuyers }
 
   // === Global multiplier stack ===
+  const noP = mods.noPrestige
+  const signatureEffects = getSignatureEffects(
+    noP ? ZERO_SIGNATURE_ALLOCATION : (state.signatureAllocation ?? ZERO_SIGNATURE_ALLOCATION),
+    getSignatureEfficiency(noP ? 0 : (state.signatureCount ?? 0)),
+  )
   const achievementTempoBonus = getAchievementTempoBonus(achievementSet)
   const challengeMults = getChallengeMultipliers(
     state.completedChallenges,
     state.challengeBestTimes ?? {},
     state.keepChallenges ?? false,
   )
-  const totalTempoBonus = achievementTempoBonus + challengeMults.tempoBonus
+  const totalTempoBonus = achievementTempoBonus + challengeMults.tempoBonus + signatureEffects.tempoBonus
 
   // Single source of truth for the production multiplier — shared with the UI rate displays so
   // they can't drift (encore/finale/opus/perfectPitch/tempo/milestone-tickspeed/PRODUCTION_SCALE).
   // noPrestige challenges zero out the prestige-point contributions.
-  const noP = mods.noPrestige
-
   // === Layer 2: crescendo + records ===
   const nextCresc = advanceCrescendo(state.crescendo, conducting, effectiveDeltaMs / 1000, state.opusUpgrades)
   const crescendoMult = getCrescendoMultiplier(nextCresc, state.opusUpgrades)
@@ -109,7 +113,10 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
 
   // Cost multiplier from challenge + achievement cost reductions + challenge reward costMult
   const achCostReduction = getAchievementCostReduction(achievementSet)
-  const effectiveCostMult = mods.costMultiplier * achCostReduction * challengeMults.costMult
+  const effectiveCostMult = mods.costMultiplier
+    * achCostReduction
+    * challengeMults.costMult
+    * signatureEffects.costMult
 
   // Rising costs: apply time-based inflation
   let risingCostFactor = 1

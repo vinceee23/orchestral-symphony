@@ -11,6 +11,7 @@ import { ChallengesPage } from '../challenges/ChallengesPage'
 import { OpusPage } from '../opus/OpusPage'
 import { AutobuyersPage } from '../autobuyers/AutobuyersPage'
 import { WorldTourPage } from '../worldtour/WorldTourPage'
+import { SignaturePage } from '../signature/SignaturePage'
 import { StatsPanel } from '../shared/StatsPanel'
 
 // Dev/screenshot convenience: open a specific tab with ?tab=prestige (etc.). Harmless in prod.
@@ -29,7 +30,9 @@ export function AppShell() {
   const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const finalePoints = useGameStore((s) => s.finalePoints)
   const worldTourUnlocked = useGameStore((s) => s.worldTourUnlocked)
-  const era = getEra(lifetimeEncorePoints, opusCount, finalePoints, worldTourUnlocked)
+  const signatureCount = useGameStore((s) => s.signatureCount)
+  const signatureUnlocked = useGameStore((s) => s.signatureUnlocked)
+  const era = getEra(lifetimeEncorePoints, opusCount, finalePoints, worldTourUnlocked, signatureCount)
   useEffect(() => {
     if (opusCount <= 0) return
     const { setSpaceHeld, releaseConduct } = useUiStore.getState()
@@ -73,6 +76,7 @@ export function AppShell() {
           {activeTab === 'opus' && <OpusPage />}
           {activeTab === 'autobuyers' && <AutobuyersPage />}
           {activeTab === 'worldtour' && <WorldTourPage />}
+          {activeTab === 'signature' && signatureUnlocked && <SignaturePage />}
           {activeTab === 'achievements' && <AchievementsPage />}
           {activeTab === 'challenges' && <ChallengesPage />}
           {activeTab === 'stats' && <StatsPanel />}

@@ -3,7 +3,7 @@
  * Compose stage, so the game visibly warms/recolors as you rise (gloomy-neutral era 0 → gold/violet/blaze).
  * Subtle undertone only (stays dark + readable). Mirrors the Compose stage's era + palette.
  */
-export const ERA_COLORS = ['#d4a843', '#d4a843', '#7c3aed', '#2dd4bf', '#ec4899', '#ef4444', '#fbbf24']
+export const ERA_COLORS = ['#d4a843', '#d4a843', '#7c3aed', '#2dd4bf', '#f59e0b', '#ef4444', '#fbbf24']
 
 /** Stage/app era from progression — one tier per prestige layer (0 intimate · 1 Encore · 2 Magnum Opus · 3 World Tour · 6 Finale). */
 export function getEra(
@@ -11,8 +11,19 @@ export function getEra(
   opusCount: number,
   finalePoints: number,
   worldTourUnlocked: boolean,
+  signatureCount = 0,
 ): number {
-  return finalePoints > 0 ? 6 : worldTourUnlocked ? 3 : opusCount > 0 ? 2 : lifetimeEncorePoints > 0 ? 1 : 0
+  return finalePoints > 0
+    ? 6
+    : signatureCount > 0
+      ? 4
+      : worldTourUnlocked
+        ? 3
+        : opusCount > 0
+          ? 2
+          : lifetimeEncorePoints > 0
+            ? 1
+            : 0
 }
 
 /** A subtle era-color undertone gradient for app chrome. Strength ramps with era; stays readable.

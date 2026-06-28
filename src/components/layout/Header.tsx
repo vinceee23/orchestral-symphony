@@ -28,6 +28,8 @@ export function Header() {
   const activeChallenge = useGameStore((s) => s.activeChallenge)
   const opusCount = useGameStore((s) => s.opusCount)
   const worldTourUnlocked = useGameStore((s) => s.worldTourUnlocked)
+  const signatureAllocation = useGameStore((s) => s.signatureAllocation)
+  const signatureCount = useGameStore((s) => s.signatureCount)
   const lifetimeAcclaim = useGameStore((s) => s.lifetimeAcclaim)
   const completedChallenges = useGameStore((s) => s.completedChallenges)
   const challengeBestTimes = useGameStore((s) => s.challengeBestTimes)
@@ -47,7 +49,7 @@ export function Header() {
   // Reactive logo: the wordmark glow SWELLS with crescendo / while conducting — the logo resonates as you play.
   const resonance = Math.min(1, crescendo + (conducting ? 0.15 : 0))
 
-  const era = getEra(lifetimeEncorePoints, opusCount, finalePoints, worldTourUnlocked)
+  const era = getEra(lifetimeEncorePoints, opusCount, finalePoints, worldTourUnlocked, signatureCount)
   const achievementSet = new Set(achievements)
   const globalMult = getProductionMultiplier({
     achievements,
@@ -67,6 +69,8 @@ export function Header() {
     worldTourUnlocked,
     lifetimeAcclaim,
     warmUpLevel,
+    signatureAllocation,
+    signatureCount,
   })
   const tier1 = tiers[0]
   const fullMult = globalMult.times(getAchievementTierMultiplier(achievementSet, 1))

@@ -150,7 +150,13 @@ function applyStoryBeatSeeding(state: PersistedSave): void {
  */
 export const MIGRATIONS: Record<number, (state: PersistedSave) => void> = {
   1: () => {
-    /* identity — fields introduced after v1 go here as v2, v3, … */
+    /* identity - fields introduced after v1 go here as v2, v3, ... */
+  },
+  2: (state) => {
+    state.signatureAllocation ??= { percussion: 0, strings: 0, brass: 0, woodwinds: 0, harmony: 0 }
+    state.signatureCount ??= 0
+    state.peakDomainAlignment ??= { percussion: 0, strings: 0, brass: 0, woodwinds: 0, harmony: 0 }
+    state.signatureUnlocked ??= false
   },
 }
 

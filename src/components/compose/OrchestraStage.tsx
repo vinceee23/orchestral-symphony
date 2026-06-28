@@ -81,6 +81,8 @@ export function OrchestraStage() {
   const platinum = useGameStore((s) => s.platinum)
   const finalePoints = useGameStore((s) => s.finalePoints)
   const worldTourUnlocked = useGameStore((s) => s.worldTourUnlocked)
+  const signatureAllocation = useGameStore((s) => s.signatureAllocation)
+  const signatureCount = useGameStore((s) => s.signatureCount)
   const lifetimeAcclaim = useGameStore((s) => s.lifetimeAcclaim)
   const completedChallenges = useGameStore((s) => s.completedChallenges)
   const challengeBestTimes = useGameStore((s) => s.challengeBestTimes)
@@ -132,6 +134,8 @@ export function OrchestraStage() {
     worldTourUnlocked,
     lifetimeAcclaim,
     warmUpLevel,
+    signatureAllocation,
+    signatureCount,
   })
 
   return (

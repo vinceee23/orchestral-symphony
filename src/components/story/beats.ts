@@ -33,6 +33,7 @@ export const STORY_BEAT_ORDER: StoryBeatId[] = [
   'first_records',
   'platinum',
   'world_tour',
+  'signature',
 ]
 
 export const STORY_BEATS: Record<StoryBeatId, StoryBeatDefinition> = {
@@ -161,7 +162,7 @@ export const STORY_BEATS: Record<StoryBeatId, StoryBeatDefinition> = {
 type BeatGateState = Pick<
   GameState,
   'encoreCount' | 'lifetimeEncoreCount' | 'opusCount' | 'platinum' | 'worldTourUnlocked'
-  | 'layer1WallReached' | 'recordsSold'
+  | 'layer1WallReached' | 'recordsSold' | 'signatureCount'
 >
 
 /** Whether a beat's milestone condition is satisfied (independent of seenStoryBeats). */
@@ -181,6 +182,8 @@ export function isBeatConditionMet(id: StoryBeatId, state: BeatGateState): boole
       return state.platinum
     case 'world_tour':
       return state.worldTourUnlocked
+    case 'signature':
+      return state.signatureCount >= 1
     default:
       return false
   }
@@ -210,6 +213,7 @@ type MigrationState = Pick<
   | 'worldTourUnlocked'
   | 'layer1WallReached'
   | 'recordsSold'
+  | 'signatureCount'
 >
 
 /** True when a save predates story beats and already has meaningful progress. */
@@ -221,6 +225,7 @@ export function hasPreStoryProgress(state: MigrationState): boolean {
     || state.opusCount > 0
     || state.platinum
     || state.worldTourUnlocked
+    || state.signatureCount > 0
   )
 }
 
@@ -237,5 +242,6 @@ export function seedSeenStoryBeatsFromProgress(state: MigrationState): string[] 
   if (state.recordsSold >= 1) seen.push('first_records')
   if (state.platinum) seen.push('platinum')
   if (state.worldTourUnlocked) seen.push('world_tour')
+  if (state.signatureCount >= 1) seen.push('signature')
   return seen
 }

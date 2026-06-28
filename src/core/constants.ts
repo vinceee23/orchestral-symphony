@@ -152,7 +152,7 @@ export const AP_UNLOCK: Record<'encore', { cost: number; minOpusCount: number }>
   encore: { cost: 5, minOpusCount: 1 },
 }
 
-/** L4-only — not in AP_UNLOCK until L4_UNLOCKED. Also gated on worldTourUnlocked in unlockWithApplause. */
+/** L4-only auto-tour purchase config. Runtime unlock is per-save via signatureUnlocked. */
 export const AP_UNLOCK_AUTO_TOUR = { cost: 200, minOpusCount: 5 }
 
 // Magnum Opus gate: gentle escalation — 72 Symphonies + floor(opusCount/3)

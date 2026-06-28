@@ -35,6 +35,8 @@ export interface PreChallengeSnapshot {
   tempo: TempoState
 }
 
+export type SignatureDomain = 'percussion' | 'strings' | 'brass' | 'woodwinds' | 'harmony'
+
 export interface GameState {
   soundwaves: Decimal
   tiers: TierState[]
@@ -114,6 +116,16 @@ export interface GameState {
   /** MOs performed after Platinum — drives the hybrid L3 unlock gate. */
   postPlatinumMoCount: number
 
+  // === Layer 4: Signature (identity) ===
+  /** The identity record. resetTier: never. Fractions sum to <= 1; unspent budget is allowed. */
+  signatureAllocation: Record<SignatureDomain, number>
+  /** Lifetime count of L4 ascensions. resetTier: never. */
+  signatureCount: number
+  /** Highest single-domain fraction ever committed, per domain. resetTier: never. */
+  peakDomainAlignment: Record<SignatureDomain, number>
+  /** L4 unlock flag; replaces the old build-time gate for per-save L4 rewards. */
+  signatureUnlocked: boolean
+
   // Prestige Layer 6: Grand Finale (the "infinity" reset at 1.79e308 SW)
   finalePoints: number
   finaleCount: number
@@ -169,6 +181,8 @@ export interface GameActions {
   buyKeepAutobuyers: () => void
   graduateVenue: () => void
   performTour: () => void
+  performSignature: () => void
+  setSignatureAllocation: (alloc: Record<SignatureDomain, number>) => void
   unlockWorldTour: () => void
   bankVenueAcclaim: () => void
   setAutoMOEnabled: (enabled: boolean) => void

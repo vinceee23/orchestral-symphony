@@ -4,6 +4,12 @@ import { getAchievementGlobalMultiplier, getAchievementTempoBonus } from './achi
 import { getActiveChallengeModifiers, getChallengeById, getChallengeMultipliers } from './challenges'
 import { getCoreProductionMultiplier } from './formulas'
 import { hasPerk } from './perks'
+import {
+  ZERO_SIGNATURE_ALLOCATION,
+  getSignatureEffects,
+  getSignatureEfficiency,
+  getSignatureProductionMultiplier,
+} from './signature'
 import { getAcclaimMultiplier } from './worldTour'
 import { warmUpMultiplier } from './warmup'
 
@@ -62,6 +68,8 @@ type ProductionMultiplierState = Pick<
   | 'worldTourUnlocked'
   | 'lifetimeAcclaim'
   | 'warmUpLevel'
+  | 'signatureAllocation'
+  | 'signatureCount'
 >
 
 export interface ProductionMultiplierOptions {
@@ -89,35 +97,52 @@ export function getProductionMultiplier(
     state.keepChallenges ?? false,
   )
   const noPrestige = options.noPrestige ?? isNoPrestigeActive(state)
+  const signatureAllocation = noPrestige
+    ? ZERO_SIGNATURE_ALLOCATION
+    : (state.signatureAllocation ?? ZERO_SIGNATURE_ALLOCATION)
+  const signatureCount = noPrestige ? 0 : (state.signatureCount ?? 0)
+  const signatureEffects = getSignatureEffects(
+    signatureAllocation,
+    getSignatureEfficiency(signatureCount),
+  )
   const recordsSold = options.recordsSold ?? state.recordsSold
   const platinum = options.platinum ?? state.platinum
   const crescendoLevel = options.crescendoLevel ?? state.crescendo
   const warmUpMult = options.warmUpMult ?? (
     state.activeChallenge ? 1 : warmUpMultiplier(state.warmUpLevel ?? 0)
   )
-  const entries: MultEntry[] = [{
-    source: 'core',
-    channel: 'core',
-    value: getCoreProductionMultiplier({
-      lifetimeEncorePoints: noPrestige ? 0 : state.lifetimeEncorePoints,
-      finalePoints: noPrestige ? 0 : state.finalePoints,
-      encoreUpgrades: state.encoreUpgrades,
-      tempoLevel: state.tempo.level,
-      tiers: state.tiers,
-      opusUpgrades: state.opusUpgrades,
-      crescendoLevel,
-      recordsSold,
-      platinum,
-      massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
-      achievementTempoBonus: getAchievementTempoBonus(achievementSet) + challengeMults.tempoBonus,
-      acclaimMult: state.worldTourUnlocked && !noPrestige
-        ? getAcclaimMultiplier(state.lifetimeAcclaim)
-        : 1,
-      challengeGlobalProdMult: challengeMults.globalProdMult,
-      warmUpMult,
-      crescendoBonus: challengeMults.crescendoBonus,
-    }),
-  }]
+  const entries: MultEntry[] = [
+    {
+      source: 'core',
+      channel: 'core',
+      value: getCoreProductionMultiplier({
+        lifetimeEncorePoints: noPrestige ? 0 : state.lifetimeEncorePoints,
+        finalePoints: noPrestige ? 0 : state.finalePoints,
+        encoreUpgrades: state.encoreUpgrades,
+        tempoLevel: state.tempo.level,
+        tiers: state.tiers,
+        opusUpgrades: state.opusUpgrades,
+        crescendoLevel,
+        recordsSold,
+        platinum,
+        massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
+        achievementTempoBonus: getAchievementTempoBonus(achievementSet)
+          + challengeMults.tempoBonus
+          + signatureEffects.tempoBonus,
+        acclaimMult: state.worldTourUnlocked && !noPrestige
+          ? getAcclaimMultiplier(state.lifetimeAcclaim)
+          : 1,
+        challengeGlobalProdMult: challengeMults.globalProdMult,
+        warmUpMult,
+        crescendoBonus: challengeMults.crescendoBonus + signatureEffects.crescendoBonus,
+      }),
+    },
+    {
+      source: 'signature:domain',
+      channel: 'domain',
+      value: getSignatureProductionMultiplier(signatureAllocation, signatureCount),
+    },
+  ]
 
   return getAchievementGlobalMultiplier(achievementSet).times(composeMultiplier(entries))
 }
