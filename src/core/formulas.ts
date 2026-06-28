@@ -164,11 +164,15 @@ export function getEncoreMultiplier(ep: number): Decimal {
   return new Decimal(1).plus(ENCORE_REWARD_PER * ep)
 }
 
-/** EP gained from a run's peak soundwaves: floor((peak/threshold)^root). 0 below threshold. */
+/** EP gained from a run's peak soundwaves: floor((peak/threshold)^root), with a MIN of 1.
+ *  Any Encore that meets its tier-gate rewards at least 1 EP — a prestige never gives nothing.
+ *  Above the threshold the sublinear curve takes over (keeps EP bounded under uncapped production).
+ *  (Auto-encore still gates on peak > threshold separately, so this never causes auto-prestige spam.) */
 export function getEncoreGain(peakSoundwaves: Decimal): number {
-  if (peakSoundwaves.lte(ENCORE_EP_THRESHOLD)) return 0
+  if (peakSoundwaves.lte(0)) return 0
+  if (peakSoundwaves.lte(ENCORE_EP_THRESHOLD)) return 1
   const n = Math.floor(peakSoundwaves.div(ENCORE_EP_THRESHOLD).pow(ENCORE_EP_ROOT).toNumber())
-  return isFinite(n) ? n : Number.MAX_SAFE_INTEGER // guard: extreme peaks can't poison numeric EP
+  return isFinite(n) ? Math.max(1, n) : Number.MAX_SAFE_INTEGER // guard: extreme peaks can't poison numeric EP
 }
 
 /** Opus BPM multiplier: each OP = x2 tick speed (BPM) */

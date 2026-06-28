@@ -229,7 +229,7 @@ export function ComposePage() {
           <div className="flex items-center justify-between">
             <span className="font-display font-semibold text-sm">Encore</span>
             <span className="text-[10px] tabular-nums">
-              {canEncore ? `×${formatNumber(currentEncoreMult, 2)}→×${formatNumber(nextEncoreMult, 2)}` : `${encorePurchased}/${encoreCost.amount}`}
+              {canEncore ? `×${formatNumber(currentEncoreMult, 2)}→×${formatNumber(nextEncoreMult, 2)}` : `${encorePurchased}/${encoreCost.amount} ${encoreCost.tierName}`}
             </span>
           </div>
           {canEncore ? (

@@ -10,6 +10,7 @@ export interface StoryBeatProps {
   logo?: boolean
 }
 
+const FADE_IN_MS = 700
 const FADE_OUT_MS = 800
 const LINE_FADE_MS = 600
 const LOGO_HOLD_MS = 2400
@@ -43,9 +44,13 @@ export function StoryBeat({ lines, goldLevel, onDone, logo }: StoryBeatProps) {
   const [lineVisible, setLineVisible] = useState(true)
   const [showLogo, setShowLogo] = useState(false)
   const [logoIn, setLogoIn] = useState(false)
+  const [entered, setEntered] = useState(false)
 
   useEffect(() => {
     containerRef.current?.focus()
+    // fade IN on mount (next frame) so the overlay eases to black instead of popping instantly
+    const raf = requestAnimationFrame(() => setEntered(true))
+    return () => cancelAnimationFrame(raf)
   }, [])
 
   const finish = useCallback(() => {
@@ -94,10 +99,10 @@ export function StoryBeat({ lines, goldLevel, onDone, logo }: StoryBeatProps) {
     <div
       ref={containerRef}
       className={`fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black select-none transition-opacity ${
-        exiting ? 'opacity-0' : 'opacity-100'
+        exiting || !entered ? 'opacity-0' : 'opacity-100'
       }`}
       style={{
-        transitionDuration: reducedMotion ? '200ms' : `${FADE_OUT_MS}ms`,
+        transitionDuration: reducedMotion ? '200ms' : `${exiting ? FADE_OUT_MS : FADE_IN_MS}ms`,
       }}
       role="dialog"
       aria-modal="true"
