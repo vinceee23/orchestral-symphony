@@ -928,7 +928,9 @@ describe('full-era pacing instrument', () => {
         greedyBuyCheapest(state)
       }
 
-      const conducting = state.layer1WallReached || state.opusCount > 0
+      // Conducting unlocks only AFTER the first Magnum Opus (real game gates it on opusCount > 0). The old
+      // `layer1WallReached || ...` over-credited the wall→MO climb with a Crescendo boost. (2026-06-29 fix.)
+      const conducting = state.opusCount > 0
       const dt = chooseDt(state)
       applyTick(state, dt, conducting)
       simMs += dt

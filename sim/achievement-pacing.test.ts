@@ -525,7 +525,10 @@ describe('achievement pacing instrument', () => {
       greedyBuyOpusUpgrades(state)
       enableUnlockedAutobuyers(state)
 
-      const conducting = state.layer1WallReached || state.opusCount > 0
+      // Conducting unlocks only AFTER the first Magnum Opus (UI: button hidden + Spacebar disabled while
+      // opusCount === 0). The old `layer1WallReached || ...` let the sim conduct during the wall→MO climb,
+      // over-crediting it with a Crescendo boost the real game forbids pre-MO. (2026-06-29 fix.)
+      const conducting = state.opusCount > 0
       applyTick(state, DT_MS, conducting)
       simMs += DT_MS
       setClock(simMs)
