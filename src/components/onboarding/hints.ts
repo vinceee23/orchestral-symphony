@@ -1,13 +1,11 @@
 import type { GameState } from '../../store/types'
 import { getEncoreCost, getMagnumOpusCost } from '../../core/constants'
-import { isWarmUpUnlocked } from '../../core/warmup'
 import { canUnlockWorldTour } from '../../core/worldTour'
 import { CHALLENGES, getActiveChallengeModifiers, getChallengeById, isChallengeUnlocked } from '../../core/challenges'
 
 export type OnboardingHintId =
   | 'first_buy'
   | 'conduct'
-  | 'warmup'
   | 'encore'
   | 'magnum_opus'
   | 'world_tour'
@@ -64,17 +62,6 @@ function hasUnlockedChallenge(state: GameState): boolean {
   return CHALLENGES.some((challenge) => isChallengeUnlocked(state, challenge))
 }
 
-function hasPassedWarmUp(state: GameState): boolean {
-  return (
-    isWarmUpUnlocked(state)
-    || state.encoreCount > 0
-    || state.lifetimeEncoreCount > 0
-    || state.layer1WallReached
-    || state.opusCount > 0
-    || state.worldTourUnlocked
-  )
-}
-
 function hasPassedWorldTour(state: GameState): boolean {
   return state.worldTourUnlocked || state.tourCount > 0 || canUnlockWorldTour(state)
 }
@@ -82,7 +69,6 @@ function hasPassedWorldTour(state: GameState): boolean {
 export const ONBOARDING_HINT_ORDER: OnboardingHintId[] = [
   'first_buy',
   'conduct',
-  'warmup',
   'encore',
   'magnum_opus',
   'world_tour',
@@ -99,11 +85,6 @@ export const ONBOARDING_HINTS: Record<OnboardingHintId, OnboardingHintDefinition
     id: 'conduct',
     text: 'Hold to conduct — a temporary production surge.',
     isMet: (state) => state.opusCount > 0 && !state.activeChallenge,
-  },
-  warmup: {
-    id: 'warmup',
-    text: 'Keep playing to fill Warm-Up for a production bonus; it fades when idle.',
-    isMet: (state) => isWarmUpUnlocked(state) && !state.activeChallenge,
   },
   encore: {
     id: 'encore',
@@ -149,7 +130,6 @@ export function seedSeenHintsFromProgress(state: GameState): OnboardingHintId[] 
   const seen: OnboardingHintId[] = []
   if (hasAnyProgress(state)) seen.push('first_buy')
   if (state.opusCount > 0 || state.worldTourUnlocked) seen.push('conduct')
-  if (hasPassedWarmUp(state)) seen.push('warmup')
   if (state.encoreCount > 0 || state.lifetimeEncoreCount > 0 || canPerformEncore(state)) seen.push('encore')
   if (state.opusCount > 0 || state.worldTourUnlocked || canPerformMagnumOpus(state)) seen.push('magnum_opus')
   if (hasPassedWorldTour(state)) seen.push('world_tour')
