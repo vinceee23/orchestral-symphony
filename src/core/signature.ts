@@ -121,3 +121,46 @@ export function getSignatureProductionMultiplier(
   const effects = getSignatureEffects(alloc, getSignatureEfficiency(signatureCount))
   return effects.prodMult.times(effects.harmonyMult)
 }
+
+/**
+ * Emergent "your sound" identity — the epithet your dominant Signature domain earns you (A1). Each maps to
+ * the god-fingerprint behind that domain (Pulse/Voice/Blaze/Breath/Twins — never named outright), making the
+ * Identity axis FELT and pre-loading the L9 Signature-mirror. A spread allocation with no clear leader reads
+ * as "The Composer"; an unallocated identity is "The Unvoiced".
+ */
+const SIGNATURE_IDENTITY: Record<SignatureDomain, string> = {
+  percussion: 'The Pulse-Driven',
+  strings: 'The Lyric',
+  brass: 'The Radiant',
+  woodwinds: 'The Windborne',
+  harmony: 'The Harmonist',
+}
+
+/** Share of the dominant domain at/above which it defines the identity; below it, the voice reads as balanced. */
+const SIGNATURE_DOMINANCE_SHARE = 0.4
+
+export interface SignatureIdentity {
+  label: string
+  /** The dominant domain, or null when unvoiced / balanced (no single domain ≥ SIGNATURE_DOMINANCE_SHARE). */
+  domain: SignatureDomain | null
+}
+
+export function getSignatureIdentity(
+  alloc: Partial<Record<SignatureDomain, number>> | undefined,
+): SignatureIdentity {
+  const total = allocationSum(alloc)
+  if (total <= 0) return { label: 'The Unvoiced', domain: null }
+
+  let top: SignatureDomain = SIGNATURE_DOMAINS[0]
+  let topValue = -1
+  for (const domain of SIGNATURE_DOMAINS) {
+    const value = allocationValue(alloc, domain)
+    if (value > topValue) {
+      topValue = value
+      top = domain
+    }
+  }
+
+  if (topValue / total < SIGNATURE_DOMINANCE_SHARE) return { label: 'The Composer', domain: null }
+  return { label: SIGNATURE_IDENTITY[top], domain: top }
+}

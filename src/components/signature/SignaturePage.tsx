@@ -7,6 +7,7 @@ import {
   ZERO_SIGNATURE_ALLOCATION,
   getSignatureEffects,
   getSignatureEfficiency,
+  getSignatureIdentity,
 } from '../../core/signature'
 import { getActiveChallengeModifiers, getChallengeById } from '../../core/challenges'
 import { Button } from '../shared/Button'
@@ -65,6 +66,7 @@ export function SignaturePage() {
   const canPerform = signatureUnlocked && circuitComplete && !prestigeBlocked
   const efficiency = getSignatureEfficiency(signatureCount)
   const effects = getSignatureEffects(allocation, efficiency)
+  const identity = getSignatureIdentity(allocation) // A1: emergent "your sound" from the dominant domain
 
   const updateDomain = (domain: SignatureDomain, value: number) => {
     if (!canEdit) return
@@ -82,6 +84,12 @@ export function SignaturePage() {
       <header className="text-center">
         <h1 className="text-2xl font-display font-semibold text-amber-400 tracking-wide">Signature</h1>
         <p className="text-sm text-text-muted mt-2">Align your voice across instrument domains before each new climb.</p>
+        {signatureUnlocked && (
+          <p className="mt-3 text-sm">
+            <span className="text-xs text-text-muted uppercase tracking-[0.25em]">Your sound</span>
+            <span className="block font-display text-xl text-amber-300 tracking-wide mt-0.5">{identity.label}</span>
+          </p>
+        )}
       </header>
 
       <section className="rounded-xl border border-amber-500/30 bg-bg-secondary/40 p-5 space-y-3">

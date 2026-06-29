@@ -21,6 +21,7 @@ import {
   getSignatureEffects,
   getSignatureEfficiency,
   getSignatureProductionMultiplier,
+  getSignatureIdentity,
 } from '../src/core/signature'
 import { isBeatConditionMet } from '../src/components/story/beats'
 import type { GameState, SignatureDomain, TierState } from '../src/store/types'
@@ -367,5 +368,14 @@ describe('L4 Signature', () => {
       'strings',
       'woodwinds',
     ])
+  })
+
+  it('A1 identity: dominant domain → epithet, spread → Composer, empty → Unvoiced', () => {
+    expect(getSignatureIdentity(ZERO_SIGNATURE_ALLOCATION)).toEqual({ label: 'The Unvoiced', domain: null })
+    expect(getSignatureIdentity(alloc({ percussion: 1 }))).toEqual({ label: 'The Pulse-Driven', domain: 'percussion' })
+    expect(getSignatureIdentity(alloc({ harmony: 0.5, woodwinds: 0.2 }))).toEqual({ label: 'The Harmonist', domain: 'harmony' })
+    // even spread, no domain ≥40% share → balanced "Composer"
+    expect(getSignatureIdentity(alloc({ percussion: 0.2, strings: 0.2, brass: 0.2, woodwinds: 0.2, harmony: 0.2 })))
+      .toEqual({ label: 'The Composer', domain: null })
   })
 })
