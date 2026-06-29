@@ -1,7 +1,12 @@
 # Achievements Overhaul — Proposal (for Vince's review)
 
-*Draft 2026-06-24. Nothing implemented yet — this is the plan to react to. Once you approve names/pacing,
-I wire it into `src/core/achievements.ts` and source images separately.*
+> ## ⚠ SUPERSEDED 2026-06-29 — historical proposal
+> This 2026-06-24 draft (and the later `ACHIEVEMENTS-V2-SPEC.md` "keep ~70, no culling" lock) are
+> **superseded** by the 2026-06-29 cull: achievements went **376 → 100**, cutting ~285 number/time-padding
+> filler and curating for depth (commit `fb18542`). The governing rule now is **no-filler / meaningful-only**
+> (memory: `achievements-no-filler`). The pacing sim's "reward every ≤20 min" gap gate that drove the filler
+> was retired. **Current source of truth:** `src/core/achievements.ts` + `HANDOFF.md`. Read this doc only for
+> historical naming/voice ideas, not as the active plan.
 
 ## The two real problems
 

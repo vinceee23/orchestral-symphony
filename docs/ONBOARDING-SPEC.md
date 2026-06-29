@@ -11,7 +11,8 @@ walls, every hint shown at most once and persisted as seen.
 2. **Just-in-time control explainers** — a small dismissible card the FIRST time each control becomes
    available, 1–2 sentences, then never again:
    - Tempo/Conduct first usable → "Hold to conduct — a temporary production surge."
-   - Warm-Up unlocks (3rd tier) → "Keep playing to fill Warm-Up for a production bonus; it fades when idle."
+   - ~~Warm-Up unlocks (3rd tier) → "Keep playing to fill Warm-Up..."~~ **— DEAD as of 2026-06-29: Warm-Up
+     retired (`isWarmUpUnlocked → false`), so this hint never fires. Do not re-add it.**
    - Encore first available → "Prestige: reset for a permanent multiplier."
    - Magnum Opus first available → one line on the L2 transition.
    - World Tour unlocks → one line; the Challenges panel unlocks → one line.

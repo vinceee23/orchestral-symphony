@@ -1,5 +1,10 @@
 # Early Active-Verb — proposals for Vince to pick (then build)
 
+> ## 📜 HISTORICAL 2026-06-29 — outcome recorded
+> Option A (**Warm-Up**) was chosen and built — then **RETIRED 2026-06-29** as redundant with
+> Conduct/Crescendo (commit `bba0415`). The L0–L3 active verb is now **Conduct/Crescendo** (post-MO).
+> This doc is kept for the decision record only; see `HANDOFF.md` for current state.
+
 **Why this exists:** the appeal review flagged that L0–L3's moment-to-moment is essentially "buy tier → wait
 → prestige," with **Conduct (hold-to-conduct) as the *only* active verb — and idle sustains ~70% of it**, so
 even that flattens. For a min-maxing audience the early loop reads as "undercooked." We want **one

@@ -8,8 +8,9 @@
 > automation that runs the layer beneath it. The arc is also a *story*: a birth→rise→apotheosis→fall→
 > redemption→confrontation spine told through cold-open story beats. As of 2026-06-28, **Layers 0–3 are
 > feature-complete, balance-gated, and deployed to `master`/Pages** — Encore → Magnum Opus → World Tour, plus
-> the early **Warm-Up** active verb, light **first-run onboarding**, and the cold-open + per-layer story
-> beats; full suite green (17/17 sim files). **Layers 4–9 are design-locked but not yet implemented** (only
+> light **first-run onboarding** and the cold-open + per-layer story beats. (~~the early Warm-Up active
+> verb~~ **— RETIRED 2026-06-29**, redundant with Conduct/Crescendo; achievements also culled 376→100. See
+> `HANDOFF.md`.) Full suite green. **Layers 4–9 are design-locked but not yet implemented** (only
 > inert story-beat placeholders exist in code). See **`HANDOFF.md`** (repo root) for the live snapshot and
 > two balance calls awaiting Vince's confirmation. (Citations below still reference `feat/layer3`, now merged
 > to `master` — the code is identical.)

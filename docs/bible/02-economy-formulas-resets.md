@@ -80,7 +80,8 @@ So the *true* per-tier production multiplier in the tick is:
 
 ## 2. Achievements as multipliers — the "budget"
 
-`achievements.ts` defines **118 achievements** (`ACHIEVEMENTS`, header comment `achievements.ts:84`).
+`achievements.ts` defines **100 achievements** (culled from 376 on 2026-06-29 — meaningful-only, no
+number/time-padding filler; commit `fb18542`, memory `achievements-no-filler`).
 Rewards are typed `AchievementReward` (`achievements.ts:14-24`): `globalPercent`, `tierPercent`,
 `tempoBonus`, `costReduction`, `tierCostReduction`, `startingSW`, `headStartBoost`, `perk`, or `none`.
 

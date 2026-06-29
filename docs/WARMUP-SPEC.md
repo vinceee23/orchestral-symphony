@@ -1,6 +1,14 @@
 # Warm-Up — early active-play production bonus (L0–L3 active verb)
 
-**Status:** LOCKED 2026-06-28 (Vince). The early active *decision* the appeal review asked for:
+> ## ⛔ RETIRED 2026-06-29 — THIS FEATURE NO LONGER EXISTS
+> Warm-Up was removed (it was redundant with Conduct/Crescendo — both reward active presence with a
+> production multiplier, and post-MO they showed at once). `isWarmUpUnlocked → false` at the source
+> (`src/core/warmup.ts`, commit `bba0415`): the bar auto-hides, zero production effect. Plumbing is kept
+> for save-compat + easy revert, but **the mechanic is inert** — do NOT treat this spec as live design.
+> The separate head-start perk (`perk-warmup`) is a DIFFERENT mechanic and is unaffected.
+> **This document is historical.** Current state: `HANDOFF.md`.
+
+**Status (historical):** LOCKED 2026-06-28 (Vince). The early active *decision* the appeal review asked for:
 idle-FIRST, not twitchy, bounded, foreshadows L5 Virtuoso's "reward steady play." Build via Codex,
 sim + gate by Claude.
 

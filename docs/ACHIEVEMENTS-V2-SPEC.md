@@ -1,5 +1,15 @@
 # Achievement Set v2 — full redesign/expand SPEC (proposal, not implemented)
 
+> ## ⚠ SUPERSEDED 2026-06-29 — its core lock is REVERSED
+> This spec's Wave-A lock — *"keep all ~70, **no culling**, never re-lock, expand to ~90–100"* — was
+> **reversed** on 2026-06-29. The achievement set had ballooned to **376** (mostly auto-generated
+> number/time-padding filler) and was **culled to 100** with a **no-filler / meaningful-only** mandate
+> (commit `fb18542`; memory: `achievements-no-filler`). What still holds: the **reward engine**, the
+> **globalPercent budget guard** (achievements must not become the progression system — now sim-checked by
+> human-pacing's `globalAtPlat` band), and the **song-title + orchestral-wit voice**. What's DEAD: the
+> "no culling / keep ~70-100" count target and the per-row drip targets. **Current source of truth:**
+> `src/core/achievements.ts` + `HANDOFF.md`.
+
 Status: **proposal for Vince's sign-off.** Self-iterated for loopholes (see §8). No code changed.
 Depth: detailed + implementable. The reward *engine* stays; the **list, pacing, and perks** are redesigned.
 
@@ -134,6 +144,6 @@ Detailed enough to implement directly against the v1 schema. (Existing kept entr
 
 ## 9. Build order (once signed off)
 
-**Wave A scope — LOCKED (2026-06-25):** keep **all ~70** existing achievements (re-pace + re-distribute thresholds/reward-types; **no culling**, never re-lock); keep the **easter-egg sprinkle + add a few** across later rows; new achievements keep the **song-title + orchestral-wit** voice; total achievement power **capped ≤ +150–200%**; new Wave A perks = **Offline Boost** + **OP-autobuyer-gated bulk** (QoL, not raw power). L3/R9+ achievements + Wave-B perks come with L3.
+**Wave A scope — LOCKED (2026-06-25), ⚠ REVERSED 2026-06-29 (see top banner — culled 376→100, no-filler):** keep **all ~70** existing achievements (re-pace + re-distribute thresholds/reward-types; **no culling**, never re-lock); keep the **easter-egg sprinkle + add a few** across later rows; new achievements keep the **song-title + orchestral-wit** voice; total achievement power **capped ≤ +150–200%**; new Wave A perks = **Offline Boost** + **OP-autobuyer-gated bulk** (QoL, not raw power). L3/R9+ achievements + Wave-B perks come with L3.
 
 1. **Sync `sim/` to live `constants.ts`** (import as source of truth) + add the per-achievement first-unlock timestamp instrument (§7). 2. Re-pace R1–R8 (re-distribute existing thresholds, smooth the drip, kill the MO spike) + add the two Wave A perks → sim → tune to the budget. 3. Ship Wave A (Cursor builds, Codex reviews, Claude gates). 4. *(Separate follow-up)* add **auto-prestige as an OP-tree upgrade**. 5. After L3 lands: R9 (World Tour) + Wave-B perks → sim → tune.
