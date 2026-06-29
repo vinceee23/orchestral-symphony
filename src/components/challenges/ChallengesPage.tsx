@@ -3,6 +3,7 @@ import {
   CHALLENGES,
   isChallengeUnlocked,
   speedScaledCapstone,
+  getChallengeMultipliers,
   CAPSTONE_TIME_FLOOR_MS,
   CAPSTONE_TIME_CAP_MS,
   CAPSTONE_MULT_FLOOR,
@@ -52,6 +53,16 @@ export function ChallengesPage() {
     ? CHALLENGES.reduce((sum, ch) => sum + (challengeBestTimes[ch.id] ?? 0), 0)
     : completedChallenges.reduce((sum, id) => sum + (challengeBestTimes[id] ?? 0), 0)
   const capstoneMult = allCleared ? speedScaledCapstone(totalBestMs) : 1
+
+  // B1: live readout of the total bonus the player's clears are giving RIGHT NOW (includes the capstone
+  // once all 12 are cleared) — so the cumulative reward is concrete, not just per-challenge labels.
+  const liveBonuses = getChallengeMultipliers(completedChallenges, challengeBestTimes)
+  const liveBonusParts: string[] = []
+  if (liveBonuses.globalProdMult > 1.0001) liveBonusParts.push(`x${liveBonuses.globalProdMult.toFixed(2)} production`)
+  if (liveBonuses.costMult < 0.9999) liveBonusParts.push(`-${Math.round((1 - liveBonuses.costMult) * 100)}% cost`)
+  if (liveBonuses.tempoBonus > 0) liveBonusParts.push(`+${liveBonuses.tempoBonus.toFixed(2)} tempo`)
+  if (liveBonuses.crescendoBonus > 0) liveBonusParts.push(`+${liveBonuses.crescendoBonus.toFixed(2)} crescendo ceiling`)
+  if (liveBonuses.milestoneStrength > 0) liveBonusParts.push(`+${liveBonuses.milestoneStrength.toFixed(2)} milestone strength`)
 
   const activeCh = activeChallenge
     ? CHALLENGES.find((c) => c.id === activeChallenge.challengeId)
@@ -126,6 +137,15 @@ export function ChallengesPage() {
             )}
           </div>
         </section>
+      )}
+
+      {challengeGate.worldTourUnlocked && (
+        <div className="mb-4 rounded-xl border border-teal-500/20 bg-bg-secondary/30 px-3 py-2">
+          <span className="text-[10px] text-text-muted uppercase tracking-wider">Active challenge bonuses · </span>
+          <span className="text-[11px] text-teal-300/90 tabular-nums">
+            {liveBonusParts.length > 0 ? liveBonusParts.join('  ·  ') : 'clear a challenge to start earning'}
+          </span>
+        </div>
       )}
 
       {activeCh && activeChallenge && (
