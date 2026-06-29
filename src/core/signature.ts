@@ -21,7 +21,9 @@ export const ZERO_SIGNATURE_ALLOCATION: Record<SignatureDomain, number> = {
 const SIGNATURE_EFFICIENCY_LOG_SCALE = 0.35 // TBD-tune (sim/playtest)
 const SIGNATURE_EFFICIENCY_LOG_MULT = 0.55 // TBD-tune (sim/playtest)
 const SIGNATURE_EFFICIENCY_CAP = 1.75 // TBD-tune (sim/playtest)
-const PERCUSSION_TEMPO_BONUS_MAX = 0.08 // TBD-tune (sim/playtest)
+const PERCUSSION_TEMPO_BONUS_MAX = 0.07 // trimmed 0.08→0.07 (2026-06-29): percussion→tempo compounded with
+// the active buy/milestone loop and widened idle:active to 1.26 vs the 1.25 guard (backlog P0 #3). Lower
+// magnitude pulls it back under the guard while staying inside the dominance band (both sim-checked).
 const STRINGS_CRESCENDO_BONUS_MAX = 0.25 // TBD-tune (sim/playtest)
 const BRASS_PROD_ADD_MAX = 0.25 // TBD-tune (sim/playtest)
 const WOODWINDS_COST_REDUCTION_MAX = 0.08 // TBD-tune (sim/playtest)
