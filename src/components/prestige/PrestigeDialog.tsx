@@ -41,14 +41,22 @@ export const PRESTIGE_INFO: Record<PrestigeKind, {
   },
 }
 
+/** Concrete, scannable before-you-commit preview: what you gain, what resets, what survives. */
+export interface PrestigePreview {
+  gain: string
+  resets: string[]
+  keeps: string[]
+}
+
 interface Props {
   type: PrestigeKind
+  preview?: PrestigePreview
   onConfirm: () => void
   onCancel: () => void
 }
 
 /** First-time confirmation dialog for a prestige reset (with a "don't show again" opt-out). */
-export function PrestigeDialog({ type, onConfirm, onCancel }: Props) {
+export function PrestigeDialog({ type, preview, onConfirm, onCancel }: Props) {
   const [dontShow, setDontShow] = useState(false)
   const info = PRESTIGE_INFO[type]
   const confirmVariant = type === 'mo' ? 'purple' : 'gold'
@@ -70,6 +78,23 @@ export function PrestigeDialog({ type, onConfirm, onCancel }: Props) {
             <p key={i} className="text-sm text-text-secondary leading-relaxed">{line}</p>
           ))}
         </div>
+
+        {preview && (
+          <div className="rounded-lg border border-border bg-bg-primary/60 divide-y divide-border/60 text-sm">
+            <div className="flex gap-2 px-3 py-2">
+              <span className="text-success shrink-0">{'↑'} You gain</span>
+              <span className="text-text-primary text-right flex-1 tabular-nums">{preview.gain}</span>
+            </div>
+            <div className="flex gap-2 px-3 py-2">
+              <span className="text-danger shrink-0">{'↺'} Resets</span>
+              <span className="text-text-secondary text-right flex-1">{preview.resets.join(' · ')}</span>
+            </div>
+            <div className="flex gap-2 px-3 py-2">
+              <span className="text-text-muted shrink-0">{'✓'} You keep</span>
+              <span className="text-text-secondary text-right flex-1">{preview.keeps.join(' · ')}</span>
+            </div>
+          </div>
+        )}
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"

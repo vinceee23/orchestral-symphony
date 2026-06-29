@@ -8,7 +8,7 @@ import { ENCORE_UPGRADES, getEncoreUpgradeCost, getOvertureGainMultiplier } from
 import { hasPerk, ENCORE_UPGRADE_DISCOUNT } from '../../core/perks'
 import { playPrestigeSound, playBuySound } from '../../core/audio'
 import { getChallengeById, getActiveChallengeModifiers } from '../../core/challenges'
-import { PrestigeDialog, type PrestigeKind } from './PrestigeDialog'
+import { PrestigeDialog, type PrestigeKind, type PrestigePreview } from './PrestigeDialog'
 import { useUiStore } from '../../store/uiStore'
 import { Button } from '../shared/Button'
 
@@ -67,6 +67,25 @@ export function PrestigePage() {
     peakCrescendoMult,
     levels: opusUpgrades,
   })
+
+  // B2 prestige-preview: exactly what you gain / reset / keep, before you commit (perk-aware).
+  const keepsEncoreUpgrades = hasPerk(new Set(achievements), 'perk-keep-encore-upgrades')
+  const encorePreview: PrestigePreview = {
+    gain: `+${projectedGain} Applause  ·  x${formatNumber(currentEncoreMult, 2)} → x${formatNumber(nextEncoreMult, 2)}`,
+    resets: ['tiers', 'soundwaves', 'tempo'],
+    keeps: ['your Applause multiplier', 'spendable Applause', 'Encore upgrades', 'achievements'],
+  }
+  const moPreview: PrestigePreview = {
+    gain: `+${projectedOpGain} OP`,
+    resets: ['tiers', 'soundwaves', 'tempo', 'Applause', ...(keepsEncoreUpgrades ? [] : ['Encore upgrades'])],
+    keeps: [
+      'Opus Points',
+      'achievements',
+      ...(platinum ? ['records & Platinum'] : []),
+      ...(keepsEncoreUpgrades ? ['Encore upgrades (perk)'] : []),
+    ],
+  }
+  const resetSummary = (p: PrestigePreview) => `Resets ${p.resets.join(' · ')} — keeps ${p.keeps[0]}`
 
   const run = (kind: PrestigeKind) => {
     if (kind === 'encore') {
@@ -144,15 +163,18 @@ export function PrestigePage() {
             </div>
           </div>
         ) : (
-          <Button
-            onClick={() => tryPrestige('encore')}
-            variant="gold"
-            size="lg"
-            display
-            className="w-full"
-          >
-            Perform Encore  ·  x{formatNumber(currentEncoreMult, 2)} {'→'} x{formatNumber(nextEncoreMult, 2)}
-          </Button>
+          <div className="space-y-1.5">
+            <Button
+              onClick={() => tryPrestige('encore')}
+              variant="gold"
+              size="lg"
+              display
+              className="w-full"
+            >
+              Perform Encore  ·  x{formatNumber(currentEncoreMult, 2)} {'→'} x{formatNumber(nextEncoreMult, 2)}
+            </Button>
+            <p className="text-[11px] text-text-muted/80 text-center">{resetSummary(encorePreview)}</p>
+          </div>
         )}
         {encoreCount === 0 && (
           <p className="text-xs text-text-muted text-center">Your first Encore unlocks Movements — Symphonies arrive a few Encores later.</p>
@@ -237,11 +259,19 @@ export function PrestigePage() {
             >
               {canMO ? 'Perform Magnum Opus' : `${moPurchased}/${moCost.amount} ${moCost.tierName}`}
             </Button>
+            {canMO && <p className="text-[11px] text-text-muted/80 text-center">{resetSummary(moPreview)}</p>}
           </div>
         )}
       </section>
 
-      {pending && <PrestigeDialog type={pending} onConfirm={() => run(pending)} onCancel={() => setPending(null)} />}
+      {pending && (
+        <PrestigeDialog
+          type={pending}
+          preview={pending === 'encore' ? encorePreview : pending === 'mo' ? moPreview : undefined}
+          onConfirm={() => run(pending)}
+          onCancel={() => setPending(null)}
+        />
+      )}
     </div>
   )
 }
