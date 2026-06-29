@@ -55,6 +55,10 @@ All gated green (tsc · vitest 20/20, 95 pass/1 skip · build) and committed on 
   fresh session can't follow reversed instructions.
 
 ### Open / awaiting Vince (next session)
+- **▶ NEXT UP — Genre audit + concept proof-test (`docs/GENRE-AUDIT.md`).** Vince is running a Gemini Deep
+  Research prompt on incremental-genre criticisms; the report comes back in a FRESH session. Resume: read
+  `docs/GENRE-AUDIT.md`, walk the numbered findings one-by-one vs Sonance, graduate real items into the
+  backlog. (memory: `genre-audit-prooftest`.)
 - **~~⚠ ONE RED SIM~~ ✅ RESOLVED above (percussion trim).** _(historical:_ `sim/l4-signature.test.ts > "no
   domain main worsens the idle:active balance vs baseline (P0 #3)"` — **percussion = 1.2609 vs the 1.25 guard**
   (0.9% over; deterministic, percussion-only, other 8 tests pass). **Root cause:** retiring Warm-Up (this
