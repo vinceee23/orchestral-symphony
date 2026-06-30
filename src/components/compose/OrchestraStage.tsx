@@ -195,7 +195,7 @@ export function OrchestraStage() {
             if (!canAfford) return
             if (buyAmount === 'max') buyMaxTier(config.id)
             else buyTier(config.id, amount)
-            registerBuy(config.id, amount)
+            registerBuy(config.id, buyAmount === 'max' ? undefined : amount)
           }
 
           return (

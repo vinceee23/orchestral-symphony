@@ -19,6 +19,10 @@ interface ModalShellProps {
 export function ModalShell({ onClose, label, panelClassName = '', children }: ModalShellProps) {
   const panelRef = useRef<HTMLDivElement>(null)
   const prevFocus = useRef<HTMLElement | null>(null)
+  // onClose is often a fresh inline callback each render (e.g. PrestigeDialog from a per-tick parent).
+  // Keep it in a ref so the focus-trap effect runs once on mount, not re-running/refocusing every tick.
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
 
   useEffect(() => {
     prevFocus.current = document.activeElement as HTMLElement | null
@@ -29,7 +33,7 @@ export function ModalShell({ onClose, label, panelClassName = '', children }: Mo
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault()
-        onClose()
+        onCloseRef.current()
         return
       }
       if (e.key === 'Tab' && panel) {
@@ -46,7 +50,8 @@ export function ModalShell({ onClose, label, panelClassName = '', children }: Mo
       document.removeEventListener('keydown', onKey, true)
       prevFocus.current?.focus?.()
     }
-  }, [onClose])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 md:p-6" onClick={onClose}>

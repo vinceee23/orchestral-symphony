@@ -38,6 +38,7 @@ export function importSaveString(b64: string): boolean {
   if (!parseSaveString(b64)) return false
   const bin = atob(b64.trim())
   const json = new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)))
+  cancelPendingSave(SAVE_KEY) // a queued debounced autosave must not overwrite the import on reload
   localStorage.setItem(SAVE_KEY, json)
   return true
 }
@@ -96,6 +97,15 @@ function flushSave() {
   writeNow(name, value)
 }
 
+/** Drop any pending debounced write (optionally only for a specific key) so a stale autosave can't
+ *  clobber an imported save or resurrect a hard-reset key on the next flush. */
+function cancelPendingSave(name?: string) {
+  if (name !== undefined && pendingName !== name) return
+  if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }
+  pendingName = null
+  pendingValue = null
+}
+
 function hookUnloadFlush() {
   if (unloadHooked || typeof window === 'undefined') return
   unloadHooked = true
@@ -133,6 +143,7 @@ export function createDecimalStorage(): PersistStorage<any> {
       if (flushTimer === null) flushTimer = setTimeout(flushSave, 1000)
     },
     removeItem(name: string) {
+      cancelPendingSave(name) // a queued write must not resurrect a removed key (e.g. hard reset)
       try {
         localStorage.removeItem(name)
       } catch { /* noop */ }
