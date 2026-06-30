@@ -84,3 +84,65 @@ building leaves them as TBD placeholders, which is fine at zero-allocation but u
 
 *Source: two read-only fork reviews, 2026-06-28. Nothing here is committed as work — pick items to graduate
 into specs. P0 items are the exception: they're requirements for the L4 tuning pass, not optional ideas.*
+
+---
+
+## D. Genre-audit graduated items (2026-06-29)
+
+> Source: the Gemini Deep Research genre audit (`docs/GENRE-AUDIT-REPORT.md`), walked one-by-one with Vince
+> (C1–C21, I1–I6, Parts B & C). These are the **decided** outcomes. North-star lens added this session:
+> **Sonance must feel like Sonance, not "AD Music Edition"** — differentiation must live in the *core-loop math*,
+> not just the theme. Items below are tagged by disposition.
+
+### D1 — Ready-to-build pass — ✅ BUILT (2026-06-29, `feat/layer4`)
+1. ✅ **Settings panel v1** [C16 + C12] — full spec built; see `docs/SETTINGS-SPEC.md`. Closes the C16 gap.
+   Save schema v2→v3. (M)
+2. ✅ **Production Breakdown panel** [C10] — per-channel ×N on the Stats page, sourced from
+   `coreProductionFactors`/`getProductionBreakdown`; drift-guarded test proves product === multiplier. (S–M)
+3. ✅ **Conducting → tap-to-trigger timed burst** [C4] — `uiStore` burst window (`CONDUCT_BURST_MS`), Space/
+   button now tap; no holding. *Superseded B5.* (S–M)
+4. ✅ **`ch_unplugged` ordering gate** — capstone now requires the other 11 cleared (the reported "exploit"
+   was a false positive — the reward was already correctly gated on all-12; verified per THE METHOD). (S)
+
+### D2 — Identity spine + depth (needs a design spec each before build; the not-AD core work)
+5. **Signature-as-spine** [C21/Part B] — elevate L4 so each domain allocation *reshapes which tier-interaction
+   matters*, so runs play differently. On-branch, low trial risk. Build on Part B's "strongest idea". (L)
+6. **Harmony/Resonance between tiers** [C21/Part B] — adjacent tiers in consonant ratios (chords/intervals) grant
+   bonuses → puzzle becomes balancing for consonance, not dumping into the top tier. **⚠️ Touches the live L0–L3
+   loop — reworks the public trial; biggest differentiation, biggest build.** (L, **trial-affecting**)
+7. **Tempo risk/reward dial** [C21/Part B] — Tempo becomes a managed tradeoff (more output vs dissonance) instead
+   of strictly-good. **⚠️ Touches live L0 tempo; must not violate C4 anti-idle.** (M–L, **trial-affecting**)
+8. **Time Banking offline model** [C15 / I1] — bank offline time as a spendable resource burned at accelerated
+   speed with active decisions on return. Report's top offline pick + a non-AD differentiator. (M–L)
+9. **Rule-inversion challenges** [I2] — add 2–3 challenges that fundamentally change play (e.g. "buying a tier
+   resets lower tiers"), not just constraints. Feeds depth + identity. (M)
+10. **Systematic milestone auto-completion** [I5] — early tiers auto-clear on later resets; the principled fix for
+    C2 (tedious re-climb). Supersedes ad-hoc head-start perks. *This is the chosen C2/C-section-C2 answer.* (M)
+
+### D3 — Folded into the #6 L4 playtest / feel pass (magnitudes, not mechanics)
+- C1 dead-zone audit: verify every layer transition has a lateral action available at the wall.
+- C2 early re-climb: measure the opening re-climb length; apply D2-#10 only if it actually feels tedious.
+- C4 `AUTO_CONDUCT_FRACTION`: tune the idle-floor-to-ceiling gap so idling never feels mandatory.
+- C18/C20: keep hint cards concise; verify story beats are skippable.
+
+### D4 — Roadmap doctrine (decisions, not build items)
+- **9-layer ladder → gate behind proof** [Part B]: do NOT pre-commit to 9 full resets. Build L4→L5, prove each
+  verb is genuinely distinct AND well-paced before committing the next; collapse any that don't justify a full
+  reset into a parallel upgrade tree. (Update `DESIGN.md` / `bible/04-forward-design`.)
+- **Monetization → free demo (L0–L3) → premium L4+ on Steam** [Part C]: matches the existing branch split and
+  the report's gold standard. (Confirm in `docs/MONETIZATION.md`.)
+- **Early community feedback → deferred** to launch-prep (post trial to r/incremental_games + Galaxy Click once
+  L4 reflects the identity direction).
+- **PH tax (RA 12023):** Steam = Merchant of Record, auto-remits 12% VAT on PH sales; only action is correct
+  BIR/ORUS classification for foreign royalties. Informational.
+
+### D5 — Backlog (later / endgame)
+- **Custom difficulty dials** [I3] — Synergism-style; candidate for L8 Redemption endgame replayability.
+- **Background music + true Music/SFX volume split** — needs an audio asset pipeline; `audio.ts` is SFX-only today.
+
+### Cleared as already-handled (no action — Sonance is at or ahead of genre norms)
+C3 (sim pacing gate), C5 (no mandatory clicking), C6 (distinct verbs, built layers), C7 (free respec),
+C8 (`PrestigeDialog` gain/resets/keeps preview), C9 (Roadies + higher-order automation + buy-max),
+C11 (uncapped milestones + cascade), C13 (376→100 cull), C14 (additive specific rewards), C16 QoL (Buy-Max +
+bulk-buy exist; save export = D1-#1), C17 (progressive disclosure), C19 (built content), I4 (automation thesis),
+I6 (Signature free respec).

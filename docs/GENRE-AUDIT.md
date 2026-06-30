@@ -1,8 +1,8 @@
 # Genre Audit + Concept Proof-Test — Sonance vs the incremental/idle genre
 
-> **Status (2026-06-29):** prompt READY; awaiting Vince to run it in **Gemini Deep Research** and paste the
-> report back (likely in a FRESH session — this thread is a clean handoff point). Then we walk the findings
-> one-by-one and graduate the real ones into `MECHANICS-BACKLOG.md`.
+> **Status (2026-06-29):** ✅ DONE. Report received (`docs/GENRE-AUDIT-REPORT.md`, converted from the root
+> `.docx`) and walked one-by-one with Vince (C1–C21, I1–I6, Parts B & C). All decisions graduated into
+> `docs/MECHANICS-BACKLOG.md` §D. This file is kept for the reusable prompt + the processing plan below.
 
 ## Why this exists
 Vince read r/incremental_games threads and saw heavy criticism/ideas for AD-style idlers. Goal: pressure-test

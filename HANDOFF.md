@@ -4,6 +4,34 @@
 > and `docs/build-specs/` (L4–L9). The 9-layer ladder + full context live there. This file is the
 > "where we left off + what I changed + what needs your call" snapshot.
 
+## ⭐ THIS SESSION (2026-06-29, latest) — Genre audit WALKED + build pass started
+
+Walked the Gemini genre-audit report (`docs/GENRE-AUDIT-REPORT.md`, converted from the root `.docx`)
+one-by-one with Vince: C1–C21, I1–I6, Parts B & C. All decisions recorded in **`docs/MECHANICS-BACKLOG.md`
+§D**. Headlines:
+- **New north-star (memory `sonance-not-ad-reskin`):** Sonance must feel like Sonance, NOT "AD Music Edition" —
+  differentiation must live in the **core-loop math**, not the theme. Chosen identity spine (3 core levers):
+  **Signature-as-spine + Harmony/Resonance + Tempo risk/reward dial** (the last two **touch the live L0–L3
+  loop** — big, trial-affecting builds; spec each before building).
+- **Sonance scored well:** ~14 of 21 criticisms already handled at/above genre norms (distinct verbs, free
+  respec, prestige preview, Roadies automation, additive achievements, progressive disclosure, sim pacing gate).
+- **Ready-to-build pass (§D1) — ✅ BUILT (uncommitted) on `feat/layer4`:** Settings panel v1
+  (`docs/SETTINGS-SPEC.md`, save schema v2→v3), Production Breakdown panel (C10, drift-guarded), Conducting
+  → tap-to-burst (C4, `CONDUCT_BURST_MS`), `ch_unplugged` ordering gate (the reported "exploit" was a
+  verified FALSE POSITIVE — reward already gated on all-12; added the ordering gate as polish). **Gate FULLY
+  GREEN: tsc clean · 78 src tests · vite build · 7/7 sim files (21 pass/1 skip, real exit 0).** Not yet
+  committed (awaiting Vince's go).
+  - ⚠️ The ordering gate broke `sim/challenge-pacing.test.ts` (its beatability instrument unlocks each
+    challenge via `isChallengeUnlocked`; the capstone now needs the 11 others cleared, which a raw-SW climb
+    doesn't do). Fixed: the 11-cleared gate is *sequencing*, orthogonal to SW-pacing, so the sim bypasses it
+    via a probe (capture loop + `startChallenge`) WITHOUT granting the others' reward buffs — capstone stays
+    tested in isolation, pacing unchanged. (Caught only by reading the REAL vitest exit — the bg wrapper
+    reported "exit 0" while vitest exited 1; `gate-read-real-exit`.)
+- **Roadmap doctrine:** 9-layer → *gate behind proof* (don't pre-commit to 9 full resets); monetization →
+  *free demo L0–L3 → premium L4+* (matches branch split); early community feedback → deferred to launch-prep.
+- Bigger identity/depth items (Signature-as-spine, Harmony/Resonance, Tempo-dial, Time Banking, rule-inversion
+  challenges, milestone auto-completion) → §D2, each needs a spec before build.
+
 ## ⭐ THIS SESSION (2026-06-29) — Playtest pass: Warm-Up retired · achievements culled · sim honesty
 
 Live-playtest iteration on `feat/layer4` (nothing deployed; master untouched — Vince: keep iterating, deploy
@@ -55,10 +83,10 @@ All gated green (tsc · vitest 20/20, 95 pass/1 skip · build) and committed on 
   fresh session can't follow reversed instructions.
 
 ### Open / awaiting Vince (next session)
-- **▶ NEXT UP — Genre audit + concept proof-test (`docs/GENRE-AUDIT.md`).** Vince is running a Gemini Deep
-  Research prompt on incremental-genre criticisms; the report comes back in a FRESH session. Resume: read
-  `docs/GENRE-AUDIT.md`, walk the numbered findings one-by-one vs Sonance, graduate real items into the
-  backlog. (memory: `genre-audit-prooftest`.)
+- **✅ DONE — Genre audit walked** (2026-06-29 latest session, see top block). Report at
+  `docs/GENRE-AUDIT-REPORT.md`; all decisions in `docs/MECHANICS-BACKLOG.md` §D. **▶ NEXT UP — the §D1
+  ready-to-build pass** (Settings v1 / Production Breakdown / Conducting tap-burst / capstone fix), then spec
+  the §D2 identity-spine items.
 - **~~⚠ ONE RED SIM~~ ✅ RESOLVED above (percussion trim).** _(historical:_ `sim/l4-signature.test.ts > "no
   domain main worsens the idle:active balance vs baseline (P0 #3)"` — **percussion = 1.2609 vs the 1.25 guard**
   (0.9% over; deterministic, percussion-only, other 8 tests pass). **Root cause:** retiring Warm-Up (this
