@@ -1,6 +1,6 @@
 import Decimal from 'break_infinity.js'
 import type { GameState, PreChallengeSnapshot, TierState } from './types'
-import { STARTING_SOUNDWAVES, DEFAULT_SETTINGS } from '../core/constants'
+import { STARTING_SOUNDWAVES, DEFAULT_SETTINGS, DEFAULT_HOTKEYS } from '../core/constants'
 import { createInitialState } from './initialState'
 import { SAVE_SCHEMA_VERSION } from './saveSchema'
 import {
@@ -163,8 +163,12 @@ export const MIGRATIONS: Record<number, (state: PersistedSave) => void> = {
     state.settings = { ...DEFAULT_SETTINGS, ...(state.settings ?? {}) }
   },
   4: (state) => {
-    // Rebindable hotkeys added to settings — re-merge so v3 saves backfill `settings.hotkeys`.
-    state.settings = { ...DEFAULT_SETTINGS, ...(state.settings ?? {}) }
+    // Rebindable hotkeys added to settings — re-merge so v3 saves backfill `settings.hotkeys`, and
+    // DEEP-merge hotkeys so a partial/edited IMPORTED save can't leave an individual action key missing
+    // (which would silently disable that hotkey).
+    const s = { ...DEFAULT_SETTINGS, ...(state.settings ?? {}) }
+    s.hotkeys = { ...DEFAULT_HOTKEYS, ...(s.hotkeys ?? {}) }
+    state.settings = s
   },
 }
 

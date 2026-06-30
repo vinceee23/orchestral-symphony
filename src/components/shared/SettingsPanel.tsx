@@ -96,6 +96,13 @@ export function SettingsPanel() {
       if (e.key === 'Escape') { setRebinding(null); return }
       if (['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return
       const key = e.key === ' ' ? ' ' : e.key.toLowerCase()
+      // 1–7 are the reserved buy-tier keys (they win in useHotkeys), so a rebind to them would silently
+      // never fire — reject and keep listening rather than bind a dead key.
+      if (key >= '1' && key <= '7') {
+        setStatus('Keys 1–7 are reserved for buying tiers')
+        setTimeout(() => setStatus(null), 2500)
+        return
+      }
       updateSettings({ hotkeys: { ...hotkeys, [rebinding]: key } })
       setRebinding(null)
     }

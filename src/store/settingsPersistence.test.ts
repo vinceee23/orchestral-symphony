@@ -25,4 +25,15 @@ describe('settings persistence', () => {
     migratePersistedSave(save)
     expect(save.settings).toEqual(DEFAULT_SETTINGS)
   })
+
+  it('deep-backfills a partial hotkeys map (e.g. a hand-edited import missing keys)', () => {
+    const save = {
+      ...baseSave(),
+      settings: { ...DEFAULT_SETTINGS, hotkeys: { conduct: ' ' } },
+    } as unknown as PersistedSave
+    migratePersistedSave(save)
+    expect(save.settings?.hotkeys.conduct).toBe(' ')   // kept
+    expect(save.settings?.hotkeys.maxAll).toBe('m')    // backfilled
+    expect(save.settings?.hotkeys.maxTempo).toBe('t')  // backfilled
+  })
 })
