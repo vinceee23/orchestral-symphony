@@ -12,6 +12,7 @@ export function HintCard({ hint, onDismiss }: HintCardProps) {
         <div className="h-2 w-2 shrink-0 rounded-full bg-accent-gold shadow-[0_0_10px_rgba(212,168,67,0.75)]" />
         <p className="min-w-0 flex-1 text-sm leading-snug text-text-secondary">
           {hint.text}
+          <span className="block text-[10px] text-text-muted mt-0.5">Turn tips off in Settings.</span>
         </p>
         <button
           type="button"

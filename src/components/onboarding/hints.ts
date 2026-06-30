@@ -10,6 +10,7 @@ export type OnboardingHintId =
   | 'magnum_opus'
   | 'world_tour'
   | 'challenges'
+  | 'signature'
 
 export interface OnboardingHintDefinition {
   id: OnboardingHintId
@@ -73,6 +74,7 @@ export const ONBOARDING_HINT_ORDER: OnboardingHintId[] = [
   'magnum_opus',
   'world_tour',
   'challenges',
+  'signature',
 ]
 
 export const ONBOARDING_HINTS: Record<OnboardingHintId, OnboardingHintDefinition> = {
@@ -83,7 +85,7 @@ export const ONBOARDING_HINTS: Record<OnboardingHintId, OnboardingHintDefinition
   },
   conduct: {
     id: 'conduct',
-    text: 'Hold to conduct — a temporary production surge.',
+    text: 'Tap Conduct (or Space) for a Crescendo — a short production burst.',
     isMet: (state) => state.opusCount > 0 && !state.activeChallenge,
   },
   encore: {
@@ -108,6 +110,11 @@ export const ONBOARDING_HINTS: Record<OnboardingHintId, OnboardingHintDefinition
     id: 'challenges',
     text: 'Challenges are open: clear constraint runs for permanent rewards.',
     isMet: (state) => hasUnlockedChallenge(state) && !state.activeChallenge,
+  },
+  signature: {
+    id: 'signature',
+    text: 'Signature: at ascension, shape your sound across five instrument domains.',
+    isMet: (state) => !!state.signatureUnlocked && !state.activeChallenge,
   },
 }
 
@@ -134,5 +141,6 @@ export function seedSeenHintsFromProgress(state: GameState): OnboardingHintId[] 
   if (state.opusCount > 0 || state.worldTourUnlocked || canPerformMagnumOpus(state)) seen.push('magnum_opus')
   if (hasPassedWorldTour(state)) seen.push('world_tour')
   if (hasPassedWorldTour(state) || hasUnlockedChallenge(state)) seen.push('challenges')
+  if (state.signatureUnlocked || state.signatureCount > 0) seen.push('signature')
   return seen
 }

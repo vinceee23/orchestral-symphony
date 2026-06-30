@@ -209,6 +209,7 @@ export function SettingsPanel() {
 
       <Section title="Gameplay">
         <Row label="Offline progress"><Toggle checked={settings.offlineEnabled} onChange={(b) => updateSettings({ offlineEnabled: b })} /></Row>
+        <Row label="Show layer tutorials"><Toggle checked={settings.showTutorials !== false} onChange={(b) => updateSettings({ showTutorials: b })} /></Row>
         <Row label="Show prestige confirmation dialogs"><Toggle checked={confirms} onChange={toggleConfirms} /></Row>
       </Section>
 

@@ -10,8 +10,11 @@ export function useOnboardingHint() {
   const markHintSeen = useGameStore((s) => s.markHintSeen)
   const [displayedHint, setDisplayedHint] = useState<OnboardingHintDefinition | null>(null)
   const seenHints = state.seenHints ?? []
+  // Player can disable layer tutorials in Settings (undefined = on, for pre-toggle saves).
+  const tutorialsOn = state.settings?.showTutorials !== false
 
   const activeHint =
+    tutorialsOn &&
     displayedHint &&
     !seenHints.includes(displayedHint.id) &&
     displayedHint.isMet(state)
@@ -19,10 +22,10 @@ export function useOnboardingHint() {
       : null
 
   useEffect(() => {
-    if (displayedHint) return
+    if (displayedHint || !tutorialsOn) return
     const nextHint = getNextOnboardingHint(seenHints, state)
     if (nextHint) setDisplayedHint(nextHint)
-  }, [displayedHint, seenHints, state])
+  }, [displayedHint, seenHints, state, tutorialsOn])
 
   useEffect(() => {
     if (!displayedHint) return
