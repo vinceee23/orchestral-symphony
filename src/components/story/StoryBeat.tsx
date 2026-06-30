@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { SonanceLogo } from '../shared/SonanceLogo'
 import { useGameStore } from '../../store/gameStore'
+import { playStoryBeatSound } from '../../core/audio'
 
 export interface StoryBeatProps {
   lines: string[]
@@ -53,6 +54,7 @@ export function StoryBeat({ lines, goldLevel, onDone, logo }: StoryBeatProps) {
 
   useEffect(() => {
     containerRef.current?.focus()
+    playStoryBeatSound() // a soft low swell under each narrative beat (incl. the World Tour reveal)
     // fade IN on mount (next frame) so the overlay eases to black instead of popping instantly
     const raf = requestAnimationFrame(() => setEntered(true))
     return () => cancelAnimationFrame(raf)

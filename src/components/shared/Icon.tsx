@@ -13,6 +13,7 @@ export type IconName =
   | 'disc'         // vinyl record — Opus / records / platinum
   | 'gear'         // cog — Autobuyers
   | 'sliders'      // equalizer sliders — Settings
+  | 'globe'        // world tour
   | 'lock'         // locked layer/feature
 
 interface IconProps {
@@ -91,6 +92,13 @@ const ICONS: Record<IconName, React.ReactNode> = {
       <line x1="4" y1="16" x2="20" y2="16" />
       <circle cx="9" cy="8" r="2.2" fill="currentColor" stroke="none" />
       <circle cx="15" cy="16" r="2.2" fill="currentColor" stroke="none" />
+    </>
+  ),
+  globe: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <ellipse cx="12" cy="12" rx="4" ry="9" />
+      <line x1="3" y1="12" x2="21" y2="12" />
     </>
   ),
   lock: (

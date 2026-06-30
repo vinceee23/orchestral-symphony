@@ -35,9 +35,12 @@ Current: 3 sine-blip one-shots (buy/tempo/prestige); **Conduct/Crescendo, achiev
 - 🅿 **Procedural music/ambient bed** that evolves per era + a separate Music volume slider — needs your ear + a settings-schema/save change. Deferred to a reviewed batch.
 
 ### UI / UX juice
-- ☐ **Buy-juice input parity** (section flash + "+N" pop + sound on keyboard buys too) — shared handler. *(pairs with audio)*
-- ☐ **FloatingNotes reshuffle**: re-randomizes (notes teleport) on every prestige; make deterministic like StageLife motes. (S)
-- ☐ **Locked tier pods** are flat grey "???" boxes — add dim silhouette + next-unlock hint + ready shimmer. (M)
+- ☑ **FloatingNotes reshuffle fixed**: deterministic module-level note field, sliced by liveliness — notes no longer teleport on prestige (existing notes keep position; higher tiers append).
+- ☑ **World Tour distinct icon**: new `globe` icon (was sharing `sparkle` with Prestige).
+- ☑ **Story beats now have a soft audio swell** (StoryBeat mount) — covers all narrative beats *including the previously-silent World Tour reveal*.
+- ◐ **Buy-juice input parity**: audio half done (keyboard buys play SFX). **Visual** parity (section flash + "+N" pop on keyboard buys) still ☐ — needs lifting the juice trigger into shared state. (M)
+- ☐ **Locked tier pods** are flat grey "???" boxes — dim silhouette + next-unlock hint + ready shimmer. (M) *(deferred — taste-sensitive, better with your eye)*
+- ☐ **World Tour unlock celebration** — a dedicated overlay on par with EncoreCelebration (sound now covered via the story beat). (M) *(deferred)*
 - 🅿 **Orchestra stage clips below ~900px** (7 fixed-width no-wrap pods, scale keyed to era not width). Real responsive fix is L-effort + taste → proposal. (L)
 - ⏸ **Overlay coordination** (Encore bloom + era-reveal + toast can stack) — M, lower priority.
 

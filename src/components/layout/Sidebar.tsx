@@ -36,7 +36,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     const insertAt = tabs.findIndex((t) => t.id === 'autobuyers') + 1
     tabs = [
       ...tabs.slice(0, insertAt),
-      { id: 'worldtour', label: 'World Tour', icon: 'sparkle' as IconName },
+      { id: 'worldtour', label: 'World Tour', icon: 'globe' as IconName },
       { id: 'challenges', label: 'Challenges', icon: 'metronome' as IconName },
       ...tabs.slice(insertAt),
     ]
