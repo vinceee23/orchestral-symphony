@@ -1,0 +1,14 @@
+{
+  "name": "Sonance",
+  "short_name": "Sonance",
+  "description": "A music idle game. Reach into the silence; something reaches back.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#0a0a0f",
+  "icons": [
+    { "src": "./sonance-favicon.png", "sizes": "128x128", "type": "image/png" },
+    { "src": "./sonance-orb.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

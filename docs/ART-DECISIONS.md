@@ -15,7 +15,9 @@
 
 ---
 
-## D1 — World Tour venue art  ⭐ cheapest visible win
+## D1 — World Tour venue art  ⭐ cheapest visible win  ✅ DONE 2026-07-01
+> **Resolved:** wired all 6 drafts as-is → `public/venues/{0..5}.jpg`, rendered in WorldTourPage (BASE_URL-prefixed) replacing the dashed box; venue hero starts dim and **blooms/saturates as you max its components** (`venueFill`). Gated + committed.
+
 6 illustrations exist and map 1:1 to the venues (verified against `VENUES` in `worldTour.ts`):
 | draft file | venue |
 |---|---|
@@ -33,7 +35,7 @@
 
 ---
 
-## D2 — Achievement art (1 of 100)  ⭐ biggest coverage gap, biggest credit cost
+## D2 — Achievement art (1 of 100)  ⭐ biggest coverage gap  · 🔄 Vince exploring LOCAL-GPU generation (RX 6700 XT) — no Gemini credits. See the GPU plan in chat / below.
 **Options:**
 - **A (no credits, recommended for the trial): a designed glyph/emblem fallback** — instead of raw OS emoji (inconsistent Windows/Mac/mobile, clashes with the gold deco), render each achievement's icon as a styled gold-on-midnight badge (consistent frame, the existing emoji or an SVG centered in the deco treatment). Looks *intentional*, ships now, costs nothing.
 - **B: generate ~100 bespoke emblems** via `art/gen-emblems.mjs` (Gemini) — best looking, but real credits + curation time.
@@ -48,7 +50,9 @@
 
 ---
 
-## D4 — Favicon / social-share set  (mostly no-credit; cheap polish)
+## D4 — Favicon / social-share set  ✅ DONE 2026-07-01 (og:image still open)
+> **Resolved:** added meta description, theme-color, apple-touch-icon, `manifest.webmanifest`, and text-only OG/Twitter cards to `index.html`; deleted stale `public/favicon.svg` + dead `art/tiers/tier1_notes.jpg` + dead `src/core/futureChallenges.ts`. **Still open:** the og:image (1200×630 share card) — decide later.
+
 Missing: apple-touch-icon (180²), **og:image / twitter:image** (shared trial links currently render NO preview card), `.ico`, web manifest. Plus the stale off-brand `favicon.svg` should go.
 **Options:** (a) I add the `<head>` tags + delete the stale svg now, and we compose an og:image from the existing orb/logo (a 1200×630 — I can build a simple branded one in HTML→PNG, or you generate a hero); (b) defer.
 **My rec:** **(a).** Shared links rendering blank is a real first-impression miss for a trial people will link. **Decision:** want me to do the head-tags + stale-svg cleanup now (safe, no taste)? The og:image *art* is the only taste part.

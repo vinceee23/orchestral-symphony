@@ -71,6 +71,10 @@ export function WorldTourPage() {
   const fillPct = capacity > 0 ? Math.min(100, (bufferNum / capacity) * 100) : 0
   const prodMult = getAcclaimMultiplier(lifetimeNum)
   const graduable = isVenueGraduatable(components, currentVenue)
+  // 0..1 venue completion (fraction of this venue's components maxed) — drives the hero's "comes alive" bloom.
+  const venueFill = venue.componentIds.length
+    ? venue.componentIds.filter((id) => (components[id] ?? 0) >= getComponentMaxTier(id)).length / venue.componentIds.length
+    : 0
 
   return (
     <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
@@ -135,14 +139,25 @@ export function WorldTourPage() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-teal-500/20 bg-bg-secondary/30 p-6 text-center space-y-3">
+      <section className="rounded-xl border border-teal-500/20 bg-bg-secondary/30 p-3 text-center space-y-3">
         <div
-          className="mx-auto w-full max-w-md h-40 rounded-lg border border-dashed border-teal-500/40 bg-gradient-to-b from-teal-950/40 to-bg-primary flex items-center justify-center"
+          className="relative mx-auto w-full max-w-md aspect-video rounded-lg overflow-hidden border border-teal-500/20"
           aria-hidden
         >
-          <span className="text-teal-400/60 text-sm uppercase tracking-widest">
-            {venue.name}
-          </span>
+          {/* Venue hero — starts dim and warms/blooms as you max its components (venueFill). */}
+          <img
+            src={`${import.meta.env.BASE_URL}venues/${currentVenue}.jpg`}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover transition-all duration-700"
+            style={{ filter: `brightness(${0.6 + venueFill * 0.5}) saturate(${0.7 + venueFill * 0.5})` }}
+          />
+          <div
+            className="absolute inset-0 pointer-events-none transition-opacity duration-700"
+            style={{ opacity: venueFill, background: 'radial-gradient(60% 60% at 50% 55%, rgba(212,168,67,0.28), transparent 75%)' }}
+          />
+          <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-bg-primary/90 to-transparent pt-10 pb-2">
+            <span className="text-sm font-display text-teal-100/90 tracking-wide">{venue.name}</span>
+          </div>
         </div>
         <p className="text-xs text-text-muted">
           Catalogue {circuitComplete ? 'live' : 'snapshot'} ×{formatNumber(effectiveCatalogue, 2)}
