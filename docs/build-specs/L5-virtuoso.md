@@ -48,12 +48,13 @@ performance *in tempo* and bank the **integral of a consistency curve**. A long 
 out-scores a short spiky one (a beginner's flash). **Headline reward = your count of completed Takes** — a
 clean, legible "how many flawless performances have you delivered" number, exactly the virtuoso fantasy.
 
-> **MINOR to fold in (do NOT skip):** `HARDENING-PLAN.md:88` + `:240` — the beat's 2nd line
-> *"(We were never the living.)"* **reveals the gods too early**. Pull it back to a *fingerprint* (a line
-> that hints at many-as-one without naming them). This is a `beats.ts` copy-only edit; make it as part of the
-> L5 build. Suggested fingerprint (TBD — Vince signs off the copy): keep line 1, replace line 2 with
-> something that *breathes/keeps-time* without saying "we" (e.g. a line that lands as the watcher, not the
-> reveal). The reveal stays at L8 (`STORY-SPEC.md:23`).
+> **MINOR to fold in (do NOT skip) — COPY LOCKED 2026-07-01:** the beat's 2nd line
+> *"(We were never the living.)"* **reveals the gods too early**. Replace it (keep line 1) with the
+> Breath-fingerprint — Vince signed off:
+> > There is nothing left for the living to teach you.
+> > And still — something listens, and does not breathe.
+> A `beats.ts` copy-only edit; make it as part of the L5 build. The "we" reveal stays at L8
+> (`STORY-SPEC.md:23`).
 
 ### What L5 must NOT be (distinctness guards — `LADDER-MECHANICS.md:92-95`)
 
@@ -475,28 +476,20 @@ Render the **corridor / band UI** (the hardening plan explicitly calls for it �
 
 ---
 
-## 10. Cross-layer coherence (added 2026-07-01, from the genre-audit)
+## 10. Cross-layer coherence (added 2026-07-01, from the genre-audit) — RULINGS LOCKED
 
-These are design rulings to confirm with Vince (Q&A), not yet locked:
+1. **Tempo dial (§D2 not-AD lever) × L5 "in-tempo" → INTENTIONAL TENSION (locked).** The Tempo dial is the
+   *instrument*; L5 mastery = playing it *smoothly under control* — resisting the cheap spike. The layers are
+   in deliberate dialogue: spiking the dial helps short-term but **costs Take-area** in L5. So L5 reads the
+   real (dial-affected) production rate — the dial's spikes legitimately hurt the consistency score, by
+   design. (Build note: this couples the two; tune L5's band + the dial's spike-payoff together in sim so a
+   spike is a *real* choice, not strictly dominated either way.) Naming still 3-way distinct: L1 `tempo.level`
+   (BPM), the L0 Tempo *dial*, L5 "in-tempo" (rate consistency) — keep vocabulary unambiguous in code + UI.
 
-1. **Tempo dial (§D2 not-AD lever) × L5 "in-tempo".** If L0 Tempo becomes a *risk/reward dial* where
-   spiking buys a burst, that directly opposes L5 scoring *smooth growth* (spikes = the sin). Three ways to
-   reconcile — pick one at build:
-   - **(a) Intentional tension (recommended):** the dial is the *instrument*; L5 mastery = playing it
-     *smoothly under control* (resist the cheap spike). The two layers are in deliberate dialogue —
-     spiking is good short-term (dial) but costs you Take-area (L5). This is rich and on-theme ("control").
-   - **(b) Decouple:** L5 reads a *different* signal than the dial-affected rate (e.g. tier-purchase cadence,
-     or production *excluding* the dial's burst term), so the dial doesn't muddy the consistency read.
-   - **(c) Sequence them apart:** ship the Tempo dial as an L0 identity change first, prove it, then design
-     L5's "smooth" definition *around* the dial's final behavior. (Fits gate-behind-proof.)
-   Naming note still applies: L1 `tempo.level` (BPM), the L0 Tempo *dial*, and L5 "in-tempo" (rate
-   consistency) are THREE distinct concepts — keep the vocabulary unambiguous in code + UI.
-
-2. **Cold-open reveal god for the `virtuoso` beat.** Per the progressive-reveal design, each cold-open glows
-   a god's constellation. The `virtuoso` beat (mastery/consistency, "near-blaze" era) has no obvious single
-   domain — candidates: **the Maestro** (mastery/control = the conductor, and it foreshadows the origin) or
-   **no specific god** (a faint many-as-one shimmer). The existing line-2 pullback (§1 MINOR) is the same
-   edit; resolve copy + reveal-god together.
+2. **Cold-open reveal god for the `virtuoso` beat → THE MAESTRO (locked).** The beat glows the Maestro's
+   constellation/orb — mastery/control = the conductor, and it quietly foreshadows the origin ("nothing left
+   to teach you" = you're nearing their level). Line-2 copy locked to the Breath-fingerprint (see §1 MINOR):
+   *"And still — something listens, and does not breathe."* — the reveal of "we" stays at L8.
 
 ---
 
