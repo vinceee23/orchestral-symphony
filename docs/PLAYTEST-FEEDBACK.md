@@ -28,6 +28,18 @@ Captured during in-app testing of the §D1 build pass. Status: ✅ done · 🔜 
   NOT a persistence bug — proven by a round-trip regression test. Hard-refresh on the committed build and
   settings persist.
 
-## 💬 Discuss
-- **The "gods" (L9)** — what the 6-god pantheon looks like (5 domain gods: Pulse/Voice/Blaze/Breath/Twins +
-  Maestro). Tie to `docs/build-specs/L9-the-gods.md` + `bible/05-narrative-world` + the L4 Signature mirror.
+## 🎺 Gods (L9) — visual direction DECIDED (2026-07-01)
+Canonical data in `src/core/pantheon.ts`. Art direction:
+- **Faceless figures, aura = character** (Journey/Sky language). Pure VOID where a face would be.
+- **Human-scale, uncanny** — incl. the Maestro (the god who began everything is *your size*; you become
+  the next downbeat). The mirror god = your domain's god, in your tint, where you'd stand.
+- **Instrument-fused silhouettes**: Timpana=drumhead torso · Lyra=strung sounding-box · Clarion=brass-bell
+  flare (made of light) · Aeolia=hollow reed-body · Twins=two tines of one tuning-fork (the interval) ·
+  Maestro=plays the orchestra (the cold-open orb taking figure).
+- **Per-domain cold tints** = the Maestro's gold split through a prism (gold #d4a843; crimson/violet/amber/
+  teal/jade for the five). Behavior carries identity (Pulse strobes, Breath breathes…).
+- **"Now you know our faces"** = the formless "we" takes FORM (figures), never literal faces.
+- **Seeded early** (`9f…`): the L4 "your sound" identity now glows your god's tint + "…echoing Timpana,
+  the Pulse." The cold-open orb already IS the Maestro (gold, breathing, reached back) — no code needed.
+- Still open / next: orb performing other fingerprints on the (currently inert) L4–L9 beats; the Twins'
+  two-phase fight; the join-the-pantheon ending. L9 itself is gated far out (build last).

@@ -10,6 +10,7 @@ import {
   getSignatureIdentity,
 } from '../../core/signature'
 import { getActiveChallengeModifiers, getChallengeById } from '../../core/challenges'
+import { godForDomain } from '../../core/pantheon'
 import { Button } from '../shared/Button'
 
 const DOMAIN_LABELS: Record<SignatureDomain, { label: string; lever: string }> = {
@@ -84,12 +85,22 @@ export function SignaturePage() {
       <header className="text-center">
         <h1 className="text-2xl font-display font-semibold text-amber-400 tracking-wide">Signature</h1>
         <p className="text-sm text-text-muted mt-2">Align your voice across instrument domains before each new climb.</p>
-        {signatureUnlocked && (
-          <p className="mt-3 text-sm">
-            <span className="text-xs text-text-muted uppercase tracking-[0.25em]">Your sound</span>
-            <span className="block font-display text-xl text-amber-300 tracking-wide mt-0.5">{identity.label}</span>
-          </p>
-        )}
+        {signatureUnlocked && (() => {
+          const god = godForDomain(identity.domain)
+          return (
+            <p className="mt-3 text-sm">
+              <span className="text-xs text-text-muted uppercase tracking-[0.25em]">Your sound</span>
+              <span className="block font-display text-xl tracking-wide mt-0.5"
+                style={{ color: god ? god.tint : undefined }}
+                title={god ? `echoing ${god.name}, ${god.epithet}` : undefined}>
+                {identity.label}
+              </span>
+              {god && (
+                <span className="block text-[11px] text-text-muted mt-0.5 italic">…echoing {god.name}, {god.epithet}.</span>
+              )}
+            </p>
+          )
+        })()}
       </header>
 
       <section className="rounded-xl border border-amber-500/30 bg-bg-secondary/40 p-5 space-y-3">
