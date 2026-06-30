@@ -50,14 +50,14 @@ Current: 3 sine-blip one-shots (buy/tempo/prestige); **Conduct/Crescendo, achiev
 - ☑ **Stale "hold to conduct" comments** in ConductorPodium rewritten to the tap-burst-decay model.
 
 ### A11y / Perf
-- ☐ **OS `prefers-reduced-motion` ignored** by ~all animations (only StoryBeat honors it). Gate all decorative animations in `index.css` under the media query; default in-app toggle ON when OS prefers reduce. (S)
-- ☐ **StoryBeat ignores in-app reducedMotion** (OS-only) — read `settings.reducedMotion` too. (S)
-- ☐ **SmoothNumber** runs ~8 uncapped rAF setState loops ignoring fpsCap + reducedMotion (the "30 FPS battery" setting doesn't reduce render load). Snap to real value under reduced-motion; gate to fps clock. (M)
-- ☐ **Sidebar tabs** no `aria-current`/`aria-label` when collapsed → screen reader hears 7 unlabeled buttons. (S)
-- ☐ **Modals** (Help/Prestige/HardReset) — no Esc-to-close, no focus trap/restore, missing role=dialog. Shared modal wrapper. (M)
-- ☐ **Number-heavy UI opaque to AT** — aria-label on tier buttons (name+cost+afford), aria-live on Soundwaves. (M)
-- ☐ **Per-frame funnel recompute** in Header/Stage/Stats each call `getProductionMultiplier()` every tick — memoize once/tick. (M)
-- ☐ **Save written every frame** (zustand persist on every setState ~60×/s) — debounce to ~1/s. (M)
+- ☑ **OS `prefers-reduced-motion`** now gates ALL decorative animation in `index.css` (global block mirroring `.reduce-motion`), not just the story overlay. *(Auto-defaulting the in-app toggle ON for OS-pref users skipped — handled directly instead, so no save-defaults change.)*
+- ☑ **StoryBeat honors the in-app reducedMotion toggle** (OS pref OR setting; both hooks run unconditionally).
+- ☑ **SmoothNumber** snaps to the real value and skips its per-frame rAF under reduced motion (OS or in-app) — a11y + perf (kills the ~8-loop setState storm in that mode). *(Full fps-clock throttle for the normal path still ☐.)*
+- ☑ **Sidebar tabs** now carry `aria-current="page"` + `aria-label` + `title` (collapsed icon-only state is announced).
+- ☐ **Modals** (Help/Prestige/HardReset) — no Esc-to-close, no focus trap/restore, missing role=dialog. Shared modal wrapper. (M) *(deferred)*
+- ☐ **Number-heavy UI opaque to AT** — aria-label on tier buttons (name+cost+afford), aria-live on Soundwaves. (M) *(deferred)*
+- ☐ **Per-frame funnel recompute** in Header/Stage/Stats each call `getProductionMultiplier()` every tick — memoize once/tick. (M) *(deferred — perf)*
+- ☐ **Save written every frame** (zustand persist on every setState ~60×/s) — debounce to ~1/s. (M) *(deferred — perf)*
 
 ---
 

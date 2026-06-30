@@ -67,6 +67,9 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
+          aria-current={activeTab === tab.id ? 'page' : undefined}
+          aria-label={tab.label}
+          title={tab.label}
           className={`
             flex items-center gap-3 px-4 py-3 text-left transition-colors duration-150
             ${activeTab === tab.id

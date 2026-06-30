@@ -249,6 +249,15 @@ body {
     opacity: 1;
     transform: none;
   }
+  /* Honor the OS preference for ALL decorative animation, not just the story overlay (mirrors the
+     in-app .reduce-motion toggle). Vestibular-safety / WCAG 2.3.3 for the shipped trial. */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
 
 /* App-level reduced-motion toggle (Settings → Display). Near-instant everything; avoids `none` so

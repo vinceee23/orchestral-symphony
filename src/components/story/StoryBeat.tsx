@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { SonanceLogo } from '../shared/SonanceLogo'
+import { useGameStore } from '../../store/gameStore'
 
 export interface StoryBeatProps {
   lines: string[]
@@ -37,7 +38,11 @@ function usePrefersReducedMotion(): boolean {
  * When `logoSrc` is set (the intro), the last line gives way to a logo card that zooms in + blooms.
  */
 export function StoryBeat({ lines, goldLevel, onDone, logo }: StoryBeatProps) {
-  const reducedMotion = usePrefersReducedMotion()
+  // Honor BOTH the OS preference and the in-app Settings toggle (the toggle alone couldn't reach
+  // these JS-inline orb/logo animations before). Both hooks run unconditionally (Rules of Hooks).
+  const osReducedMotion = usePrefersReducedMotion()
+  const settingReducedMotion = useGameStore((s) => s.settings.reducedMotion)
+  const reducedMotion = osReducedMotion || settingReducedMotion
   const containerRef = useRef<HTMLDivElement>(null)
   const [lineIndex, setLineIndex] = useState(0)
   const [exiting, setExiting] = useState(false)
