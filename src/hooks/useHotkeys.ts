@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useGameStore } from '../store/gameStore'
 import { useUiStore } from '../store/uiStore'
-import { TIER_COUNT } from '../core/constants'
+import { TIER_COUNT, DEFAULT_HOTKEYS } from '../core/constants'
 
 /**
  * Keyboard shortcuts (AD-style, the "Max + Hold" QoL):
@@ -20,12 +20,16 @@ function buyTier(id: number) {
 
 function act(key: string) {
   const s = useGameStore.getState()
+  const hk = s.settings.hotkeys ?? DEFAULT_HOTKEYS
   if (key >= '1' && key <= '7') buyTier(Number(key))
-  else if (key === 'm') { for (let id = 1; id <= TIER_COUNT; id++) s.buyMaxTier(id); s.buyMaxTempo() } // max EVERYTHING (AD-style)
-  else if (key === 't') s.buyMaxTempo()
+  else if (key === hk.maxAll) { for (let id = 1; id <= TIER_COUNT; id++) s.buyMaxTier(id); s.buyMaxTempo() } // max EVERYTHING
+  else if (key === hk.maxTempo) s.buyMaxTempo()
 }
 
-const isHotkey = (k: string) => (k >= '1' && k <= '7') || k === 'm' || k === 't'
+const isHotkey = (k: string) => {
+  const hk = useGameStore.getState().settings.hotkeys ?? DEFAULT_HOTKEYS
+  return (k >= '1' && k <= '7') || k === hk.maxAll || k === hk.maxTempo
+}
 
 export function useHotkeys() {
   useEffect(() => {

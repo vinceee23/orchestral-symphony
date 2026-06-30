@@ -162,6 +162,10 @@ export const MIGRATIONS: Record<number, (state: PersistedSave) => void> = {
     // Player settings. Merge so old saves get defaults AND any future sub-key fills in.
     state.settings = { ...DEFAULT_SETTINGS, ...(state.settings ?? {}) }
   },
+  4: (state) => {
+    // Rebindable hotkeys added to settings — re-merge so v3 saves backfill `settings.hotkeys`.
+    state.settings = { ...DEFAULT_SETTINGS, ...(state.settings ?? {}) }
+  },
 }
 
 function runMigrationChain(state: PersistedSave): void {

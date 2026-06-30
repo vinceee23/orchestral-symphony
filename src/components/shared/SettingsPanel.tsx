@@ -2,8 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import { exportSaveString, importSaveString } from '../../core/save'
 import { getEra } from '../../core/eraTheme'
-import type { NumberNotation } from '../../core/constants'
+import { DEFAULT_HOTKEYS, type NumberNotation, type HotkeyAction } from '../../core/constants'
 import { Button } from './Button'
+
+const fmtKey = (k: string) => (k === ' ' ? 'Space' : k.toUpperCase())
+const HOTKEY_ROWS: [HotkeyAction, string][] = [['conduct', 'Conduct'], ['maxAll', 'Max all'], ['maxTempo', 'Max tempo']]
 
 const PRESTIGE_SKIP_KEYS = ['prestige_skip_encore', 'prestige_skip_mo', 'prestige_skip_gf']
 const confirmsEnabled = () => !PRESTIGE_SKIP_KEYS.some((k) => localStorage.getItem(k))
@@ -70,7 +73,25 @@ export function SettingsPanel() {
   const [confirms, setConfirms] = useState(confirmsEnabled)
   const [resetArmed, setResetArmed] = useState(false)
   const [resetText, setResetText] = useState('')
+  const [rebinding, setRebinding] = useState<HotkeyAction | null>(null)
   const fps = useFps()
+  const hotkeys = settings.hotkeys ?? DEFAULT_HOTKEYS
+
+  // Capture the next keypress for a rebind (capture-phase + stop so the game handlers don't also fire it).
+  useEffect(() => {
+    if (!rebinding) return
+    const onKey = (e: KeyboardEvent) => {
+      e.preventDefault()
+      e.stopImmediatePropagation()
+      if (e.key === 'Escape') { setRebinding(null); return }
+      if (['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return
+      const key = e.key === ' ' ? ' ' : e.key.toLowerCase()
+      updateSettings({ hotkeys: { ...hotkeys, [rebinding]: key } })
+      setRebinding(null)
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [rebinding, hotkeys, updateSettings])
 
   useEffect(() => {
     const update = () => setSecondsAgo(Math.max(0, Math.round((Date.now() - lastSaveTimestamp) / 1000)))
@@ -189,6 +210,18 @@ export function SettingsPanel() {
       <Section title="Gameplay">
         <Row label="Offline progress"><Toggle checked={settings.offlineEnabled} onChange={(b) => updateSettings({ offlineEnabled: b })} /></Row>
         <Row label="Show prestige confirmation dialogs"><Toggle checked={confirms} onChange={toggleConfirms} /></Row>
+      </Section>
+
+      <Section title="Hotkeys">
+        {HOTKEY_ROWS.map(([action, label]) => (
+          <Row key={action} label={label}>
+            <button onClick={() => setRebinding(action)}
+              className={`text-xs px-2.5 py-1 rounded-md border min-w-[72px] transition-colors ${rebinding === action ? 'border-accent-gold/70 bg-accent-gold/10 text-accent-gold animate-pulse' : 'border-border text-text-primary hover:border-accent-gold/50'}`}>
+              {rebinding === action ? 'Press a key…' : fmtKey(hotkeys[action])}
+            </button>
+          </Row>
+        ))}
+        <p className="text-[11px] text-text-muted">Buy-tier keys 1–7 are fixed. Esc cancels a rebind.</p>
       </Section>
 
       <Section title="About">

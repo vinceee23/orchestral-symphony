@@ -181,6 +181,9 @@ export const CONDUCT_BURST_MS = 9000                    // tap-to-conduct burst 
 
 // === Player settings (persisted prefs — see SETTINGS-SPEC.md / genre-audit C12+C16) ===
 export type NumberNotation = 'suffix' | 'scientific' | 'engineering'
+/** Rebindable keys (stored as e.key — ' ' for Space, lowercase letters). conduct=AppShell, the rest=useHotkeys. */
+export type HotkeyAction = 'conduct' | 'maxAll' | 'maxTempo'
+export type HotkeyMap = Record<HotkeyAction, string>
 export interface GameSettings {
   notation: NumberNotation
   reducedMotion: boolean
@@ -191,7 +194,9 @@ export interface GameSettings {
   theme: 'auto' | 'locked'     // 'locked' freezes the era tint to lockedEra
   lockedEra: number
   offlineEnabled: boolean
+  hotkeys: HotkeyMap
 }
+export const DEFAULT_HOTKEYS: HotkeyMap = { conduct: ' ', maxAll: 'm', maxTempo: 't' }
 export const DEFAULT_SETTINGS: GameSettings = {
   notation: 'suffix',
   reducedMotion: false,
@@ -202,6 +207,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   theme: 'auto',
   lockedEra: 0,
   offlineEnabled: true,
+  hotkeys: { ...DEFAULT_HOTKEYS },
 }
 export const AUTO_CONDUCT_FRACTION = 0.7                // idle/auto-conduct sustains 70% of the crescendo ceiling; active holding = 100% (Break-phase decision: active > idle)
 export const TEMPO_OP_MULT_PER_LEVEL = 1.5              // each Tempo OP-node = x1.5 global tempo/production

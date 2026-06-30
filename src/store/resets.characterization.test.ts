@@ -288,7 +288,7 @@ describe('reset action characterization', () => {
           "preChallengeState": null,
           "producedThisRun": "0",
           "recordsSold": 750000,
-          "saveSchemaVersion": 3,
+          "saveSchemaVersion": 4,
           "seenHints": [
             "buy-note",
           ],
@@ -445,7 +445,7 @@ describe('reset action characterization', () => {
           "preChallengeState": null,
           "producedThisRun": "0",
           "recordsSold": 750000,
-          "saveSchemaVersion": 3,
+          "saveSchemaVersion": 4,
           "seenHints": [
             "buy-note",
           ],
@@ -591,7 +591,7 @@ describe('reset action characterization', () => {
           "preChallengeState": null,
           "producedThisRun": "0",
           "recordsSold": 750000,
-          "saveSchemaVersion": 3,
+          "saveSchemaVersion": 4,
           "seenHints": [
             "buy-note",
           ],
@@ -744,7 +744,7 @@ describe('reset action characterization', () => {
           "preChallengeState": null,
           "producedThisRun": "0",
           "recordsSold": 750000,
-          "saveSchemaVersion": 3,
+          "saveSchemaVersion": 4,
           "seenHints": [
             "buy-note",
           ],
@@ -919,7 +919,7 @@ describe('reset action characterization', () => {
           "preChallengeState": null,
           "producedThisRun": "0",
           "recordsSold": 1500000,
-          "saveSchemaVersion": 3,
+          "saveSchemaVersion": 4,
           "seenHints": [
             "buy-note",
           ],
@@ -1065,7 +1065,7 @@ describe('reset action characterization', () => {
           "preChallengeState": null,
           "producedThisRun": "0",
           "recordsSold": 1000000,
-          "saveSchemaVersion": 3,
+          "saveSchemaVersion": 4,
           "seenHints": [
             "buy-note",
           ],
@@ -1209,7 +1209,7 @@ describe('reset action characterization', () => {
           "preChallengeState": null,
           "producedThisRun": "0",
           "recordsSold": 108000,
-          "saveSchemaVersion": 3,
+          "saveSchemaVersion": 4,
           "seenHints": [
             "buy-note",
           ],
@@ -1382,7 +1382,7 @@ describe('reset action characterization', () => {
           "preChallengeState": null,
           "producedThisRun": "0",
           "recordsSold": 1800000,
-          "saveSchemaVersion": 3,
+          "saveSchemaVersion": 4,
           "seenHints": [
             "buy-note",
           ],
@@ -1528,7 +1528,7 @@ describe('reset action characterization', () => {
           "preChallengeState": null,
           "producedThisRun": "0",
           "recordsSold": 1020000,
-          "saveSchemaVersion": 3,
+          "saveSchemaVersion": 4,
           "seenHints": [
             "buy-note",
           ],
@@ -1674,7 +1674,7 @@ describe('reset action characterization', () => {
           "preChallengeState": null,
           "producedThisRun": "0",
           "recordsSold": 750000,
-          "saveSchemaVersion": 3,
+          "saveSchemaVersion": 4,
           "seenHints": [
             "buy-note",
           ],
@@ -1826,7 +1826,7 @@ describe('reset action characterization', () => {
           "preChallengeState": null,
           "producedThisRun": "0",
           "recordsSold": 750000,
-          "saveSchemaVersion": 3,
+          "saveSchemaVersion": 4,
           "seenHints": [
             "buy-note",
           ],
@@ -1972,7 +1972,7 @@ describe('reset action characterization', () => {
           "preChallengeState": null,
           "producedThisRun": "0",
           "recordsSold": 2500000,
-          "saveSchemaVersion": 3,
+          "saveSchemaVersion": 4,
           "seenHints": [
             "buy-note",
           ],

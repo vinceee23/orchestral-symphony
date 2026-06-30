@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useGameStore } from '../../store/gameStore'
+import { DEFAULT_HOTKEYS } from '../../core/constants'
 import { useUiStore } from '../../store/uiStore'
 import { getEra, eraTintCss, effectiveEra } from '../../core/eraTheme'
 import { Header } from './Header'
@@ -40,7 +41,10 @@ export function AppShell() {
     const { triggerConduct, releaseConduct } = useUiStore.getState()
     // Tap Space to trigger a conduct burst (no holding). Repeat-keydown is ignored; tap again to sustain.
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.code !== 'Space' || e.repeat) return
+      if (e.repeat) return
+      const conductKey = (useGameStore.getState().settings.hotkeys ?? DEFAULT_HOTKEYS).conduct
+      const k = e.key === ' ' ? ' ' : e.key.toLowerCase()
+      if (k !== conductKey) return
       const t = e.target as HTMLElement
       if (t?.tagName === 'INPUT' || t?.tagName === 'TEXTAREA' || t?.isContentEditable) return
       e.preventDefault()
