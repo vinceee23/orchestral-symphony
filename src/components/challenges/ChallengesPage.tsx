@@ -30,6 +30,7 @@ export function ChallengesPage() {
     peakSoundwaves: s.peakSoundwaves,
     encoreCount: s.encoreCount,
     opusCount: s.opusCount,
+    completedChallenges: s.completedChallenges,
   }))
   const startChallenge = useGameStore((s) => s.startChallenge)
   const abandonChallenge = useGameStore((s) => s.abandonChallenge)

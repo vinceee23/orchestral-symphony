@@ -568,7 +568,12 @@ function startChallenge(state: GameState, id: string, simTime: number): boolean 
 
   const challenge = getChallengeById(id)
   if (!challenge) return false
-  if (!isChallengeUnlocked(state, challenge)) return false
+  // The capstone's "all 11 others cleared" gate is a sequencing prereq; the instrument tests it isolated,
+  // so satisfy that gate via a probe (without granting the others' reward buffs to the actual run state).
+  const unlockProbe = challenge.reward.capstone
+    ? { ...state, completedChallenges: CHALLENGES.filter((c) => c.id !== challenge.id).map((c) => c.id) }
+    : state
+  if (!isChallengeUnlocked(unlockProbe, challenge)) return false
 
   const snapshot = {
     soundwaves: new Decimal(state.soundwaves),
@@ -667,7 +672,13 @@ function buildThresholdSnapshots(
   const tryCapture = () => {
     for (const ch of CHALLENGES) {
       if (snapshots.has(ch.id)) continue
-      if (!isChallengeUnlocked(state, ch)) continue
+      // The capstone's extra "all 11 others cleared" gate is a SEQUENCING prereq, not a pacing gate — by
+      // the time you reach it you'll have cleared the rest. Treat them cleared for the unlock check so the
+      // instrument still snapshots the capstone at its SW threshold.
+      const probe = ch.reward.capstone
+        ? { ...state, completedChallenges: CHALLENGES.filter((c) => c.id !== ch.id).map((c) => c.id) }
+        : state
+      if (!isChallengeUnlocked(probe, ch)) continue
       snapshots.set(ch.id, { state: cloneGameState(state), climbMin: simMs / 60000 })
     }
   }
@@ -737,6 +748,8 @@ function runChallenge(
   setClock: (t: number) => void,
 ): ChallengeRunResult {
   const state = cloneGameState(baseSnapshot)
+  // Isolate each challenge — NO other clears, so the SW-pacing is measured without reward buffs (the
+  // capstone's "all 11 cleared" gate is bypassed for the unlock check only, in startChallenge below).
   state.completedChallenges = []
   state.activeChallenge = null
   state.preChallengeState = null

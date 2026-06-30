@@ -140,7 +140,9 @@ export function getL4ChallengeAscensionPatch(
 }
 
 export function isChallengeUnlocked(
-  state: Pick<GameState, 'worldTourUnlocked' | 'peakSoundwaves' | 'encoreCount' | 'opusCount'>,
+  state: Pick<GameState, 'worldTourUnlocked' | 'peakSoundwaves' | 'encoreCount' | 'opusCount'> & {
+    completedChallenges?: string[]
+  },
   challenge: ChallengeConfig,
 ): boolean {
   if (!state.worldTourUnlocked) return false
@@ -148,6 +150,11 @@ export function isChallengeUnlocked(
   if (t.peakSoundwaves !== undefined && !state.peakSoundwaves.gte(t.peakSoundwaves)) return false
   if (t.encoreCount !== undefined && state.encoreCount < t.encoreCount) return false
   if (t.opusCount !== undefined && state.opusCount < t.opusCount) return false
+  // The Unplugged Finale caps the suite: it unlocks only once every OTHER challenge is cleared.
+  if (challenge.reward.capstone) {
+    const done = new Set(state.completedChallenges ?? [])
+    if (CHALLENGES.some((c) => c.id !== challenge.id && !done.has(c.id))) return false
+  }
   return true
 }
 

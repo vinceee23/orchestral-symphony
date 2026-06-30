@@ -46,11 +46,19 @@ describe('isChallengeUnlocked', () => {
         getChallengeById('ch_flat')!,
       ),
     ).toBe(true)
+  })
+
+  it('gates the Unplugged Finale capstone behind clearing every other challenge', () => {
+    const otherIds = CHALLENGES.filter((c) => c.id !== 'ch_unplugged').map((c) => c.id)
+    const atPeak = { ...l3Gate, peakSoundwaves: new Decimal('1e72') }
+    // Peak SW alone is no longer enough — the other 11 must be cleared first.
+    expect(isChallengeUnlocked(atPeak, getChallengeById('ch_unplugged')!)).toBe(false)
     expect(
-      isChallengeUnlocked(
-        { ...l3Gate, peakSoundwaves: new Decimal('1e72') },
-        getChallengeById('ch_unplugged')!,
-      ),
+      isChallengeUnlocked({ ...atPeak, completedChallenges: otherIds.slice(0, -1) }, getChallengeById('ch_unplugged')!),
+    ).toBe(false)
+    // All 11 others cleared → the finale unlocks.
+    expect(
+      isChallengeUnlocked({ ...atPeak, completedChallenges: otherIds }, getChallengeById('ch_unplugged')!),
     ).toBe(true)
   })
 
