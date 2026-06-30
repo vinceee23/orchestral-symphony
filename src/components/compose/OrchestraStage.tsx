@@ -196,6 +196,7 @@ export function OrchestraStage() {
               onClick={onBuy}
               disabled={!canAfford}
               title={`${config.name} — produces ${config.produces}\nRate: ${formatNumber(rate)}/s\n${amount} for ${formatCost(cost)}\n${milestone}/10 to next x2`}
+              aria-label={`${config.name}, ${formatNumber(rate)} per second. Buy ${amount} for ${formatCost(cost)} soundwaves.${canAfford ? '' : ' Not enough soundwaves.'}`}
               className={`group relative flex flex-col items-center w-[112px] sm:w-[140px] rounded-2xl border px-3 py-4 transition-all duration-150 ${
                 burst === config.id ? 'animate-section-buy' : (waving ? 'animate-section-wave' : '')
               } ${

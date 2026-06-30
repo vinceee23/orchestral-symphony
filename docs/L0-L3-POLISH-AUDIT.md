@@ -57,8 +57,8 @@ Current: 3 sine-blip one-shots (buy/tempo/prestige); **Conduct/Crescendo, achiev
 - ☑ **StoryBeat honors the in-app reducedMotion toggle** (OS pref OR setting; both hooks run unconditionally).
 - ☑ **SmoothNumber** snaps to the real value and skips its per-frame rAF under reduced motion (OS or in-app) — a11y + perf (kills the ~8-loop setState storm in that mode). *(Full fps-clock throttle for the normal path still ☐.)*
 - ☑ **Sidebar tabs** now carry `aria-current="page"` + `aria-label` + `title` (collapsed icon-only state is announced).
-- ☐ **Modals** (Help/Prestige/HardReset) — no Esc-to-close, no focus trap/restore, missing role=dialog. Shared modal wrapper. (M) *(deferred)*
-- ☐ **Number-heavy UI opaque to AT** — aria-label on tier buttons (name+cost+afford), aria-live on Soundwaves. (M) *(deferred)*
+- ◐ **Modals** — PrestigeDialog now has Esc-to-close + role=dialog/aria-modal. Help/HardReset Esc + a shared focus-trap/restore wrapper still ☐. (M)
+- ◐ **Number-heavy UI** — tier buy buttons now carry a full `aria-label` (name + rate + cost + affordability). aria-live on the Soundwaves headline still ☐. (M)
 - ☐ **Per-frame funnel recompute** in Header/Stage/Stats each call `getProductionMultiplier()` every tick — memoize once/tick. (M) *(deferred — perf)*
 - ☐ **Save written every frame** (zustand persist on every setState ~60×/s) — debounce to ~1/s. (M) *(deferred — perf)*
 
