@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type Decimal from 'break_infinity.js'
 import { CONDUCT_BURST_MS } from '../core/constants'
-import { playConductSound } from '../core/audio'
+import { playConductSound, playBuySound } from '../core/audio'
 
 export interface OfflineSummary {
   awayMs: number
@@ -32,6 +32,10 @@ interface UiState {
   triggerConduct: () => void
   expireConductIfDone: (now: number) => void
   releaseConduct: () => void
+  // Last tier buy (from EITHER a pod click or a 1-7 hotkey) — drives the on-stage flash/+N juice + buy
+  // sound from one place, so keyboard and mouse buys feel identical. seq makes each buy a distinct event.
+  lastBuy: { tierId: number; amount?: number; seq: number } | null
+  registerBuy: (tierId: number, amount?: number) => void
   // DEV-only pacing tool: game-loop time multiplier (1 = normal). See DevPanel + useGameLoop.
   devSpeed: number
   setDevSpeed: (n: number) => void
@@ -58,6 +62,11 @@ export const useUiStore = create<UiState>((set) => ({
       ? { conducting: false, conductBurstEndsAt: null }
       : {})),
   releaseConduct: () => set({ conducting: false, conductBurstEndsAt: null }),
+  lastBuy: null,
+  registerBuy: (tierId, amount) => {
+    playBuySound(tierId) // rate-gated in audio.ts; one place for buy sound (click + hotkey)
+    set((s) => ({ lastBuy: { tierId, amount, seq: (s.lastBuy?.seq ?? 0) + 1 } }))
+  },
   devSpeed: 1,
   setDevSpeed: (n) => set({ devSpeed: n }),
 }))

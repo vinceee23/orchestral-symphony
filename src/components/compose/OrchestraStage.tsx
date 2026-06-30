@@ -7,7 +7,7 @@ import {
 } from '../../core/formulas'
 import { getAchievementTierMultiplier } from '../../core/achievements'
 import { formatNumber, formatCost } from '../../core/format'
-import { playBuySound } from '../../core/audio'
+import { useUiStore } from '../../store/uiStore'
 import { getProductionMultiplier } from '../../core/multiplierRegistry'
 import { SmoothNumber } from '../shared/SmoothNumber'
 
@@ -91,10 +91,11 @@ export function OrchestraStage() {
   const warmUpLevel = useGameStore((s) => s.warmUpLevel)
   const buyTier = useGameStore((s) => s.buyTier)
   const buyMaxTier = useGameStore((s) => s.buyMaxTier)
+  const registerBuy = useUiStore((s) => s.registerBuy)
+  const lastBuy = useUiStore((s) => s.lastBuy)
 
   const [burst, setBurst] = useState<number | null>(null)
   const [pop, setPop] = useState<{ id: number; n: number; seq: number } | null>(null)
-  const popSeq = useRef(0)
   // §11 gold wave: while conducting (crescendo up), a brightness pulse rolls across the sections
   // (staggered per-section animation-delay). Disabled while a section is bursting from a buy.
   const waving = crescendo > 0.1
@@ -114,6 +115,16 @@ export function OrchestraStage() {
     return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unlockKey])
+
+  // Buy juice for BOTH pointer + keyboard: flash the section + float a +N pop on every registered buy.
+  useEffect(() => {
+    if (!lastBuy) return
+    const { tierId, amount, seq } = lastBuy
+    setBurst(tierId)
+    if (amount !== undefined) setPop({ id: tierId, n: amount, seq })
+    const t = setTimeout(() => setBurst((b) => (b === tierId ? null : b)), 380)
+    return () => clearTimeout(t)
+  }, [lastBuy])
 
   const achievementSet = new Set(achievements)
   const globalMult = getProductionMultiplier({
@@ -184,10 +195,7 @@ export function OrchestraStage() {
             if (!canAfford) return
             if (buyAmount === 'max') buyMaxTier(config.id)
             else buyTier(config.id, amount)
-            playBuySound(config.id)
-            setBurst(config.id)
-            setPop({ id: config.id, n: amount, seq: ++popSeq.current })
-            setTimeout(() => setBurst((b) => (b === config.id ? null : b)), 380)
+            registerBuy(config.id, amount)
           }
 
           return (

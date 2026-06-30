@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useGameStore } from '../store/gameStore'
 import { useUiStore } from '../store/uiStore'
 import { TIER_COUNT, DEFAULT_HOTKEYS } from '../core/constants'
-import { playBuySound, playTempoSound } from '../core/audio'
+import { playTempoSound } from '../core/audio'
 
 /**
  * Keyboard shortcuts (AD-style, the "Max + Hold" QoL):
@@ -13,14 +13,16 @@ import { playBuySound, playTempoSound } from '../core/audio'
  */
 const REPEAT_MS = 90
 
-// Buy + sound, but only play if a purchase actually happened (soundwaves changed) — so an unaffordable
-// keypress is silent, matching the mouse path. Gives keyboard buyers the same audio as clicking.
+// Buy, then register it (sound + on-stage flash/+N) only if a purchase actually happened (soundwaves
+// changed) — so an unaffordable keypress is silent/inert, matching the pointer path. registerBuy unifies
+// the juice so keyboard buys look + sound identical to clicking a pod. Max passes no amount (flash, no +N).
 function buyTier(id: number) {
   const s = useGameStore.getState()
   const before = s.soundwaves
+  const amount = s.buyAmount === 'max' ? undefined : (s.buyAmount === 10 ? 10 : 1)
   if (s.buyAmount === 'max') s.buyMaxTier(id)
-  else s.buyTier(id, s.buyAmount === 10 ? 10 : 1)
-  if (!useGameStore.getState().soundwaves.eq(before)) playBuySound(id)
+  else s.buyTier(id, amount as number)
+  if (!useGameStore.getState().soundwaves.eq(before)) useUiStore.getState().registerBuy(id, amount)
 }
 
 function act(key: string) {
