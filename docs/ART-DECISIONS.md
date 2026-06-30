@@ -35,7 +35,21 @@
 
 ---
 
-## D2 — Achievement art (1 of 100)  ◐ IN PROGRESS 2026-07-01
+## D2 — Achievement art (1 of 100)  ◐ glyph fallback SHIPPED · local-gen SHELVED (gfx1031/ZLUDA wall)
+> **2026-07-01 ZLUDA attempt (full writeup so a future session / Codex can resume):** Installed ComfyUI-Zluda
+> for the RX 6700 XT (gfx1031): HIP SDK 6.2.4 + the **gfx1031 rocBLAS** community libs (littlewu build) +
+> a **Defender folder exclusion** (ZLUDA is a flagged false-positive) + ZLUDA nightly. **The server boots
+> fine** (detects gfx1031, Triton 3.4, loads SDXL to GPU). **But inference fails at the GPU layer:**
+> SDXL → native **segfault** (`0xC0000005`, crashes the server); SD1.5 → **`cuDNN error:
+> CUDNN_STATUS_EXECUTION_FAILED`** on `F.conv2d` (server survives, 0 images). `--use-split-cross-attention
+> --lowvram` didn't help. Triton also can't compile (no Visual Studio / MSVC → no `stdio.h`).
+> **Untried next levers (for Codex, separate quota — heavy iteration):** (1) force-disable cuDNN
+> (`torch.backends.cudnn.enabled=False` / the `cfz_cudnn` toggle node) so conv uses a non-cuDNN fallback;
+> (2) install VS Build Tools "Desktop C++" so Triton compiles; (3) try a different ZLUDA/HIP build or
+> ROCm-on-Linux; (4) just use a cloud GPU for a one-off batch. Setup lives at `C:\Users\macar\ComfyUI-Zluda`
+> (model on `E:\sonance-models`, temp on `E:\sonance-comfy-tmp`; launch via the scratchpad `run-comfy-server.bat`).
+> **Recommendation:** ship the trial on the glyph fallback (looks intentional); revisit gen via Codex or cloud.
+
 > **Resolved approach:** (1) ✅ **glyph fallback shipped** — every achievement now renders a styled gold-on-midnight badge (emoji glowing in a deco frame) instead of raw emoji; the wall reads as intentional. The loader tries `<id>.png` → `<id>.jpg` → badge, so generated art drops in and overrides. (2) 🔄 **local-gen kit ready** (`art/achievements/` + `art/gen-achievements-comfy.mjs`) — ComfyUI+ZLUDA on the RX 6700 XT, **no Gemini credits**. Pilot of 6 (ach_real_life A/B + 5 impactful/reachable) with a shared cinematic style for consistency. **Vince runs the gen on his GPU**, then we judge + scale up.
 
 **Options:**

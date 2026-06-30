@@ -27,17 +27,21 @@ const items = wanted.length ? cfg.items.filter((i) => wanted.includes(i.id)) : c
 if (!items.length) { console.error('No matching items in prompts.json'); process.exit(1) }
 
 const S = cfg.settings
+// Env overrides (e.g. GEN_W=512 GEN_H=512 GEN_STEPS=28 for SD1.5, which is native 512px).
+const W = Number(process.env.GEN_W) || S.width
+const H = Number(process.env.GEN_H) || S.height
+const STEPS = Number(process.env.GEN_STEPS) || S.steps
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
-// Minimal SDXL text2img graph (ComfyUI API format).
+// Minimal text2img graph (ComfyUI API format).
 function graph(positive, negative, seed) {
   return {
     '4': { class_type: 'CheckpointLoaderSimple', inputs: { ckpt_name: CKPT } },
-    '5': { class_type: 'EmptyLatentImage', inputs: { width: S.width, height: S.height, batch_size: 1 } },
+    '5': { class_type: 'EmptyLatentImage', inputs: { width: W, height: H, batch_size: 1 } },
     '6': { class_type: 'CLIPTextEncode', inputs: { text: positive, clip: ['4', 1] } },
     '7': { class_type: 'CLIPTextEncode', inputs: { text: negative, clip: ['4', 1] } },
     '3': { class_type: 'KSampler', inputs: {
-      seed, steps: S.steps, cfg: S.cfg, sampler_name: S.sampler_name, scheduler: S.scheduler, denoise: 1,
+      seed, steps: STEPS, cfg: S.cfg, sampler_name: S.sampler_name, scheduler: S.scheduler, denoise: 1,
       model: ['4', 0], positive: ['6', 0], negative: ['7', 0], latent_image: ['5', 0],
     } },
     '8': { class_type: 'VAEDecode', inputs: { samples: ['3', 0], vae: ['4', 2] } },
@@ -56,9 +60,10 @@ async function generate(item, idx) {
   if (!res.ok) throw new Error(`/prompt ${res.status}: ${await res.text()}`)
   const { prompt_id } = await res.json()
 
-  // Poll history until this prompt's outputs appear.
+  // Poll history until this prompt's outputs appear. Generous cap: the FIRST ZLUDA gen compiles
+  // kernels (can take many minutes / look like a hang); later images are fast.
   let out
-  for (let t = 0; t < 600; t++) { // up to ~5 min
+  for (let t = 0; t < 2400; t++) { // up to ~20 min (first-run kernel compile)
     await sleep(500)
     const h = await (await fetch(`${COMFY}/history/${prompt_id}`)).json()
     const node = h?.[prompt_id]?.outputs?.['9']?.images?.[0]
