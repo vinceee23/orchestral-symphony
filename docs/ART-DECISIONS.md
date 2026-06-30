@@ -1,0 +1,69 @@
+# Art decisions (L0–L3) — for Vince
+
+> Art is the **last** priority and **your** call (taste + Gemini credits). I did NOT generate or wire
+> any art autonomously. This is the decision sheet: what exists, what's missing, the options, my
+> recommendation, and what's prepped to execute the moment you say yes. Conserve credits per the tiered
+> model (memory: `gemini-model-tiers`).
+
+## Current art inventory (everything real)
+- **Tier emblems** — ✅ complete: all 7 in `public/emblems/*.jpg` (gold-on-midnight, chroma-keyed at runtime). The one fully-polished art slice.
+- **Stage backdrop** — ⚠ ONE image (`public/backdrops/hall-master.jpg`); the 7 "eras" are a zoom/desaturate/blur/tint *illusion* over it.
+- **Achievements** — ⚠ **1 of 100** (`ach_real_life.jpg`); the other 99 render as raw OS emoji.
+- **World Tour venues** — ⚠ **placeholder** dashed-box in-game, BUT **6 finished illustrations already exist** in `drafts/l3-venues/` (never wired).
+- **Logo / orb / favicon.png** — ✅ polished.
+- **Dead/stale:** `public/favicon.svg` (pre-rename purple bolt, off-brand, unreferenced) + `art/tiers/tier1_notes.jpg` (abandoned approach).
+
+---
+
+## D1 — World Tour venue art  ⭐ cheapest visible win
+6 illustrations exist and map 1:1 to the venues (verified against `VENUES` in `worldTour.ts`):
+| draft file | venue |
+|---|---|
+| `ladder-1-old-house.jpg` | 0 The Old House |
+| `ladder-2-local-hall.jpg` | 1 Local Hall |
+| `ladder-3-city-theatre.jpg` | 2 City Theatre |
+| `ladder-4-concert-hall.jpg` | 3 Concert Hall |
+| `ladder-5-opera-house.jpg` | 4 Opera House |
+| `ladder-6-world-stage.jpg` | 5 World Stage |
+(there are also 3 Old-House progressive-state drafts: `oh-state-1-lit/2-instruments/3-grand` — could show the venue *upgrading* as components are bought.)
+
+**Options:** (a) **wire the 6 drafts as-is** now — replaces the dashed placeholder, reversible, zero credits; (b) regenerate polished finals first, then wire; (c) wire now + regenerate later.
+**My rec:** **(a) now.** It's the single biggest visible improvement and fully reversible. **Decision I need:** are the 6 drafts good enough to ship? (I can't judge their quality — you can.)
+**Prepped to execute on yes:** copy `drafts/l3-venues/ladder-*.jpg` → `public/venues/{0..5}.jpg`, render in `WorldTourPage` (BASE_URL-prefixed) replacing the dashed box, brighten as the venue sells out. ~20 min + gate.
+
+---
+
+## D2 — Achievement art (1 of 100)  ⭐ biggest coverage gap, biggest credit cost
+**Options:**
+- **A (no credits, recommended for the trial): a designed glyph/emblem fallback** — instead of raw OS emoji (inconsistent Windows/Mac/mobile, clashes with the gold deco), render each achievement's icon as a styled gold-on-midnight badge (consistent frame, the existing emoji or an SVG centered in the deco treatment). Looks *intentional*, ships now, costs nothing.
+- **B: generate ~100 bespoke emblems** via `art/gen-emblems.mjs` (Gemini) — best looking, but real credits + curation time.
+- **C: generate only the L0–L3-reachable achievements** (the sims show ~43–70 unlock in a trial run) and glyph-fallback the rest. Middle ground.
+**My rec:** **A for the ship**, optionally **C** later for the most-seen ones. **Decision I need:** A, B, or C — and if B/C, your credit budget + which Gemini tier.
+
+---
+
+## D3 — Era backdrops (1 image faked across 7 eras)
+**Options:** (a) keep the zoom/recolor illusion (works, free); (b) generate distinct L0–L3 hall keyframes (intimate room → grand hall → world stage) via `art/gen-halls.mjs` and blend.
+**My rec:** **(a) keep for now**, revisit after D1/D2. The illusion reads acceptably; distinct halls are a "nice to have," not a gap a player flags. **Decision:** leave it, or want distinct halls?
+
+---
+
+## D4 — Favicon / social-share set  (mostly no-credit; cheap polish)
+Missing: apple-touch-icon (180²), **og:image / twitter:image** (shared trial links currently render NO preview card), `.ico`, web manifest. Plus the stale off-brand `favicon.svg` should go.
+**Options:** (a) I add the `<head>` tags + delete the stale svg now, and we compose an og:image from the existing orb/logo (a 1200×630 — I can build a simple branded one in HTML→PNG, or you generate a hero); (b) defer.
+**My rec:** **(a).** Shared links rendering blank is a real first-impression miss for a trial people will link. **Decision:** want me to do the head-tags + stale-svg cleanup now (safe, no taste)? The og:image *art* is the only taste part.
+
+---
+
+## D5 — Prestige / Opus signature art (optional)
+Encore/MO/World Tour screens have no hero crest. **Rec:** low priority; revisit after D1–D2. Could reuse the gold deco emblem style (an Encore record/EP crest, a Magnum Opus seal).
+
+---
+
+## Repo hygiene (safe, no taste — approve in one nod)
+- Delete stale `public/favicon.svg` (off-brand purple bolt, unreferenced) + `art/tiers/tier1_notes.jpg` (dead). Also dead code: `futureChallenges.ts`.
+
+---
+
+### Fastest path to a visibly more-finished trial
+**D1 (wire venue drafts) → D2-A (glyph fallback) → D4-a (head tags + cleanup).** All low/no-credit. Give me a yes on each and I'll execute + gate.
