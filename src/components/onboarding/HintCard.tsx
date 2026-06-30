@@ -23,7 +23,7 @@ export function HintCard({ hint, onDismiss }: HintCardProps) {
           ) : (
             <p className="text-sm leading-snug text-text-secondary">{hint.text}</p>
           )}
-          <span className="block text-[10px] text-text-muted mt-1">Turn tips off in Settings.</span>
+          <span className="block text-[10px] text-text-muted mt-1">Turn tutorials off in Settings.</span>
         </div>
         <button
           type="button"

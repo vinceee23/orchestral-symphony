@@ -42,12 +42,12 @@ Current: 3 sine-blip one-shots (buy/tempo/prestige); **Conduct/Crescendo, achiev
 - ⏸ **Overlay coordination** (Encore bloom + era-reveal + toast can stack) — M, lower priority.
 
 ### Copy
-- ☐ **Layer-name contradiction**: Prestige ladder + a StageHall comment say "Repertoire/Genre/Canon"; everywhere else "World Tour/Signature/Grand Finale". Single source of truth. (S)
-- ☐ **MO/OP copy is factually WRONG**: PrestigeDialog + onboarding say "each Opus Point permanently multiplies your tempo" — but raw OP multiplies nothing (`getOpusBPMMultiplier` is dead code); production only rises when you buy the Tempo track. Fix copy + delete dead fn. (S)
-- ☐ **HelpModal** stops at Encore — add Magnum Opus, Conduct/Crescendo (incl. Space hotkey, currently undocumented), Records→Platinum, World Tour. (M)
-- ☐ **Hint "tips" vs Settings "Show layer tutorials"** term mismatch; **"Conducting (see below)"** points at a later card. (S)
-- ☐ **AUTO_CONDUCT_FRACTION** value 0.7 vs "half ceiling" copy — verify which surfaces still say "half", align. (S)
-- ☐ **Stale "hold to conduct" comments** in ConductorPodium (tap-only model shipped). (S)
+- ☑ **Layer-name contradiction**: Prestige ladder L3/L4 'Repertoire'/'Genre' → 'World Tour'/'Signature' (now matches every other surface). *(Virtuoso/Canon kept — they match the build specs; the era-vs-layer name unification is a deeper follow-up.)*
+- ☑ **MO/OP copy fixed**: PrestigeDialog + the magnum_opus_done hint no longer claim raw Opus Points multiply tempo — now "spend OP in the Opus tree; its Tempo track → permanent global production". Dead `getOpusBPMMultiplier` deleted.
+- ☐ **HelpModal** stops at Encore — add Magnum Opus, Conduct/Crescendo (incl. Space hotkey, currently undocumented), Records→Platinum, World Tour. (M) *(deferred — prose/voice work)*
+- ☑ **Hint "tips" → "tutorials"** (matches the Settings label); **"Conducting (see below)" → "see the next tip"**.
+- ☑ **Auto-Conduct copy** "half ceiling" → "~70% of its ceiling" (matches AUTO_CONDUCT_FRACTION=0.7). *(whether 0.7 is the right VALUE is balance proposal C4.)*
+- ☑ **Stale "hold to conduct" comments** in ConductorPodium rewritten to the tap-burst-decay model.
 
 ### A11y / Perf
 - ☐ **OS `prefers-reduced-motion` ignored** by ~all animations (only StoryBeat honors it). Gate all decorative animations in `index.css` under the media query; default in-app toggle ON when OS prefers reduce. (S)

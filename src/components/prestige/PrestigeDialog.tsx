@@ -24,8 +24,8 @@ export const PRESTIGE_INFO: Record<PrestigeKind, {
     bg: 'bg-accent-purple/10',
     description: [
       'A Magnum Opus is a bigger reset. It resets everything an Encore does, plus your Applause.',
-      'In return you gain an Opus Point — each one permanently multiplies your tempo (the speed of your whole orchestra).',
-      'This is a powerful boost — tempo lifts everything at once.',
+      'In return you earn Opus Points to spend in the Opus tree. Its Tempo track turns Opus Points into permanent global production — other tracks unlock automation and a stronger Crescendo.',
+      'This is where your long-game power compounds.',
     ],
   },
   gf: {

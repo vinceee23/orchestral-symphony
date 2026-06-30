@@ -12,11 +12,13 @@ import { PrestigeDialog, type PrestigeKind, type PrestigePreview } from './Prest
 import { useUiStore } from '../../store/uiStore'
 import { Button } from '../shared/Button'
 
+// Layer names must match every other surface (era theme, sidebar, page titles, story beats). L3/L4
+// were stale here ('Repertoire'/'Genre') — the player saw the wrong name for the very next layer.
 const LADDER = [
   { name: 'Encore', icon: '\u{266A}' },
   { name: 'Magnum Opus', icon: '\u{1F3BC}' },
-  { name: 'Repertoire', icon: '\u{1F3AD}' },
-  { name: 'Genre', icon: '\u{1F3A8}' },
+  { name: 'World Tour', icon: '\u{1F3AD}' },
+  { name: 'Signature', icon: '\u{1F3A8}' },
   { name: 'Virtuoso', icon: '\u{1F3C6}' },
   { name: 'Canon', icon: '\u{1F4DC}' },
 ]

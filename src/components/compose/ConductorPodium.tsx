@@ -1,8 +1,8 @@
 /**
  * The conductor's podium, front-center of the stage.
  * Pre-L2 it sits DORMANT and dim ("the baton awaits") — a quiet foreshadow of the Crescendo.
- * Once L2 unlocks Conduct, `active` is true and holding Conduct fills the `swell` column of light.
- * (The live hold/swell wiring lands with the L2 tick-pass; this renders the structure + dormant tease.)
+ * Once L2 unlocks Conduct, `active` is true and the `swell` column fills with the live Crescendo.
+ * Conduct is TAP-to-trigger (a fixed burst window that decays), not a hold — `swell` is that decay curve.
  */
 import { memo } from 'react'
 

@@ -175,11 +175,6 @@ export function getEncoreGain(peakSoundwaves: Decimal): number {
   return isFinite(n) ? Math.max(1, n) : Number.MAX_SAFE_INTEGER // guard: extreme peaks can't poison numeric EP
 }
 
-/** Opus BPM multiplier: each OP = x2 tick speed (BPM) */
-export function getOpusBPMMultiplier(op: number): number {
-  return Math.pow(2, op)
-}
-
 /** Grand Finale multiplier: each FP = x10 all production */
 export function getFinaleMultiplier(fp: number): Decimal {
   return Decimal.pow(10, fp)

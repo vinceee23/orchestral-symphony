@@ -102,7 +102,7 @@ export const OPUS_UPGRADES: OpusUpgradeConfig[] = [
     id: 'auto-conduct',
     track: 'AUTOMATORS',
     name: 'Auto-Conduct',
-    description: 'AFK sustain: crescendo holds at half ceiling without holding Conduct.',
+    description: 'AFK sustain: crescendo holds at ~70% of its ceiling even while idle.',
     baseCost: 25,
     costGrowth: 1,
     maxLevel: 1,

@@ -122,9 +122,9 @@ export const ONBOARDING_HINTS: Record<OnboardingHintId, OnboardingHintDefinition
     id: 'magnum_opus_done',
     title: 'Magnum Opus',
     body: [
-      'Each Opus Point permanently ×your tempo — it speeds your whole orchestra.',
-      'The Opus upgrade tree is now open.',
-      'And Conducting is unlocked (see below).',
+      'Spend Opus Points in the Opus tree — its Tempo track turns them into permanent global production.',
+      'Other tracks unlock automation, a stronger Crescendo, and more.',
+      'And Conducting is now unlocked — see the next tip.',
     ],
     isMet: (state) => state.opusCount >= 1 && !state.activeChallenge,
   },
