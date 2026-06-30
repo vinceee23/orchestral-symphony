@@ -38,9 +38,9 @@ Current: 3 sine-blip one-shots (buy/tempo/prestige); **Conduct/Crescendo, achiev
 - ☑ **FloatingNotes reshuffle fixed**: deterministic module-level note field, sliced by liveliness — notes no longer teleport on prestige (existing notes keep position; higher tiers append).
 - ☑ **World Tour distinct icon**: new `globe` icon (was sharing `sparkle` with Prestige).
 - ☑ **Story beats now have a soft audio swell** (StoryBeat mount) — covers all narrative beats *including the previously-silent World Tour reveal*.
-- ◐ **Buy-juice input parity**: audio half done (keyboard buys play SFX). **Visual** parity (section flash + "+N" pop on keyboard buys) still ☐ — needs lifting the juice trigger into shared state. (M)
-- ☐ **Locked tier pods** are flat grey "???" boxes — dim silhouette + next-unlock hint + ready shimmer. (M) *(deferred — taste-sensitive, better with your eye)*
-- ☐ **World Tour unlock celebration** — a dedicated overlay on par with EncoreCelebration (sound now covered via the story beat). (M) *(deferred)*
+- ☑ **Buy-juice input parity** (DONE): unified via `uiStore.registerBuy` — pointer + keyboard buys now both flash the section, float a +N pop, and play the buy sound from one place. Max buys flash (no +N).
+- ☐ **Locked tier pods** are flat grey "???" boxes — dim silhouette + next-unlock hint + ready shimmer. (M) *(deferred — taste-sensitive, your eye)*
+- ☐ **World Tour unlock celebration** — a dedicated overlay on par with EncoreCelebration. (M) *(deferred — the WT story beat now plays a sound and serves as that moment; a competing overlay would stack on it.)*
 - 🅿 **Orchestra stage clips below ~900px** (7 fixed-width no-wrap pods, scale keyed to era not width). Real responsive fix is L-effort + taste → proposal. (L)
 - ⏸ **Overlay coordination** (Encore bloom + era-reveal + toast can stack) — M, lower priority.
 
@@ -59,8 +59,8 @@ Current: 3 sine-blip one-shots (buy/tempo/prestige); **Conduct/Crescendo, achiev
 - ☑ **Sidebar tabs** now carry `aria-current="page"` + `aria-label` + `title` (collapsed icon-only state is announced).
 - ☑ **Modals** — new shared `ModalShell` (role=dialog + aria-modal + **focus-trap + focus-restore** + Esc + backdrop-close) applied to HelpModal + PrestigeDialog. *(HardReset modal in SettingsPanel can adopt ModalShell next — quick follow-up.)*
 - ☑ **Number-heavy UI** — tier buy buttons carry a full `aria-label`; the Soundwaves headline is now a single `role="status"` label (value + rate) with the per-frame number `aria-hidden` to avoid SR spam.
-- ☐ **Per-frame funnel recompute** in Header/Stage/Stats each call `getProductionMultiplier()` every tick — memoize once/tick. (M) *(deferred — perf)*
-- ☐ **Save written every frame** (zustand persist on every setState ~60×/s) — debounce to ~1/s. (M) *(deferred — perf)*
+- ☐ **Per-frame funnel recompute** in Header/Stage/Stats each call `getProductionMultiplier()` every tick — memoize once/tick. (M) *(deferred — risky cache-invalidation on the display hot path; needs a supervised pass)*
+- ☑ **Save written every frame** (DONE): `createDecimalStorage.setItem` now debounces the full-state JSON.stringify + localStorage write to ~1/sec (trailing) and flushes on tab hide/close; writes synchronously in non-browser envs (tests). Was ~60 writes/sec.
 
 ---
 
