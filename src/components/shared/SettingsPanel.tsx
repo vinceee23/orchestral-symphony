@@ -4,6 +4,7 @@ import { exportSaveString, importSaveString, parseSaveString } from '../../core/
 import { getEra, eraTintCss, ERA_NAMES, ERA_COLORS } from '../../core/eraTheme'
 import { DEFAULT_HOTKEYS, type NumberNotation, type HotkeyAction } from '../../core/constants'
 import { Button } from './Button'
+import { ModalShell } from './ModalShell'
 
 const fmtKey = (k: string | undefined) => (k === ' ' ? 'Space' : (k ?? '?').toUpperCase())
 const HOTKEY_ROWS: [HotkeyAction, string][] = [['conduct', 'Conduct'], ['maxAll', 'Max all'], ['maxTempo', 'Max tempo']]
@@ -267,19 +268,21 @@ export function SettingsPanel() {
       </div>
 
       {resetArmed && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setResetArmed(false)}>
-          <div className="max-w-sm w-full p-6 rounded-xl border border-danger/40 bg-bg-primary shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-display font-bold text-danger">Hard Reset</h3>
-            <p className="text-sm text-text-secondary">This wipes <strong>all progress</strong> (your settings are kept). This cannot be undone — export a save first if you want a backup. Type <strong className="text-text-primary">RESET</strong> to confirm.</p>
-            <input value={resetText} onChange={(e) => setResetText(e.target.value)} autoFocus
-              className="w-full bg-bg-secondary border border-border rounded-md px-3 py-2 text-sm text-text-primary" placeholder="RESET" />
-            <div className="flex gap-3">
-              <Button onClick={() => { setResetArmed(false); setResetText('') }} variant="ghost" size="md" className="flex-1">Cancel</Button>
-              <Button onClick={doHardReset} variant="ghost" size="md" disabled={resetText !== 'RESET'}
-                className="flex-1 border-danger/40 text-danger hover:bg-danger/20 hover:text-danger">Wipe everything</Button>
-            </div>
+        <ModalShell
+          onClose={() => { setResetArmed(false); setResetText('') }}
+          label="Hard Reset"
+          panelClassName="max-w-sm w-full p-6 rounded-xl border border-danger/40 bg-bg-primary shadow-2xl space-y-4"
+        >
+          <h3 className="text-lg font-display font-bold text-danger">Hard Reset</h3>
+          <p className="text-sm text-text-secondary">This wipes <strong>all progress</strong> (your settings are kept). This cannot be undone — export a save first if you want a backup. Type <strong className="text-text-primary">RESET</strong> to confirm.</p>
+          <input value={resetText} onChange={(e) => setResetText(e.target.value)} autoFocus
+            className="w-full bg-bg-secondary border border-border rounded-md px-3 py-2 text-sm text-text-primary" placeholder="RESET" />
+          <div className="flex gap-3">
+            <Button onClick={() => { setResetArmed(false); setResetText('') }} variant="ghost" size="md" className="flex-1">Cancel</Button>
+            <Button onClick={doHardReset} variant="ghost" size="md" disabled={resetText !== 'RESET'}
+              className="flex-1 border-danger/40 text-danger hover:bg-danger/20 hover:text-danger">Wipe everything</Button>
           </div>
-        </div>
+        </ModalShell>
       )}
     </div>
   )

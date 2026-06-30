@@ -47,7 +47,7 @@ Current: 3 sine-blip one-shots (buy/tempo/prestige); **Conduct/Crescendo, achiev
 ### Copy
 - ☑ **Layer-name contradiction**: Prestige ladder L3/L4 'Repertoire'/'Genre' → 'World Tour'/'Signature' (now matches every other surface). *(Virtuoso/Canon kept — they match the build specs; the era-vs-layer name unification is a deeper follow-up.)*
 - ☑ **MO/OP copy fixed**: PrestigeDialog + the magnum_opus_done hint no longer claim raw Opus Points multiply tempo — now "spend OP in the Opus tree; its Tempo track → permanent global production". Dead `getOpusBPMMultiplier` deleted.
-- ☐ **HelpModal** stops at Encore — add Magnum Opus, Conduct/Crescendo (incl. Space hotkey, currently undocumented), Records→Platinum, World Tour. (M) *(deferred — prose/voice work)*
+- ☑ **HelpModal** expanded past Encore — added Magnum Opus & Opus Points, Conducting & Crescendo (incl. the Space hotkey, now in the hotkey list), Records→Platinum, and World Tour & Acclaim.
 - ☑ **Hint "tips" → "tutorials"** (matches the Settings label); **"Conducting (see below)" → "see the next tip"**.
 - ☑ **Auto-Conduct copy** "half ceiling" → "~70% of its ceiling" (matches AUTO_CONDUCT_FRACTION=0.7). *(whether 0.7 is the right VALUE is balance proposal C4.)*
 - ☑ **Stale "hold to conduct" comments** in ConductorPodium rewritten to the tap-burst-decay model.
@@ -57,7 +57,7 @@ Current: 3 sine-blip one-shots (buy/tempo/prestige); **Conduct/Crescendo, achiev
 - ☑ **StoryBeat honors the in-app reducedMotion toggle** (OS pref OR setting; both hooks run unconditionally).
 - ☑ **SmoothNumber** snaps to the real value and skips its per-frame rAF under reduced motion (OS or in-app) — a11y + perf (kills the ~8-loop setState storm in that mode). *(Full fps-clock throttle for the normal path still ☐.)*
 - ☑ **Sidebar tabs** now carry `aria-current="page"` + `aria-label` + `title` (collapsed icon-only state is announced).
-- ☑ **Modals** — new shared `ModalShell` (role=dialog + aria-modal + **focus-trap + focus-restore** + Esc + backdrop-close) applied to HelpModal + PrestigeDialog. *(HardReset modal in SettingsPanel can adopt ModalShell next — quick follow-up.)*
+- ☑ **Modals** — shared `ModalShell` (role=dialog + aria-modal + **focus-trap + focus-restore** + Esc + backdrop-close) now applied to HelpModal, PrestigeDialog, **and the HardReset confirm**. All blocking dialogs are covered.
 - ☑ **Number-heavy UI** — tier buy buttons carry a full `aria-label`; the Soundwaves headline is now a single `role="status"` label (value + rate) with the per-frame number `aria-hidden` to avoid SR spam.
 - ☐ **Per-frame funnel recompute** in Header/Stage/Stats each call `getProductionMultiplier()` every tick — memoize once/tick. (M) *(deferred — risky cache-invalidation on the display hot path; needs a supervised pass)*
 - ☑ **Save written every frame** (DONE): `createDecimalStorage.setItem` now debounces the full-state JSON.stringify + localStorage write to ~1/sec (trailing) and flushes on tab hide/close; writes synchronously in non-browser envs (tests). Was ~60 writes/sec.

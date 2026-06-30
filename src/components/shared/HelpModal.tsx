@@ -64,6 +64,41 @@ export function HelpModal() {
               than the last. After eight, you've mastered the stage… and your <em>Magnum Opus</em> awaits.
             </p>
           </div>
+          <div className="space-y-2">
+            <h3 className="text-base font-display text-accent-gold">Magnum Opus</h3>
+            <p className="text-sm text-text-secondary leading-relaxed">
+              After the eighth Encore your <em>Magnum Opus</em> opens — a deeper reset that trades the whole
+              Encore layer for <span className="text-text-primary">Opus Points</span>. Spend them in the Opus
+              tree: its Tempo track turns Opus Points into permanent global production, and other tracks unlock
+              automation and a stronger Crescendo.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-base font-display text-accent-gold">Conducting &amp; Crescendo</h3>
+            <p className="text-sm text-text-secondary leading-relaxed">
+              Once you've recorded a Magnum Opus you can <span className="text-accent-gold">Conduct</span> — tap
+              the baton (or press <span className="text-text-primary">Space</span> from any screen) to ride a
+              rising <span className="text-text-primary">Crescendo</span> that lifts production for a short
+              window, then fades. Tap again to sustain it; Auto-Conduct holds a floor while you're idle.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-base font-display text-accent-gold">Records &amp; Platinum</h3>
+            <p className="text-sm text-text-secondary leading-relaxed">
+              Your recordings sell quietly in the background once you have a Magnum Opus. The count climbs toward
+              a <span className="text-text-primary">Platinum</span> certification — a milestone that lifts your
+              Fame and opens the road ahead.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-base font-display text-accent-gold">World Tour</h3>
+            <p className="text-sm text-text-secondary leading-relaxed">
+              Past Platinum, you take the show on the road. Fill a venue with{' '}
+              <span className="text-text-primary">Acclaim</span>, upgrade its components, and graduate to grander
+              stages — Acclaim becomes a steady global multiplier, and the venues are where your long-game
+              automation lives.
+            </p>
+          </div>
         </section>
 
         <section className="space-y-3">
@@ -72,6 +107,7 @@ export function HelpModal() {
             <li><Key>1</Key>–<Key>7</Key> &nbsp;buy that section (at your current buy-amount)</li>
             <li><Key>T</Key> &nbsp;max Tempo</li>
             <li><Key>M</Key> &nbsp;max <span className="text-text-primary">everything</span> — all sections + tempo</li>
+            <li><Key>Space</Key> &nbsp;Conduct (after your first Magnum Opus)</li>
             <li><Key>H</Key> &nbsp;toggle this help &nbsp;·&nbsp; <Key>Esc</Key> close</li>
           </ul>
           <p className="text-xs text-text-muted">Hold any buy key to repeat it continuously.</p>
