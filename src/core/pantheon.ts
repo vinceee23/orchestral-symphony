@@ -3,10 +3,15 @@ import type { SignatureDomain } from '../store/types'
 /**
  * The pantheon — VISUAL/identity data only (NOT the L9 boss FSM; that's a future `gods.ts`).
  *
- * Art direction (agreed 2026-07-01): the six gods are human-scale, FACELESS figures (pure void where a
- * face would be) standing in the eternal dark — bodies abstractly fused with their instrument, each known
- * by its AURA: a cold domain tint + a signature behavior (the "fingerprint"). The Maestro is the origin —
- * the cold-open orb itself — in pure gold; the five domain-gods are his gold split through a prism.
+ * Art direction (agreed 2026-07-01, REVISED to celestial): the six gods are vast custom CONSTELLATIONS in
+ * the gold→black void — a FACELESS deity (head a blank of starlight, no features) drawn in delicate gold
+ * line over a domain-tinted starfield, cradling/playing its instrument, antique celestial-atlas style
+ * (Flamsteed/Uranometria). Each is known by its AURA: a cold domain tint + a signature "stir/blink"
+ * behavior (the fingerprint — the Pulse flares on the beat, the Breath breathes, the Twins beat in/out of
+ * phase). The Maestro is NOT a constellation — he is the central gold ORIGIN ORB (the cold-open orb) the
+ * five wheel around, like an orrery. (Earlier humanoid-figure pass read too mundane; constellations make
+ * "now you know our faces" literal — you connect the stars into the gods.)
+ * v1 concept art: drafts/god-*-constellation-v1.png + drafts/god-maestro-orb-v1.png.
  * This data seeds the pantheon early: the L4 "your sound" identity glows toward the god you're becoming.
  */
 export type GodAura = 'strobe' | 'vibrato' | 'blaze' | 'breathe' | 'beat' | 'downbeat'

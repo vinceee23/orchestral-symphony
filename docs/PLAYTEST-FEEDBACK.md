@@ -29,17 +29,20 @@ Captured during in-app testing of the §D1 build pass. Status: ✅ done · 🔜 
   settings persist.
 
 ## 🎺 Gods (L9) — visual direction DECIDED (2026-07-01)
-Canonical data in `src/core/pantheon.ts`. Art direction:
-- **Faceless figures, aura = character** (Journey/Sky language). Pure VOID where a face would be.
-- **Human-scale, uncanny** — incl. the Maestro (the god who began everything is *your size*; you become
-  the next downbeat). The mirror god = your domain's god, in your tint, where you'd stand.
-- **Instrument-fused silhouettes**: Timpana=drumhead torso · Lyra=strung sounding-box · Clarion=brass-bell
-  flare (made of light) · Aeolia=hollow reed-body · Twins=two tines of one tuning-fork (the interval) ·
-  Maestro=plays the orchestra (the cold-open orb taking figure).
-- **Per-domain cold tints** = the Maestro's gold split through a prism (gold #d4a843; crimson/violet/amber/
-  teal/jade for the five). Behavior carries identity (Pulse strobes, Breath breathes…).
-- **"Now you know our faces"** = the formless "we" takes FORM (figures), never literal faces.
-- **Seeded early** (`9f…`): the L4 "your sound" identity now glows your god's tint + "…echoing Timpana,
-  the Pulse." The cold-open orb already IS the Maestro (gold, breathing, reached back) — no code needed.
-- Still open / next: orb performing other fingerprints on the (currently inert) L4–L9 beats; the Twins'
-  two-phase fight; the join-the-pantheon ending. L9 itself is gated far out (build last).
+Canonical data in `src/core/pantheon.ts`. **v1 concept art in `drafts/god-*-constellation-v1.png` +
+`drafts/god-maestro-orb-v1.png`** (the earlier humanoid pass `drafts/god-*-v1.png` is RETIRED — read too
+mundane/uncanny; not celestial enough).
+- **CELESTIAL: each god is a vast custom CONSTELLATION** in the gold→black void — a **faceless** deity (head
+  a blank of starlight, NO features) drawn in delicate **gold line** over a domain-tinted starfield,
+  cradling/playing its instrument, **antique celestial-atlas** style (Flamsteed/Uranometria).
+- **Deity WITH instrument** (a muse + lyre, a herald + horn…), drawn star-to-star. Makes *"now you know our
+  faces"* literal — you connect the stars into the gods.
+- **Maestro = the central gold ORIGIN ORB** (the cold-open orb), the five wheeling around it like an orrery.
+- **Per-domain cold tints**: crimson/violet/gold/teal/jade; aura BEHAVIOR carries identity.
+- **The "blink" (Vince's idea):** each constellation STIRS in its fingerprint rhythm — stars twinkle, the
+  figure flares into clarity then settles, "the we, watching, briefly noticing you." Future CSS animation
+  for the L9 hub + cold-opens (Pulse flares on beat, Breath breathes, Twins in/out of phase). Captured.
+- **Seeded early** (`1c2f770`): L4 "your sound" glows your god's tint + "…echoing Timpana, the Pulse."
+- Minor polish TODO: unify the antique border treatment across the set (some have ornate frames, some torn-
+  parchment, some full-bleed). Still open: the per-fingerprint orb animation; the Twins two-phase fight;
+  the join-the-pantheon ending. L9 gated far out (build last).
