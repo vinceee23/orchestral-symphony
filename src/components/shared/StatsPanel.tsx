@@ -2,6 +2,7 @@ import { useGameStore } from '../../store/gameStore'
 import { ACHIEVEMENTS } from '../../core/achievements'
 import { CHALLENGES } from '../../core/challenges'
 import { formatNumber } from '../../core/format'
+import { getProductionBreakdown, getProductionMultiplier } from '../../core/multiplierRegistry'
 import { Button } from './Button'
 
 function formatTime(ms: number): string {
@@ -30,6 +31,9 @@ export function StatsPanel() {
   const finalePoints = useGameStore((s) => s.finalePoints)
   const peakSoundwaves = useGameStore((s) => s.peakSoundwaves)
   const hardReset = useGameStore((s) => s.hardReset)
+  // Production breakdown (C10): the live per-channel decomposition of the production multiplier.
+  const breakdown = useGameStore((s) => getProductionBreakdown(s))
+  const totalMult = useGameStore((s) => getProductionMultiplier(s))
 
   const totalPurchased = tiers.reduce((sum, t) => sum + t.purchased, 0)
 
@@ -94,6 +98,22 @@ export function StatsPanel() {
           )}
         </div>
       )}
+
+      {/* Production Breakdown (genre-audit C10): exactly how the /s multiplier is composed, so the
+          math is never opaque. The factors multiply to the total shown. */}
+      <div className="rounded-xl border border-border bg-bg-secondary/40 p-4 space-y-2">
+        <div className="flex justify-between items-baseline gap-4">
+          <h2 className="text-xs font-semibold text-text-muted uppercase tracking-wider">Production Breakdown</h2>
+          <span className="text-sm text-accent-gold font-semibold tabular-nums">x{formatNumber(totalMult, 2)}</span>
+        </div>
+        {breakdown.map((f) => (
+          <div key={f.label} className="flex justify-between items-baseline gap-4">
+            <span className="text-sm text-text-secondary">{f.label}</span>
+            <span className="text-sm text-text-primary font-medium tabular-nums">x{formatNumber(f.value, 2)}</span>
+          </div>
+        ))}
+        <p className="text-[11px] text-text-muted pt-1">All factors multiply together to set your production rate.</p>
+      </div>
 
       <div className="rounded-xl border border-danger/30 bg-bg-secondary/40 p-4 space-y-3">
         <h2 className="text-xs font-semibold text-danger uppercase tracking-wider">Danger Zone</h2>

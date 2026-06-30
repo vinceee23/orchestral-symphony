@@ -2,7 +2,7 @@ import Decimal from 'break_infinity.js'
 import type { GameState } from '../store/types'
 import { getAchievementGlobalMultiplier, getAchievementTempoBonus } from './achievements'
 import { getActiveChallengeModifiers, getChallengeById, getChallengeMultipliers } from './challenges'
-import { getCoreProductionMultiplier } from './formulas'
+import { coreProductionFactors, getCoreProductionMultiplier, type ProductionFactor } from './formulas'
 import { hasPerk } from './perks'
 import {
   ZERO_SIGNATURE_ALLOCATION,
@@ -91,10 +91,8 @@ function isNoPrestigeActive(state: ProductionMultiplierState): boolean {
   return challenge ? getActiveChallengeModifiers(challenge).noPrestige : false
 }
 
-export function getProductionMultiplier(
-  state: ProductionMultiplierState,
-  options: ProductionMultiplierOptions = {},
-): Decimal {
+/** Shared prep so getProductionMultiplier and getProductionBreakdown can never drift. */
+function prepareMultiplierInputs(state: ProductionMultiplierState, options: ProductionMultiplierOptions) {
   const achievementSet = new Set(state.achievements)
   const challengeMults = getChallengeMultipliers(
     state.completedChallenges,
@@ -116,38 +114,60 @@ export function getProductionMultiplier(
   const warmUpMult = options.warmUpMult ?? (
     state.activeChallenge ? 1 : warmUpMultiplier(state.warmUpLevel ?? 0)
   )
-  const entries: MultEntry[] = [
-    {
-      source: 'core',
-      channel: 'core',
-      value: getCoreProductionMultiplier({
-        lifetimeEncorePoints: noPrestige ? 0 : state.lifetimeEncorePoints,
-        finalePoints: noPrestige ? 0 : state.finalePoints,
-        encoreUpgrades: state.encoreUpgrades,
-        tempoLevel: state.tempo.level,
-        tiers: state.tiers,
-        opusUpgrades: state.opusUpgrades,
-        crescendoLevel,
-        recordsSold,
-        platinum,
-        massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
-        achievementTempoBonus: getAchievementTempoBonus(achievementSet)
-          + challengeMults.tempoBonus
-          + signatureEffects.tempoBonus,
-        acclaimMult: state.worldTourUnlocked && !noPrestige
-          ? getAcclaimMultiplier(state.lifetimeAcclaim)
-          : 1,
-        challengeGlobalProdMult: challengeMults.globalProdMult,
-        warmUpMult,
-        crescendoBonus: challengeMults.crescendoBonus + signatureEffects.crescendoBonus,
-      }),
-    },
-    {
-      source: 'signature:domain',
-      channel: 'domain',
-      value: getSignatureProductionMultiplier(signatureAllocation, signatureCount),
-    },
-  ]
+  const coreParams = {
+    lifetimeEncorePoints: noPrestige ? 0 : state.lifetimeEncorePoints,
+    finalePoints: noPrestige ? 0 : state.finalePoints,
+    encoreUpgrades: state.encoreUpgrades,
+    tempoLevel: state.tempo.level,
+    tiers: state.tiers,
+    opusUpgrades: state.opusUpgrades,
+    crescendoLevel,
+    recordsSold,
+    platinum,
+    massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
+    achievementTempoBonus: getAchievementTempoBonus(achievementSet)
+      + challengeMults.tempoBonus
+      + signatureEffects.tempoBonus,
+    acclaimMult: state.worldTourUnlocked && !noPrestige
+      ? getAcclaimMultiplier(state.lifetimeAcclaim)
+      : 1,
+    challengeGlobalProdMult: challengeMults.globalProdMult,
+    warmUpMult,
+    crescendoBonus: challengeMults.crescendoBonus + signatureEffects.crescendoBonus,
+  }
+  // The capped domain (Signature) contribution — matches what composeMultiplier applies.
+  const domainCap = CHANNEL_CAPS.domain
+  const rawDomain = getSignatureProductionMultiplier(signatureAllocation, signatureCount)
+  const domain = domainCap === undefined ? rawDomain : Decimal.min(rawDomain, new Decimal(1).plus(domainCap))
+  return { achievementSet, coreParams, rawDomain, domain }
+}
 
+export function getProductionMultiplier(
+  state: ProductionMultiplierState,
+  options: ProductionMultiplierOptions = {},
+): Decimal {
+  const { achievementSet, coreParams, rawDomain } = prepareMultiplierInputs(state, options)
+  const entries: MultEntry[] = [
+    { source: 'core', channel: 'core', value: getCoreProductionMultiplier(coreParams) },
+    { source: 'signature:domain', channel: 'domain', value: rawDomain },
+  ]
   return getAchievementGlobalMultiplier(achievementSet).times(composeMultiplier(entries))
+}
+
+/**
+ * Player-facing per-channel breakdown (genre-audit C10): the same factors getProductionMultiplier uses,
+ * labeled. Product of these === getProductionMultiplier (drift-guarded by multiplierRegistry.test.ts).
+ * No-op ×1 factors are dropped so the panel shows only what's actually contributing.
+ */
+export function getProductionBreakdown(
+  state: ProductionMultiplierState,
+  options: ProductionMultiplierOptions = {},
+): ProductionFactor[] {
+  const { achievementSet, coreParams, domain } = prepareMultiplierInputs(state, options)
+  const factors: ProductionFactor[] = [
+    ...coreProductionFactors(coreParams),
+    { label: 'Signature', value: domain },
+    { label: 'Achievements', value: getAchievementGlobalMultiplier(achievementSet) },
+  ]
+  return factors.filter((f) => !f.value.eq(1))
 }

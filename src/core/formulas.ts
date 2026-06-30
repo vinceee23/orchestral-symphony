@@ -228,6 +228,21 @@ export function getCoreProductionMultiplier(p: {
   /** Challenge reward: additive crescendo ceiling boost (default 0 = no-op). */
   crescendoBonus?: number
 }): Decimal {
+  return coreProductionFactors(p).reduce((acc, f) => acc.times(f.value), new Decimal(1))
+}
+
+/** A single labeled production factor (for the player-facing breakdown — genre-audit C10). */
+export interface ProductionFactor {
+  label: string
+  value: Decimal
+}
+
+/**
+ * The 'core' channel as an ORDERED list of labeled ×factors. getCoreProductionMultiplier is exactly the
+ * product of these, so the player-facing breakdown can never drift from real production (guarded by a test).
+ * Order matches the historical multiply chain to avoid float-rounding drift.
+ */
+export function coreProductionFactors(p: Parameters<typeof getCoreProductionMultiplier>[0]): ProductionFactor[] {
   const crescendoMult = getCrescendoMultiplier(p.crescendoLevel, p.opusUpgrades, p.crescendoBonus ?? 0)
   const fameMult = p.platinum ? getFameMultiplier(p.recordsSold, p.opusUpgrades) : 1
   // Mass Production perk: each tier you own 1,000+ of contributes a x2 (sim-tuned in formulas.test).
@@ -235,17 +250,19 @@ export function getCoreProductionMultiplier(p: {
     ? Decimal.pow(2, p.tiers.filter((t) => t.purchased >= 1000).length)
     : new Decimal(1)
 
-  return getEncoreMultiplier(p.lifetimeEncorePoints)
-    .times(getFinaleMultiplier(p.finalePoints))
-    .times(getTempoOpMultiplier(p.opusUpgrades))
-    .times(crescendoMult)
-    .times(fameMult)
-    .times(getPerfectPitchMultiplier(p.encoreUpgrades))
-    .times(PRODUCTION_SCALE)
-    .times(getTempoProductionMultiplier(p.tempoLevel, p.achievementTempoBonus ?? 0))
-    .times(getMilestoneTickspeedMultiplier(p.tiers))
-    .times(massMult)
-    .times(p.acclaimMult ?? 1)
-    .times(p.challengeGlobalProdMult ?? 1)
-    .times(p.warmUpMult ?? 1)
+  return [
+    { label: 'Applause', value: new Decimal(getEncoreMultiplier(p.lifetimeEncorePoints)) },
+    { label: 'Finale', value: new Decimal(getFinaleMultiplier(p.finalePoints)) },
+    { label: 'Opus tempo', value: new Decimal(getTempoOpMultiplier(p.opusUpgrades)) },
+    { label: 'Crescendo', value: new Decimal(crescendoMult) },
+    { label: 'Fame', value: new Decimal(fameMult) },
+    { label: 'Encore upgrades', value: new Decimal(getPerfectPitchMultiplier(p.encoreUpgrades)) },
+    { label: 'Base', value: new Decimal(PRODUCTION_SCALE) },
+    { label: 'Tempo', value: new Decimal(getTempoProductionMultiplier(p.tempoLevel, p.achievementTempoBonus ?? 0)) },
+    { label: 'Milestones', value: new Decimal(getMilestoneTickspeedMultiplier(p.tiers)) },
+    { label: 'Mass Production', value: massMult },
+    { label: 'Acclaim', value: new Decimal(p.acclaimMult ?? 1) },
+    { label: 'Challenges', value: new Decimal(p.challengeGlobalProdMult ?? 1) },
+    { label: 'Warm-Up', value: new Decimal(p.warmUpMult ?? 1) },
+  ]
 }
