@@ -10,6 +10,36 @@
 
 ---
 
+## ✅ DECISIONS — Vince, 2026-07-01 (implementation brief — delegate to Codex; re-sim each; gate before commit)
+
+**Design rule (P2 + all future layers):** every prestige reset **wipes the lower layer's upgrades**
+(AD-style clean slate). Persistence is **earned, never automatic/instant** — unlocked via an early/easy
+**achievement** (or a cheap upgrade in the layer above).
+
+- **P1** — In `getEncoreGain` (formulas.ts) add a small **linear floor** so early encores read +1, +2, +3…
+  (do NOT change the late `^ENCORE_EP_ROOT` curve — just lift the early end). Also **surface the cumulative
+  ×production multiplier** prominently in the Encore UI (ComposePage prestige card / PrestigePage). Sims that
+  must stay in band after: `human-pacing` (8-encore wall ≈95min, first MO ≈151min), `era-pacing`.
+- **P2** — Keep the AD-style full wipe of encore upgrades on Magnum Opus. Make the existing
+  **`keep-encore-upgrades` perk *earned via an EARLY, easy-to-reach achievement*** (re-point its gating
+  achievement to one reachable within the first MO cycle or two). *(Alt: a cheap early Opus-tree upgrade
+  instead — Vince OK with either.)* Re-sim: the perk must not trivialize MO cadence once earned.
+- **P3** — `AUTO_CONDUCT_FRACTION` **0.7 → 0.5** (constants.ts); revert the Auto-Conduct upgrade copy back to
+  "**half** ceiling" (opusUpgrades.ts — I'd changed it to ~70%). Re-sim: `human-pacing` active/idle ratios.
+- **P4** — Keep idle-first in L0–L1 (NO early active verb). UX/feel only: **juice the buy-10 milestone chase**
+  (clearer next-×2 pull + feedback on OrchestraStage) and **foreshadow Conduct legibly** (the dormant
+  ConductorPodium tease — currently 8px/near-invisible). No balance re-tune.
+- **P5** — ✅ DONE (offline autobuyers — `ac7ee60`).
+- **P6** — **Tune challenge rewards**: run the §2.8 `challenge-pacing` sim, lock reward magnitudes so each
+  clear is worth the run, fix mistuned targets (e.g. `ch_acoustic` 2e21 that's trivially beatable at its
+  encore≥10 gate), and remove the `TUNE §2.8 sim` markers in challenges.ts. Re-sim: `challenge-pacing`.
+- **P7** — ✅ DONE (swDecay time-based — `ac7ee60`).
+- **P8** — Add a **"trial complete" capstone** beat at circuit-complete (a real finish + a "the Sonance
+  continues…" hook) and **gate the Signature (L4) reveal** (Sidebar tab + "Full circuit complete" messaging)
+  so the trial doesn't dump the player at a locked door.
+
+---
+
 ## P1 — Early Encore reward feels flat ("+1 Applause" every time)  ⭐ most likely to hurt the trial
 **Feel:** Your first prestige loop — the emotional hook of the trial — hands the same "+1 Applause"
 no matter how far you pushed the run.
