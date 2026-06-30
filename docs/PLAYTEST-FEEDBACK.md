@@ -29,6 +29,12 @@ Captured during in-app testing of the §D1 build pass. Status: ✅ done · 🔜 
   settings persist.
 
 ## 🎺 Gods (L9) — visual direction DECIDED (2026-07-01)
+> **Status: ✅ APPROVED as initial draft.** Vince is satisfied with the direction; **detail refinements
+> deferred to the L9 build** (no point polishing far-out art now). In-game preview Artifact (cold-open
+> reveal + L9 hub): https://claude.ai/code/artifact/923bd51f-5b53-4371-a920-7b2267b71374
+> **Refinement notes for L9 build:** Clarion needs more *godly status* (greater divine presence/grandeur —
+> reads a touch plain vs the others). Plus the general polish pass + the animated SVG draw-in.
+
 Canonical data in `src/core/pantheon.ts`. **MATCHED concept-art set: `drafts/pantheon/*.png`**
 (timpana/lyra/clarion/aeolia/twins/maestro; locked spec: thin double gold rule-frame · soft domain nebula ·
 gold line + soft glow · faceless starlight head · Maestro = gold orrery). Earlier passes (humanoid + the
