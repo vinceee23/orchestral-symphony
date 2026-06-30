@@ -29,10 +29,10 @@ Captured during in-app testing of the §D1 build pass. Status: ✅ done · 🔜 
   settings persist.
 
 ## 🎺 Gods (L9) — visual direction DECIDED (2026-07-01)
-Canonical data in `src/core/pantheon.ts`. **MATCHED concept-art set: `drafts/god-*-set-v1.png`** (locked
-spec: thin double gold rule-frame · soft domain nebula · gold line + soft glow · faceless starlight head ·
-Maestro = gold orrery). Earlier passes RETIRED: `god-*-v1.png` (humanoid, too mundane) and
-`god-*-constellation-v1.png` (right concept, inconsistent borders/render).
+Canonical data in `src/core/pantheon.ts`. **MATCHED concept-art set: `drafts/pantheon/*.png`**
+(timpana/lyra/clarion/aeolia/twins/maestro; locked spec: thin double gold rule-frame · soft domain nebula ·
+gold line + soft glow · faceless starlight head · Maestro = gold orrery). Earlier passes (humanoid + the
+inconsistent constellation pass) moved to `drafts/_archive/gods-retired/`.
 *(Tiny nit on the set: Clarion + Maestro rendered with a faint light matte around the plate; crop to the
 black edge for a perfect match.)*
 - **CELESTIAL: each god is a vast custom CONSTELLATION** in the gold→black void — a **faceless** deity (head
@@ -56,7 +56,7 @@ Vince's idea: the per-layer cold-open quotes don't just show the breathing gold 
   with gods as you rise.
 - **Faint, building:** barely-there at first (attentive players notice the watchers gathering), full
   presence by L9. Eerie.
-- **Render = animated SVG/CSS line-constellations** (built FROM the `god-*-set-v1` concept art): stars light
+- **Render = animated SVG/CSS line-constellations** (built FROM the `drafts/pantheon/` concept art): stars light
   up, lines draw themselves in, glow + the "blink"/stir in each god's rhythm. Stays in the cold-open's
   no-images ritual; fully animatable.
 - **L9 payoff:** entering the gods' domain, all glimpsed constellations wheel together into the

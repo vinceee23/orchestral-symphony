@@ -11,7 +11,7 @@ import type { SignatureDomain } from '../store/types'
  * phase). The Maestro is NOT a constellation — he is the central gold ORIGIN ORB (the cold-open orb) the
  * five wheel around, like an orrery. (Earlier humanoid-figure pass read too mundane; constellations make
  * "now you know our faces" literal — you connect the stars into the gods.)
- * v1 concept art: drafts/god-*-constellation-v1.png + drafts/god-maestro-orb-v1.png.
+ * v1 concept art (matched set): drafts/pantheon/{timpana,lyra,clarion,aeolia,twins,maestro}.png.
  * This data seeds the pantheon early: the L4 "your sound" identity glows toward the god you're becoming.
  */
 export type GodAura = 'strobe' | 'vibrato' | 'blaze' | 'breathe' | 'beat' | 'downbeat'
