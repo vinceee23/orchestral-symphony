@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useGameStore } from '../store/gameStore'
 import { useUiStore } from '../store/uiStore'
 import { TIER_COUNT, DEFAULT_HOTKEYS } from '../core/constants'
+import { playBuySound, playTempoSound } from '../core/audio'
 
 /**
  * Keyboard shortcuts (AD-style, the "Max + Hold" QoL):
@@ -12,18 +13,30 @@ import { TIER_COUNT, DEFAULT_HOTKEYS } from '../core/constants'
  */
 const REPEAT_MS = 90
 
+// Buy + sound, but only play if a purchase actually happened (soundwaves changed) — so an unaffordable
+// keypress is silent, matching the mouse path. Gives keyboard buyers the same audio as clicking.
 function buyTier(id: number) {
   const s = useGameStore.getState()
+  const before = s.soundwaves
   if (s.buyAmount === 'max') s.buyMaxTier(id)
   else s.buyTier(id, s.buyAmount === 10 ? 10 : 1)
+  if (!useGameStore.getState().soundwaves.eq(before)) playBuySound(id)
 }
 
 function act(key: string) {
   const s = useGameStore.getState()
   const hk = s.settings.hotkeys ?? DEFAULT_HOTKEYS
   if (key >= '1' && key <= '7') buyTier(Number(key))
-  else if (key === hk.maxAll) { for (let id = 1; id <= TIER_COUNT; id++) s.buyMaxTier(id); s.buyMaxTempo() } // max EVERYTHING
-  else if (key === hk.maxTempo) s.buyMaxTempo()
+  else if (key === hk.maxAll) {
+    const before = s.soundwaves
+    for (let id = 1; id <= TIER_COUNT; id++) s.buyMaxTier(id)
+    s.buyMaxTempo()
+    if (!useGameStore.getState().soundwaves.eq(before)) playTempoSound() // one flourish for the whole max-all
+  } else if (key === hk.maxTempo) {
+    const before = s.tempo.level
+    s.buyMaxTempo()
+    if (useGameStore.getState().tempo.level !== before) playTempoSound()
+  }
 }
 
 const isHotkey = (k: string) => {

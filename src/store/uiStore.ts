@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type Decimal from 'break_infinity.js'
 import { CONDUCT_BURST_MS } from '../core/constants'
+import { playConductSound } from '../core/audio'
 
 export interface OfflineSummary {
   awayMs: number
@@ -48,7 +49,10 @@ export const useUiStore = create<UiState>((set) => ({
   clearEncoreCelebration: () => set({ encoreCelebration: null }),
   conducting: false,
   conductBurstEndsAt: null,
-  triggerConduct: () => set({ conducting: true, conductBurstEndsAt: performance.now() + CONDUCT_BURST_MS }),
+  triggerConduct: () => {
+    playConductSound() // the core musical verb — one sound per tap/press (button + global Space)
+    set({ conducting: true, conductBurstEndsAt: performance.now() + CONDUCT_BURST_MS })
+  },
   expireConductIfDone: (now) =>
     set((s) => (s.conductBurstEndsAt !== null && now >= s.conductBurstEndsAt
       ? { conducting: false, conductBurstEndsAt: null }

@@ -24,13 +24,14 @@ These are correctness/integrity/resilience holes, not taste calls. Highest lever
 
 ### Audio / SFX  (#1 priority — biggest sensory gap)
 Current: 3 sine-blip one-shots (buy/tempo/prestige); **Conduct/Crescendo, achievements, challenges, World Tour prestige, era step-ups, story beats, venue collect are all SILENT**; no music bed; keyboard buys silent. Engine rewrite already drafted in `audio.ts` (warm triangle bus + reverb + new SFX).
-- ◐ **Rewrite `audio.ts`**: master bus + generated reverb, warmer triangle voices, new SFX (conduct phrase, crescendo, achievement, challenge start/complete, milestone, story beat). *(file written; wiring next)*
-- ☐ **Conduct makes sound** (the core verb) — pentatonic phrase that climbs on repeated taps.
-- ☐ **Distinct prestige stings per layer** (Encore < Magnum Opus < World Tour grandeur).
-- ☐ **Achievement unlock chime** (AchievementToast).
-- ☐ **Challenge complete sting** (gameStore completion path).
-- ☐ **Input parity**: keyboard buys (1–7, M) fire the same buy SFX + juice as mouse (cross-cutting).
-- ☐ **Secondary cues**: era step-up swell, venue collect shimmer.
+- ☑ **Rewrite `audio.ts`**: master bus + generated reverb, warmer triangle voices, new SFX (conduct phrase, crescendo, achievement, challenge start/complete, milestone, story beat) + a rate-gate for rapid input.
+- ☑ **Conduct makes sound** (the core verb) — pentatonic phrase that climbs on repeated taps (fired from the shared `triggerConduct` action → covers button + global Space).
+- ☑ **Distinct prestige stings per layer** — `playPrestigeSound(grandeur)`: Encore (1) < Magnum Opus (2, +low foundation) < World Tour (3, +crown/resolve).
+- ☑ **Achievement unlock chime** (AchievementToast, one per batch).
+- ☑ **Challenge complete sting** (gameStore completion path, fires once).
+- ☑ **Input parity (audio)**: keyboard buys (1–7, M, T) now fire buy/flourish SFX on a successful purchase. *(Visual juice parity — section flash/+N pop on keyboard — is the UI batch.)*
+- ☑ **Venue collect** cue. (era step-up swell intentionally skipped — it always coincides with a prestige sting; the silent **World Tour auto-unlock** belongs to the celebration task.)
+- ☐ Upgrade/component buys still pass hardcoded pitches (buyBuySound(7)/(5)) — minor; map to meaningful pitch later.
 - 🅿 **Procedural music/ambient bed** that evolves per era + a separate Music volume slider — needs your ear + a settings-schema/save change. Deferred to a reviewed batch.
 
 ### UI / UX juice

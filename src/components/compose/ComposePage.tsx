@@ -110,13 +110,13 @@ export function ComposePage() {
     const from = getEncoreMultiplier(lifetimeEncorePoints).toNumber()
     const to = getEncoreMultiplier(lifetimeEncorePoints + projectedGain).toNumber()
     celebrateEncore(from, to)
-    performEncore(); playPrestigeSound(); setPendingEncore(false)
+    performEncore(); playPrestigeSound(1); setPendingEncore(false)
   }
   const onEncore = () => {
     if (localStorage.getItem('prestige_skip_encore')) doEncore()
     else setPendingEncore(true)
   }
-  const doMO = () => { performMagnumOpus(); playPrestigeSound(); setPendingMO(false) }
+  const doMO = () => { performMagnumOpus(); playPrestigeSound(2); setPendingMO(false) }
   const onMO = () => {
     if (localStorage.getItem('prestige_skip_mo')) doMO()
     else setPendingMO(true)

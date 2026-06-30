@@ -37,6 +37,7 @@ import { ACHIEVEMENTS, getAchievementCostReduction, getAchievementTierCostReduct
 import { getChallengeById, getActiveChallengeModifiers, isChallengeUnlocked, getChallengeStartingSoundwaves, getChallengeMultipliers } from '../core/challenges'
 import { createDecimalStorage, SAVE_KEY } from '../core/save'
 import { applySettings } from '../core/settingsSync'
+import { playChallengeCompleteSound } from '../core/audio'
 import { useUiStore } from './uiStore'
 import {
   L3, getCatalogueSnapshot, getComponentCost, isVenueGraduatable,
@@ -530,6 +531,7 @@ export const useGameStore = create<GameState & GameActions>()(
 
         // Check if target SW reached
         if (state.soundwaves.gte(challenge.targetSoundwaves)) {
+          playChallengeCompleteSound() // fires once — activeChallenge is cleared below so we don't re-enter
           const runTimeMs = Date.now() - state.activeChallenge.startTime
           const prevBest = state.challengeBestTimes[challenge.id]
           const newBestTimes = {

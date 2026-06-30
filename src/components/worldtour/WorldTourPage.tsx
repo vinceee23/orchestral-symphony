@@ -7,7 +7,7 @@ import {
   getComponentMaxTier, getComponentDef,
 } from '../../core/worldTour'
 import { Button } from '../shared/Button'
-import { playBuySound } from '../../core/audio'
+import { playBuySound, playPrestigeSound, playMilestoneSound } from '../../core/audio'
 
 function componentEffectLabel(id: string, level: number): string {
   const cfg = getComponentDef(id)
@@ -167,7 +167,7 @@ export function WorldTourPage() {
           />
         </div>
         {venueSoldOut && bufferNum > 0 && !autoCollect && (
-          <Button onClick={() => bankVenueAcclaim()} variant="purple" className="w-full">
+          <Button onClick={() => { bankVenueAcclaim(); playMilestoneSound() }} variant="purple" className="w-full">
             Collect {formatNumber(bufferNum, 1)} Acclaim
           </Button>
         )}
@@ -234,7 +234,7 @@ export function WorldTourPage() {
         </label>
       )}
 
-      <Button onClick={performTour} variant="gold" className="w-full" display>
+      <Button onClick={() => { performTour(); playPrestigeSound(3) }} variant="gold" className="w-full" display>
         Start Tour (resets Encore + Magnum Opus)
       </Button>
     </div>

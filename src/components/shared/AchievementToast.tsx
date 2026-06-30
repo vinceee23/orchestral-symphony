@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import { ACHIEVEMENTS } from '../../core/achievements'
+import { playAchievementSound } from '../../core/audio'
 
 interface ToastItem {
   id: string
@@ -43,6 +44,7 @@ export function AchievementToast() {
 
     if (newToasts.length > 0) {
       setToasts((prev) => [...prev, ...newToasts])
+      playAchievementSound() // a bright chime on a new unlock (one per batch, however many landed)
     }
   }, [achievements])
 
