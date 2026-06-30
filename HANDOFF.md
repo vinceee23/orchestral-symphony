@@ -5,8 +5,31 @@
 > **Key docs:** `docs/bible/` (00 method → 01 arch → 02 economy → 05 world), `docs/MECHANICS-BACKLOG.md` **§D**
 > (genre-audit decisions), `docs/PLAYTEST-FEEDBACK.md` (this session's playtest items + gods art direction),
 > `docs/SETTINGS-SPEC.md`, `docs/build-specs/L5-virtuoso.md` (**§§10–12 = the full L5 design, build-ready**),
-> `docs/GENRE-AUDIT-REPORT.md` (the Gemini report). Memories: `sonance-not-ad-reskin`, `genre-audit-prooftest`,
+> `docs/GENRE-AUDIT-REPORT.md` (the Gemini report). **NEW (2026-07-01 polish session):**
+> `docs/L0-L3-POLISH-AUDIT.md` (the 10-agent audit + ranked plan + live status tracker),
+> `docs/PLAYTEST-BALANCE-PROPOSALS.md` (P1–P8, awaiting Vince's feel verdict),
+> `docs/ART-DECISIONS.md` (art decision sheet for Vince). Memories: `sonance-not-ad-reskin`, `genre-audit-prooftest`,
 > `external-cli-delegation-down` (Codex back / Cursor off), `gate-read-real-exit`, `l4-branch-policy`.
+
+## ⭐ SESSION 2026-07-01 — L0–L3 polish pass (shipping the trial) · ultracode audit + 8 gated commits
+
+**Branch `feat/layer4`. All COMMITTED + gated (tsc · vitest 23 files/106 pass/1 skip incl. all sims · build); NOTHING pushed/deployed.** Vince is now committing to **ship L0–L3** and wanted it polished to its ideal final (incl. art + sfx + overlooked aspects). Ran a **10-agent ultracode audit** (9 dimension readers + completeness critic, 986k tok, 106 gaps) → `docs/L0-L3-POLISH-AUDIT.md` (ranked plan + live ☑/🅿/☐ tracker). Worked autonomously across a ~2h window; commit policy = auto-commit gated chunks locally.
+
+**Shipped (8 commits, each gated green):**
+1. `0978d5e` docs — the audit + plan.
+2. `2113d61` **harden(ship)** — Tier-0 ship-blockers: `?l3` cheat gated to DEV (was live in prod); **emblem + achievement art base-path 404 fixed** (absolute `/` → `BASE_URL`; was silently glyph/emoji-falling-back on the GH-Pages subpath); global **ErrorBoundary** (copy-save/reload/reset); **localStorage** try/catch + corrupt-save sidecar backup (`saveWriteFailed`).
+3. `5320c5c` **feat(audio)** — rewrote `audio.ts` (master bus + generated reverb + warm triangle voices + input rate-gate); sound on the previously-SILENT verbs: **Conduct** (pentatonic phrase via shared `triggerConduct`), escalating prestige stings `playPrestigeSound(grandeur 1/2/3)` (Encore<MO<World Tour), achievement chime, challenge-complete sting, venue collect, **keyboard buy parity**.
+4. `58d6cfb` **fix(copy)** — ladder L3/L4 'Repertoire'/'Genre' → **World Tour/Signature**; the **false "Opus Points multiply tempo"** claim corrected in PrestigeDialog + hint; deleted dead `getOpusBPMMultiplier`; Auto-Conduct "half"→"~70%"; hint "tips"→"tutorials"; stale "hold to conduct" comments fixed.
+5. `d8cffa8` **a11y** — OS `prefers-reduced-motion` now gates ALL decorative anim (was story-only); StoryBeat + SmoothNumber honor the in-app toggle (SmoothNumber snaps + drops its rAF loop under reduced-motion = a11y+perf); sidebar tabs get `aria-current`/`aria-label`/`title`.
+6. `9fbcceb` docs — `PLAYTEST-BALANCE-PROPOSALS.md`.
+7. `e3238cf` **polish(ui)** — distinct `globe` icon for World Tour (was sharing `sparkle`); FloatingNotes deterministic (no teleport on prestige); **story beats now play a soft swell** (covers the silent World Tour reveal).
+8. `ddca856` docs — `docs/ART-DECISIONS.md`.
+
+### ▶ AWAITING VINCE / NEXT
+- **🅿 Balance/feel — `docs/PLAYTEST-BALANCE-PROPOSALS.md` (P1–P8).** Deliberately NOT changed (gate behind playtest). P1 flat early-Encore reward (most trial-impactful), P3 thin Conduct payoff (`AUTO_CONDUCT_FRACTION`), P4 no L0–L1 active verb, **P5 offline-autobuyer frozen-clock bug**, P6 challenge reward placeholders, **P7 framerate-dependent ch_leaky** (P5/P7 are bugs I can fix on a yes), P8 trial-ending/L4-leak. Each has options + my pick + re-sim list.
+- **🅿 Art — `docs/ART-DECISIONS.md`.** D1 wire the 6 existing venue drafts (`drafts/l3-venues/ladder-*.jpg` → venues 0–5, cheapest visible win), D2 achievement art 1/100 (rec: no-credit glyph fallback), D3 era backdrops, D4 favicon/og:image set + delete stale `favicon.svg`. Wiring prepped; awaiting taste/credit decisions.
+- **☐ Deferred (M-effort, documented in the audit Tier-1):** modal Esc/focus-trap, tier-button aria-labels, per-tick funnel memoize + save debounce (perf), buy-juice VISUAL parity (keyboard flash/+N), World Tour unlock celebration overlay, locked-pod anticipation, HelpModal expansion (Conduct/WT/Platinum).
+- **Deploy still DEFERRED.** Trial-safe (L0–L3) commits to port to master when ready — but note these polish commits live on `feat/layer4` alongside L4 work; cherry-pick the trial-safe set.
 
 ## ⭐ SESSION 2026-06-29 → 07-01 — Genre audit · Settings v2 · pantheon design · L5 fully specced
 
