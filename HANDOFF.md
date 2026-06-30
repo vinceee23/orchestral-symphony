@@ -1,36 +1,64 @@
-# HANDOFF — Sonance (updated 2026-06-29)
+# HANDOFF — Sonance (updated 2026-07-01)
 
-> **READ FIRST for a fresh session:** this block + then `docs/bible/` (method→architecture→economy→world)
-> and `docs/build-specs/` (L4–L9). The 9-layer ladder + full context live there. This file is the
-> "where we left off + what I changed + what needs your call" snapshot.
+> **READ FIRST for a fresh session:** this block, then the key docs below. This file is the
+> "where we left off + what changed + what needs your call" snapshot.
+> **Key docs:** `docs/bible/` (00 method → 01 arch → 02 economy → 05 world), `docs/MECHANICS-BACKLOG.md` **§D**
+> (genre-audit decisions), `docs/PLAYTEST-FEEDBACK.md` (this session's playtest items + gods art direction),
+> `docs/SETTINGS-SPEC.md`, `docs/build-specs/L5-virtuoso.md` (**§§10–12 = the full L5 design, build-ready**),
+> `docs/GENRE-AUDIT-REPORT.md` (the Gemini report). Memories: `sonance-not-ad-reskin`, `genre-audit-prooftest`,
+> `external-cli-delegation-down` (Codex back / Cursor off), `gate-read-real-exit`, `l4-branch-policy`.
 
-## ⭐ THIS SESSION (2026-06-29, latest) — Genre audit WALKED + build pass started
+## ⭐ SESSION 2026-06-29 → 07-01 — Genre audit · Settings v2 · pantheon design · L5 fully specced
 
-Walked the Gemini genre-audit report (`docs/GENRE-AUDIT-REPORT.md`, converted from the root `.docx`)
-one-by-one with Vince: C1–C21, I1–I6, Parts B & C. All decisions recorded in **`docs/MECHANICS-BACKLOG.md`
-§D**. Headlines:
-- **New north-star (memory `sonance-not-ad-reskin`):** Sonance must feel like Sonance, NOT "AD Music Edition" —
-  differentiation must live in the **core-loop math**, not the theme. Identity spine (2 core levers, after
-  the **Tempo dial was CUT 2026-07-01 as Conducting v2 / redundant**): **Signature-as-spine +
-  Harmony/Resonance** (Harmony **touches the live L0–L3 loop** — big, trial-affecting; spec before building).
-- **Sonance scored well:** ~14 of 21 criticisms already handled at/above genre norms (distinct verbs, free
-  respec, prestige preview, Roadies automation, additive achievements, progressive disclosure, sim pacing gate).
-- **Ready-to-build pass (§D1) — ✅ BUILT (uncommitted) on `feat/layer4`:** Settings panel v1
-  (`docs/SETTINGS-SPEC.md`, save schema v2→v3), Production Breakdown panel (C10, drift-guarded), Conducting
-  → tap-to-burst (C4, `CONDUCT_BURST_MS`), `ch_unplugged` ordering gate (the reported "exploit" was a
-  verified FALSE POSITIVE — reward already gated on all-12; added the ordering gate as polish). **Gate FULLY
-  GREEN: tsc clean · 78 src tests · vite build · 7/7 sim files (21 pass/1 skip, real exit 0).** Not yet
-  committed (awaiting Vince's go).
-  - ⚠️ The ordering gate broke `sim/challenge-pacing.test.ts` (its beatability instrument unlocks each
-    challenge via `isChallengeUnlocked`; the capstone now needs the 11 others cleared, which a raw-SW climb
-    doesn't do). Fixed: the 11-cleared gate is *sequencing*, orthogonal to SW-pacing, so the sim bypasses it
-    via a probe (capture loop + `startChallenge`) WITHOUT granting the others' reward buffs — capstone stays
-    tested in isolation, pacing unchanged. (Caught only by reading the REAL vitest exit — the bg wrapper
-    reported "exit 0" while vitest exited 1; `gate-read-real-exit`.)
-- **Roadmap doctrine:** 9-layer → *gate behind proof* (don't pre-commit to 9 full resets); monetization →
-  *free demo L0–L3 → premium L4+* (matches branch split); early community feedback → deferred to launch-prep.
-- Bigger identity/depth items (Signature-as-spine, Harmony/Resonance, Time Banking, rule-inversion
-  challenges, milestone auto-completion) → §D2, each needs a spec before build.
+**Branch `feat/layer4`. Everything below is COMMITTED + gated; NOTHING deployed (master = public L3 trial).**
+Full gate at session end: **tsc 0 · vitest 23 files / 105 pass / 1 skip (incl. all sims) · build 0.** All
+session code **double-reviewed** (a Claude correctness pass + an independent **Codex** pass).
+
+**1. Genre audit — walked end-to-end** (`docs/GENRE-AUDIT-REPORT.md`, C1–C21/I1–I6/Parts B&C). Decisions in
+`MECHANICS-BACKLOG.md` **§D**. North-star (memory `sonance-not-ad-reskin`): Sonance must differ from AD in the
+**core-loop math**, not the theme. **Not-AD spine = 2 levers: Signature-as-spine + Harmony/Resonance** (the
+3rd, a Tempo risk/reward dial, was **CUT** — it was Conducting v2). Roadmap doctrine: 9 layers = *gate behind
+proof*; monetization = *free demo L0–L3 → premium L4+*; community feedback deferred.
+
+**2. §D1 build pass — SHIPPED + committed:** Conducting → **tap-to-burst** (no holding; `CONDUCT_BURST_MS`);
+**Production Breakdown** panel on Stats (C10, `getProductionBreakdown`, drift-guard test); **Settings panel
+v2** — now a **nav tab** (gear removed), with save **export/import** (Base64 + .txt), **rebindable hotkeys**,
+number **notation**, **reduced-motion**, **FPS cap**, **theme-lock**, **mute-on-unfocus**, in-app **hard-reset
+dialog**, **offline toggle**, **re-enable-confirmations toggle**; **two-beat tutorials** (pre-reset nudge →
+post-reset orientation card, disable-able); **era-themed save-import preview**; `ch_unplugged` **capstone
+ordering gate** (the reported "exploit" was a verified FALSE POSITIVE). **Save schema v2→v4.** Cleaner number
+formatting (`formatCost` 1-dec). Codex review then hardened the import path (3 malformed-import gaps fixed +
+tests). Stats black-screen (a Zustand selector loop) fixed.
+
+**3. Pantheon (L9 gods) — VISUAL direction APPROVED as initial draft** (`docs/PLAYTEST-FEEDBACK.md` 🎺 +
+`src/core/pantheon.ts`). **Celestial faceless constellations** (gold-line deity-with-instrument over
+domain-tinted starfields, antique-atlas style); **Maestro = the central gold origin-orb/orrery** the five
+wheel around. Matched concept-art set in **`drafts/pantheon/*.png`**. Seeded NOW: L4 "Your sound" identity
+glows your god's tint + "…echoing Timpana, the Pulse" (`1c2f770`). Forward-design: the **cold-open
+progressive-reveal** (each layer-quote glows in a god, building to L9) + the **"blink"** (constellations stir
+in their fingerprint rhythm). Refine at L9 build: Clarion needs more grandeur; animated SVG draw-in.
+
+**4. L5 "Virtuoso" — FULLY DESIGNED, build-ready** (`docs/build-specs/L5-virtuoso.md` §§10–12; design is
+balancing-only). Mastery = **consistency/control** (anti-spike; foil = Conducting). Loop: auto-cycling
+**Perfect Takes**, hold production **growing smoothly**, bank the **area**; **end-early-to-bank**; grade
+**S/A/B/C** (in-band %); clean-take **streak** (capped run-tier heat + MP; Composure "saves"). Economy:
+**Mastery Points** → tree (**Poise/Resonance/Composure/Stamina**, mastery-mechanics only); ranks
+**Apprentice→Player→Soloist→Virtuoso** (Maestro reserved for L9). Reward: an **anti-collapse production
+floor** (never below X% of peak, rank+Resonance, hard-capped). Idle-first (~1.5×); unlock = first Signature
+ascension; suspends during challenges. **Gated behind proving L4** (do NOT build L5 until L4 tuning is done).
+
+**5. Tooling/delegation:** Codex (reviewer/QA) **back** as of 07-01; **Cursor off** (on-demand only). Working
+model: Claude builds, Codex reviews/QA, Claude gates+commits.
+
+### ▶ CURRENT STATUS & NEXT
+- **THE GATE / #6 — L4 magnitude tuning + feel PLAYTEST** is the immediate next, and it **unblocks
+  everything**: building L5, the not-AD core (Harmony / Signature-as-spine), and L6+. The synthetic sim can't
+  judge the idle:active *feel* in the locked L4 layer — needs Vince's hands. Folded playtest items: C1
+  dead-zone audit, C2 early re-climb, C4 `AUTO_CONDUCT_FRACTION`.
+- After L4 is proven: spec L6–L8 (the gap), the **era/level visual language** (anchored by the pantheon art),
+  then build the §D2 not-AD core. L7 has a LIVE placeholder `performGrandFinale` (old 6-layer model) to
+  reconcile when L7 is built.
+- Deploy still DEFERRED; when ready, port only trial-safe (L0–L3) commits to master (NOT the L4 commits).
 
 ## ⭐ THIS SESSION (2026-06-29) — Playtest pass: Warm-Up retired · achievements culled · sim honesty
 
