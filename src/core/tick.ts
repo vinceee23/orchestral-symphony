@@ -28,7 +28,7 @@ import { assertFiniteDecimal } from './guards'
 import { getProductionMultiplier } from './multiplierRegistry'
 import { ZERO_SIGNATURE_ALLOCATION, getSignatureEffects, getSignatureEfficiency } from './signature'
 
-export function calculateTick(state: GameState, deltaMs: number, conducting = false): Partial<GameState> {
+export function calculateTick(state: GameState, deltaMs: number, conducting = false, nowMs: number = Date.now()): Partial<GameState> {
   const achievementSet = new Set(state.achievements)
 
   // Get active challenge modifiers
@@ -121,7 +121,7 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
   // Rising costs: apply time-based inflation
   let risingCostFactor = 1
   if (mods.risingCostRate > 0 && state.activeChallenge) {
-    const elapsedSec = (Date.now() - state.activeChallenge.startTime) / 1000
+    const elapsedSec = (nowMs - state.activeChallenge.startTime) / 1000
     risingCostFactor = Math.pow(mods.risingCostRate, elapsedSec)
   }
   const totalCostMult = effectiveCostMult * risingCostFactor
@@ -192,12 +192,17 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
 
   // === SW Decay (challenge modifier) ===
   if (mods.swDecayPercent > 0) {
-    const decayFraction = mods.swDecayPercent / 100
-    newSoundwaves = newSoundwaves.times(1 - decayFraction)
+    // Time-based so the difficulty is framerate-independent. It used to apply once PER TICK — i.e.
+    // ~60x/s on a 60Hz display vs 30x/s at the 30 cap, so ch_leaky was far harder on fast displays.
+    // Treat swDecayPercent as a PER-SECOND rate (matches the challenge-pacing sim's coarse-step
+    // calibration, which is the version that's proven beatable). Uses wall-clock deltaMs (decay isn't
+    // tickspeed-scaled), mirroring how risingCosts already does Math.pow(rate, elapsedSec).
+    const decayPerSec = mods.swDecayPercent / 100
+    newSoundwaves = newSoundwaves.times(Math.pow(1 - decayPerSec, deltaMs / 1000))
   }
 
   // === Autobuyer tick ===
-  const now = Date.now()
+  const now = nowMs
   // perk-fast-automators: one extra speed tier on every automator
   const autoSpeedBonus = hasPerk(achievementSet, 'perk-fast-automators') ? FAST_AUTOMATOR_SPEED_TIERS : 0
   // perk-bulk-unlock: lift the autobuyer bulk cap to max (manual buy is already ungated)

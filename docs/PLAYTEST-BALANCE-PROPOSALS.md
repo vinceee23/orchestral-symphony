@@ -95,7 +95,9 @@ it shapes the whole first session. **Re-sim:** any new verb needs the full pacin
 
 ---
 
-## P5 — Offline autobuyers barely run (returning-player correctness)  ⚠ bug, but balance-adjacent
+## P5 — Offline autobuyers barely run (returning-player correctness)  ✅ IMPLEMENTED 2026-07-01 (judge the offline output)
+> **Done:** threaded a simulated clock through `calculateTick` (new `nowMs` param, defaults to `Date.now()` so live play is unchanged); the offline replay now advances it per chunk, so autobuyers/tempo fire across the whole away window as SW accrues (instead of one starved burst at chunk 1). Autobuyer clocks are reset to real-now after replay so the first live tick doesn't over-fire. Live-play sims all green; **the offline magnitude itself isn't sim-covered — verify in real play** (return after a few hours with autobuyers and confirm they credited).
+
 **Feel:** Come back after hours and your automation did almost nothing.
 
 **Why (root cause, from the critic):** offline replay runs a synchronous `while` loop calling
@@ -132,7 +134,9 @@ targets that don't bite at their unlock era. **My pick:** do this as a focused b
 
 ---
 
-## P7 — `ch_leaky` (swDecay) difficulty is framerate-dependent  ⚠ pure bug (could fix without you)
+## P7 — `ch_leaky` (swDecay) difficulty is framerate-dependent  ✅ DONE 2026-07-01
+> **Done:** swDecay is now time-based — `soundwaves *= (1 - rate)^(deltaMs/1000)` — so it's framerate-independent (was ~60×/s on a 60Hz display). Reinterpreted as a PER-SECOND rate (matches the challenge-pacing sim's calibration, which is proven beatable); renamed the field `percentPerTick`→`percentPerSec` and updated ch_leaky copy to "every second". Sim confirms ch_leaky still beatable.
+
 **Why:** `tick.ts` applies `soundwaves *= (1 - swDecay%)` once per `tick()` call; the loop runs once per
 animation frame and `fpsCap` defaults to 0 (uncapped). So the decay compounds ~60–144×/s on a high-refresh
 display vs 30×/s capped — the challenge is dramatically harder/easier by hardware. `risingCosts` already

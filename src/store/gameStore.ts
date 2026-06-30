@@ -1026,16 +1026,25 @@ export const useGameStore = create<GameState & GameActions>()(
             const chunkMs = 1000
             let remaining = offlineMs
             let currentState: GameState = { ...state }
+            // Advance a SIMULATED clock per chunk. Reading Date.now() inside this synchronous loop never
+            // moves, which starved offline autobuyers/tempo to ~one catch-up burst at chunk 1 (when SW is
+            // lowest). With an advancing clock they fire across the whole window as SW accrues.
+            let simNow = state.lastSaveTimestamp
             while (remaining > 0) {
               const step = Math.min(remaining, chunkMs)
-              const updates = calculateTick(currentState, step)
+              simNow += step
+              const updates = calculateTick(currentState, step, false, simNow)
               currentState = { ...currentState, ...updates }
               remaining -= step
             }
             state.soundwaves = currentState.soundwaves
             state.tiers = currentState.tiers
             state.tempo = currentState.tempo
-            state.autobuyers = currentState.autobuyers
+            // Reset autobuyer clocks to real-now so the first LIVE tick doesn't see the (possibly 24h-capped)
+            // simulated gap and over-fire on frame 1.
+            state.autobuyers = Object.fromEntries(
+              Object.entries(currentState.autobuyers).map(([k, ab]) => [k, ab ? { ...ab, lastTick: now } : ab]),
+            ) as GameState['autobuyers']
             state.totalTimePlayed = currentState.totalTimePlayed
             state.peakSoundwaves = currentState.peakSoundwaves
             state.producedThisRun = currentState.producedThisRun

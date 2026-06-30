@@ -13,7 +13,7 @@ export type ChallengeConstraint =
   | { type: 'noTempo' }
   | { type: 'nerfedProduction'; factor: number }
   | { type: 'noMilestones' }
-  | { type: 'swDecay'; percentPerTick: number }
+  | { type: 'swDecay'; percentPerSec: number }
   | { type: 'risingCosts'; ratePerSec: number }
   | { type: 'reversedProduction' }
   | { type: 'noPrestige' }
@@ -221,7 +221,7 @@ export function getActiveChallengeModifiers(challenge: ChallengeConfig | null): 
       mods.noMilestones = true
       break
     case 'swDecay':
-      mods.swDecayPercent = c.percentPerTick
+      mods.swDecayPercent = c.percentPerSec
       break
     case 'risingCosts':
       mods.risingCostRate = c.ratePerSec
@@ -343,10 +343,10 @@ export const CHALLENGES: ChallengeConfig[] = [
   {
     id: 'ch_leaky',
     name: 'Leaky Auditorium',
-    description: 'Reach the target while losing 2% of your Soundwaves every tick.',
+    description: 'Reach the target while losing 2% of your Soundwaves every second.',
     icon: '\u{1F4A7}',
     targetSoundwaves: new Decimal('1e165'),
-    constraint: { type: 'swDecay', percentPerTick: 2 },
+    constraint: { type: 'swDecay', percentPerSec: 2 },
     reward: { globalProdMult: 1.25, ap: 10 }, // TUNE §2.8 sim
     unlocksAutobuyer: null,
     unlockThreshold: { encoreCount: 12 },
