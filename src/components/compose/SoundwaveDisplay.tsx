@@ -64,15 +64,22 @@ export function SoundwaveDisplay() {
     : new Decimal(0)
 
   return (
-    <div className="text-center py-6">
-      <div className="text-xs text-text-muted uppercase tracking-[0.2em] mb-2">
+    <div
+      className="text-center py-6"
+      role="status"
+      aria-live="off"
+      aria-label={`Soundwaves: ${formatNumber(soundwaves)}${swPerSec.gt(0) ? `, ${formatNumber(swPerSec)} per second` : ''}`}
+    >
+      {/* Visual readout — aria-hidden so the screen reader uses the single coherent label above instead
+          of announcing the 60fps-churning number every frame. */}
+      <div className="text-xs text-text-muted uppercase tracking-[0.2em] mb-2" aria-hidden="true">
         Soundwaves
       </div>
-      <div className="text-4xl md:text-5xl font-bold text-accent-gold animate-pulse-gold mb-1">
+      <div className="text-4xl md:text-5xl font-bold text-accent-gold animate-pulse-gold mb-1" aria-hidden="true">
         <SmoothNumber value={soundwaves} rate={swPerSec} />
       </div>
       {swPerSec.gt(0) && (
-        <div className="text-sm text-text-secondary">
+        <div className="text-sm text-text-secondary" aria-hidden="true">
           +{formatNumber(swPerSec)}/s
         </div>
       )}

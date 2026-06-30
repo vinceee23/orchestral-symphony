@@ -1,5 +1,6 @@
 import { useUiStore } from '../../store/uiStore'
 import { Button } from './Button'
+import { ModalShell } from './ModalShell'
 
 function Key({ children }: { children: React.ReactNode }) {
   return (
@@ -16,11 +17,11 @@ export function HelpModal() {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 md:p-6" onClick={() => setHelp(false)}>
-      <div
-        className="max-w-lg w-full max-h-[85vh] overflow-y-auto rounded-xl border border-accent-gold/40 bg-bg-primary p-6 md:p-8 shadow-2xl space-y-6"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <ModalShell
+      onClose={() => setHelp(false)}
+      label="How to Play"
+      panelClassName="max-w-lg w-full max-h-[85vh] overflow-y-auto rounded-xl border border-accent-gold/40 bg-bg-primary p-6 md:p-8 shadow-2xl space-y-6"
+    >
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-2xl font-display font-semibold text-accent-gold">How to Play</h2>
           <Button onClick={() => setHelp(false)} variant="ghost" size="sm" aria-label="Close help">
@@ -75,7 +76,6 @@ export function HelpModal() {
           </ul>
           <p className="text-xs text-text-muted">Hold any buy key to repeat it continuously.</p>
         </section>
-      </div>
-    </div>
+    </ModalShell>
   )
 }

@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Button } from '../shared/Button'
+import { ModalShell } from '../shared/ModalShell'
 
 export type PrestigeKind = 'encore' | 'mo' | 'gf'
 
@@ -61,27 +62,17 @@ export function PrestigeDialog({ type, preview, onConfirm, onCancel }: Props) {
   const info = PRESTIGE_INFO[type]
   const confirmVariant = type === 'mo' ? 'purple' : 'gold'
 
-  // Esc closes the confirm (backdrop-click already does; keyboard users need a way out too).
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel() }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onCancel])
-
   const handleConfirm = () => {
     if (dontShow) localStorage.setItem(`prestige_skip_${type}`, '1')
     onConfirm()
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onCancel}>
-      <div
-        className={`max-w-md w-full p-6 rounded-xl border ${info.border} ${info.bg} bg-bg-primary shadow-2xl space-y-4`}
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-label={info.title}
-      >
+    <ModalShell
+      onClose={onCancel}
+      label={info.title}
+      panelClassName={`max-w-md w-full p-6 rounded-xl border ${info.border} ${info.bg} bg-bg-primary shadow-2xl space-y-4`}
+    >
         <h3 className={`text-lg font-display font-bold ${info.color}`}>{info.title}</h3>
         <div className="space-y-3">
           {info.description.map((line, i) => (
@@ -122,7 +113,6 @@ export function PrestigeDialog({ type, preview, onConfirm, onCancel }: Props) {
             Confirm {info.title}
           </Button>
         </div>
-      </div>
-    </div>
+    </ModalShell>
   )
 }
