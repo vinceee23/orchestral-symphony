@@ -1,5 +1,5 @@
 import Decimal from 'break_infinity.js'
-import type { BuyAmount } from '../core/constants'
+import type { BuyAmount, GameSettings } from '../core/constants'
 
 export interface TierState {
   id: number
@@ -155,6 +155,9 @@ export interface GameState {
   seenStoryBeats: string[]
   /** Mechanical onboarding hint ids already dismissed or bypassed. Defaults to [] after state creation/migration. */
   seenHints?: string[]
+
+  /** Player preferences (notation, audio, display, QoL). Persisted; survives a hard reset. See SETTINGS-SPEC.md. */
+  settings: GameSettings
 }
 
 export interface GameActions {
@@ -188,5 +191,7 @@ export interface GameActions {
   setAutoMOEnabled: (enabled: boolean) => void
   setStoryBeatSeen: (id: string) => void
   markHintSeen: (id: string) => void
+  updateSettings: (patch: Partial<GameSettings>) => void
+  resetSettings: () => void
   hardReset: () => void
 }

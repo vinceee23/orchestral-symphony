@@ -19,6 +19,7 @@ import {
   canAutoPerformMagnumOpus,
   calculateWorldTourTick,
 } from './worldTour'
+import { DEFAULT_SETTINGS } from './constants'
 import type { GameState } from '../store/types'
 
 function minimalState(overrides: Partial<GameState> = {}): GameState {
@@ -84,6 +85,7 @@ function minimalState(overrides: Partial<GameState> = {}): GameState {
     currentRunStartTime: 0,
     version: '0.6.0',
     seenStoryBeats: [],
+    settings: { ...DEFAULT_SETTINGS },
     ...overrides,
   }
 }

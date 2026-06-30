@@ -1,6 +1,6 @@
 import Decimal from 'break_infinity.js'
 import type { GameState, PreChallengeSnapshot, TierState } from './types'
-import { STARTING_SOUNDWAVES } from '../core/constants'
+import { STARTING_SOUNDWAVES, DEFAULT_SETTINGS } from '../core/constants'
 import { createInitialState } from './initialState'
 import { SAVE_SCHEMA_VERSION } from './saveSchema'
 import {
@@ -157,6 +157,10 @@ export const MIGRATIONS: Record<number, (state: PersistedSave) => void> = {
     state.signatureCount ??= 0
     state.peakDomainAlignment ??= { percussion: 0, strings: 0, brass: 0, woodwinds: 0, harmony: 0 }
     state.signatureUnlocked ??= false
+  },
+  3: (state) => {
+    // Player settings. Merge so old saves get defaults AND any future sub-key fills in.
+    state.settings = { ...DEFAULT_SETTINGS, ...(state.settings ?? {}) }
   },
 }
 

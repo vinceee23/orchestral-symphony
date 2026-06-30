@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import { useUiStore } from '../../store/uiStore'
-import { getEra, eraTintCss } from '../../core/eraTheme'
+import { getEra, eraTintCss, effectiveEra } from '../../core/eraTheme'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 import { ComposePage } from '../compose/ComposePage'
@@ -23,36 +23,35 @@ const initialTab = (() => {
 export function AppShell() {
   const [activeTab, setActiveTab] = useState(initialTab)
 
-  // Global Conduct: hold Space to swell the crescendo from ANY tab (active after the first Magnum
-  // Opus). Lives in the always-mounted shell so switching tabs doesn't drop the hold. The pointer
-  // "Conduct" button on the Compose stage is the other held-source (see uiStore.setPointerHeld).
+  // Global Conduct: TAP Space to trigger a crescendo burst from ANY tab (active after the first Magnum
+  // Opus). Lives in the always-mounted shell so the listener spans tabs. The Compose "Conduct" button is
+  // the other tap source (see uiStore.triggerConduct). No holding — a tap rides a fixed window, then decays.
   const opusCount = useGameStore((s) => s.opusCount)
   const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const finalePoints = useGameStore((s) => s.finalePoints)
   const worldTourUnlocked = useGameStore((s) => s.worldTourUnlocked)
   const signatureCount = useGameStore((s) => s.signatureCount)
   const signatureUnlocked = useGameStore((s) => s.signatureUnlocked)
-  const era = getEra(lifetimeEncorePoints, opusCount, finalePoints, worldTourUnlocked, signatureCount)
+  const settings = useGameStore((s) => s.settings)
+  const era = effectiveEra(getEra(lifetimeEncorePoints, opusCount, finalePoints, worldTourUnlocked, signatureCount), settings)
   useEffect(() => {
     if (opusCount <= 0) return
-    const { setSpaceHeld, releaseConduct } = useUiStore.getState()
+    const { triggerConduct, releaseConduct } = useUiStore.getState()
+    // Tap Space to trigger a conduct burst (no holding). Repeat-keydown is ignored; tap again to sustain.
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.code !== 'Space' || e.repeat) return
       const t = e.target as HTMLElement
       if (t?.tagName === 'INPUT' || t?.tagName === 'TEXTAREA' || t?.isContentEditable) return
       e.preventDefault()
-      setSpaceHeld(true)
+      triggerConduct()
     }
-    const onKeyUp = (e: KeyboardEvent) => { if (e.code === 'Space') setSpaceHeld(false) }
     const onBlur = () => releaseConduct()
     const onVisibility = () => { if (document.hidden) releaseConduct() }
     window.addEventListener('keydown', onKeyDown)
-    window.addEventListener('keyup', onKeyUp)
     window.addEventListener('blur', onBlur)
     document.addEventListener('visibilitychange', onVisibility)
     return () => {
       window.removeEventListener('keydown', onKeyDown)
-      window.removeEventListener('keyup', onKeyUp)
       window.removeEventListener('blur', onBlur)
       document.removeEventListener('visibilitychange', onVisibility)
       releaseConduct()

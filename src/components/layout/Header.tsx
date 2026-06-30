@@ -8,7 +8,7 @@ import { TIER_CONFIGS } from '../../core/constants'
 import { formatNumber } from '../../core/format'
 import { getTierProductionPerSec } from '../../core/formulas'
 import { getCrescendoMultiplier } from '../../core/crescendo'
-import { getEra, eraTintCss } from '../../core/eraTheme'
+import { getEra, eraTintCss, effectiveEra } from '../../core/eraTheme'
 import { getProductionMultiplier } from '../../core/multiplierRegistry'
 import { SmoothNumber } from '../shared/SmoothNumber'
 import { SonanceLogo } from '../shared/SonanceLogo'
@@ -37,6 +37,8 @@ export function Header() {
   const warmUpLevel = useGameStore((s) => s.warmUpLevel)
   const conducting = useUiStore((s) => s.conducting)
   const toggleHelp = useUiStore((s) => s.toggleHelp)
+  const setSettingsOpen = useUiStore((s) => s.setSettingsOpen)
+  const settings = useGameStore((s) => s.settings)
 
   // Subtle live Crescendo readout — visible on EVERY tab while the swell is up or you're conducting,
   // so global Space-conduct (AppShell) is felt off the Compose stage. Hidden when fully decayed & idle.
@@ -49,7 +51,7 @@ export function Header() {
   // Reactive logo: the wordmark glow SWELLS with crescendo / while conducting — the logo resonates as you play.
   const resonance = Math.min(1, crescendo + (conducting ? 0.15 : 0))
 
-  const era = getEra(lifetimeEncorePoints, opusCount, finalePoints, worldTourUnlocked, signatureCount)
+  const era = effectiveEra(getEra(lifetimeEncorePoints, opusCount, finalePoints, worldTourUnlocked, signatureCount), settings)
   const achievementSet = new Set(achievements)
   const globalMult = getProductionMultiplier({
     achievements,
@@ -96,7 +98,7 @@ export function Header() {
         {showCrescendo && (
           <div
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border tabular-nums transition-colors ${conducting ? 'border-accent-gold/50 bg-accent-gold/10 text-accent-gold' : 'border-accent-gold/20 bg-accent-gold/5 text-text-secondary'}`}
-            title="Crescendo — hold Space (any tab) to swell"
+            title="Crescendo — tap Space (any tab) to swell"
           >
             <span className={conducting ? 'animate-pulse' : ''}>♪</span>
             <span className="text-xs font-medium">×{crescendoMult.toFixed(2)}</span>
@@ -138,6 +140,14 @@ export function Header() {
           className="w-8 h-8 flex items-center justify-center rounded-full border border-border-light text-text-secondary hover:text-accent-gold hover:border-accent-gold/50 transition-colors text-sm"
         >
           ?
+        </button>
+        <button
+          onClick={() => setSettingsOpen(true)}
+          title="Settings"
+          aria-label="Settings"
+          className="w-8 h-8 flex items-center justify-center rounded-full border border-border-light text-text-secondary hover:text-accent-gold hover:border-accent-gold/50 transition-colors text-sm"
+        >
+          ⚙
         </button>
       </div>
     </header>

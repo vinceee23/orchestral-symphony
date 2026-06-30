@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import Decimal from 'break_infinity.js'
 import { calculateTick } from './tick'
-import { TIER_CONFIGS, STARTING_SOUNDWAVES, getEncoreCost, ENCORE_WALL_COUNT } from './constants'
+import { TIER_CONFIGS, STARTING_SOUNDWAVES, getEncoreCost, ENCORE_WALL_COUNT, DEFAULT_SETTINGS } from './constants'
 import {
   getTierCost, getMilestoneMultiplier, getEncoreMultiplier, getEncoreGain,
   getTempoCost, getTempoTickInterval, getTempoBPM, getTempoProductionMultiplier,
@@ -39,6 +39,7 @@ function freshState(overrides: Partial<GameState> = {}): GameState {
     totalTimePlayed: 0, activeTimePlayed: 0,
     lastSaveTimestamp: 0, currentRunStartTime: 0, version: 'test',
     seenStoryBeats: [],
+    settings: { ...DEFAULT_SETTINGS },
     ...overrides,
   }
 }

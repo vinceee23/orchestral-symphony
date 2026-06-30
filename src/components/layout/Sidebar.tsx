@@ -1,6 +1,6 @@
 import { useGameStore } from '../../store/gameStore'
 import { Icon, type IconName } from '../shared/Icon'
-import { getEra, eraTintCss } from '../../core/eraTheme'
+import { getEra, eraTintCss, effectiveEra } from '../../core/eraTheme'
 
 interface SidebarProps {
   activeTab: string
@@ -21,7 +21,8 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const signatureCount = useGameStore((s) => s.signatureCount)
   const lifetimeEncorePoints = useGameStore((s) => s.lifetimeEncorePoints)
   const finalePoints = useGameStore((s) => s.finalePoints)
-  const era = getEra(lifetimeEncorePoints, opusCount, finalePoints, worldTourUnlocked, signatureCount)
+  const settings = useGameStore((s) => s.settings)
+  const era = effectiveEra(getEra(lifetimeEncorePoints, opusCount, finalePoints, worldTourUnlocked, signatureCount), settings)
   let tabs = opusCount > 0
     ? [
         BASE_TABS[0],

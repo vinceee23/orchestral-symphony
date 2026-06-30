@@ -175,8 +175,34 @@ export const OPUS_PLAT_ROOT = 0.05
 export const OPUS_CRESCENDO_BONUS_PER = 0.25            // crescendoBonus = 1 + peakCrescendo*this
 export const CRESCENDO_BASE_MAX = 3                     // base ceiling multiplier (x3)
 export const CRESCENDO_MAX_CEILING = 6                  // hard cap after upgrades
-export const CRESCENDO_BUILD_SEC = 12                   // seconds of holding Conduct to reach ceiling
+export const CRESCENDO_BUILD_SEC = 12                   // seconds of conducting to reach ceiling
 export const CRESCENDO_DECAY_SEC = 25                   // seconds to decay ceiling -> x1 when released
+export const CONDUCT_BURST_MS = 15000                   // tap-to-conduct: one tap rides the crescendo for this window (no holding), then it decays; re-tap to sustain. TBD-tune (#6 playtest)
+
+// === Player settings (persisted prefs — see SETTINGS-SPEC.md / genre-audit C12+C16) ===
+export type NumberNotation = 'suffix' | 'scientific' | 'engineering'
+export interface GameSettings {
+  notation: NumberNotation
+  reducedMotion: boolean
+  fpsCap: 0 | 30 | 60          // 0 = uncapped
+  masterMuted: boolean
+  sfxVolume: number            // 0..1
+  muteOnUnfocus: boolean
+  theme: 'auto' | 'locked'     // 'locked' freezes the era tint to lockedEra
+  lockedEra: number
+  offlineEnabled: boolean
+}
+export const DEFAULT_SETTINGS: GameSettings = {
+  notation: 'suffix',
+  reducedMotion: false,
+  fpsCap: 0,
+  masterMuted: false,
+  sfxVolume: 0.7,
+  muteOnUnfocus: true,
+  theme: 'auto',
+  lockedEra: 0,
+  offlineEnabled: true,
+}
 export const AUTO_CONDUCT_FRACTION = 0.7                // idle/auto-conduct sustains 70% of the crescendo ceiling; active holding = 100% (Break-phase decision: active > idle)
 export const TEMPO_OP_MULT_PER_LEVEL = 1.5              // each Tempo OP-node = x1.5 global tempo/production
 export const RECORDS_PROD_K = 5                         // legacy v0 constant (superseded by RECORDS_ALBUM_K)

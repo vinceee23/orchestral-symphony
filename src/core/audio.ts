@@ -2,6 +2,7 @@
 
 let audioCtx: AudioContext | null = null
 let muted = false
+let volume = 0.7 // 0..1, set from settings (see settingsSync.ts)
 
 function getContext(): AudioContext {
   if (!audioCtx) {
@@ -16,6 +17,10 @@ export function setMuted(value: boolean) {
 
 export function isMuted(): boolean {
   return muted
+}
+
+export function setVolume(value: number) {
+  volume = Math.max(0, Math.min(1, value))
 }
 
 // C4=261.63, D4=293.66, E4=329.63, F4=349.23, G4=392.00, A4=440.00, B4=493.88
@@ -36,7 +41,7 @@ export function playBuySound(tierId: number) {
     osc.frequency.value = freq
 
     gain.gain.setValueAtTime(0, ctx.currentTime)
-    gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.02) // 20ms attack
+    gain.gain.linearRampToValueAtTime(0.15 * volume, ctx.currentTime + 0.02) // 20ms attack
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2) // 200ms decay
 
     osc.connect(gain)
@@ -66,7 +71,7 @@ export function playTempoSound() {
 
       const startTime = ctx.currentTime + i * 0.06
       gain.gain.setValueAtTime(0, startTime)
-      gain.gain.linearRampToValueAtTime(0.1, startTime + 0.02)
+      gain.gain.linearRampToValueAtTime(0.1 * volume, startTime + 0.02)
       gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.15)
 
       osc.connect(gain)
@@ -96,7 +101,7 @@ export function playPrestigeSound() {
       osc.frequency.value = freq
 
       gain.gain.setValueAtTime(0, ctx.currentTime)
-      gain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 0.05)
+      gain.gain.linearRampToValueAtTime(0.08 * volume, ctx.currentTime + 0.05)
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8)
 
       osc.connect(gain)

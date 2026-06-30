@@ -13,6 +13,7 @@ import {
   ENCORE_WALL_COUNT,
   PLATINUM_THRESHOLD,
   WARMUP_ACTIVITY_WINDOW_MS,
+  DEFAULT_SETTINGS,
 } from '../core/constants'
 import {
   ENCORE_UPGRADE_MAP, getEncoreUpgradeCost,
@@ -34,7 +35,8 @@ import {
 } from '../core/formulas'
 import { ACHIEVEMENTS, getAchievementCostReduction, getAchievementTierCostReduction, getAchievementHeadStartBoost, getAchievementTempoBonus } from '../core/achievements'
 import { getChallengeById, getActiveChallengeModifiers, isChallengeUnlocked, getChallengeStartingSoundwaves, getChallengeMultipliers } from '../core/challenges'
-import { createDecimalStorage } from '../core/save'
+import { createDecimalStorage, SAVE_KEY } from '../core/save'
+import { applySettings } from '../core/settingsSync'
 import { useUiStore } from './uiStore'
 import {
   L3, getCatalogueSnapshot, getComponentCost, isVenueGraduatable,
@@ -965,12 +967,25 @@ export const useGameStore = create<GameState & GameActions>()(
         })
       },
 
+      updateSettings: (patch) => {
+        const next = { ...get().settings, ...patch }
+        set({ settings: next })
+        applySettings(next, typeof document !== 'undefined' && document.hidden)
+      },
+
+      resetSettings: () => {
+        const next = { ...DEFAULT_SETTINGS }
+        set({ settings: next })
+        applySettings(next, typeof document !== 'undefined' && document.hidden)
+      },
+
       hardReset: () => {
-        set(createInitialState())
+        // Wipe progress but KEEP player prefs — settings aren't "progress".
+        set({ ...createInitialState(), settings: get().settings })
       },
     }),
     {
-      name: 'sonance-v1',
+      name: SAVE_KEY,
       storage: createDecimalStorage(),
       partialize: (state): GameState => {
         const {
@@ -982,6 +997,7 @@ export const useGameStore = create<GameState & GameActions>()(
           unlockWorldTour, bankVenueAcclaim,
           setAutoMOEnabled, setAutoTourEnabled,
           setStoryBeatSeen, markHintSeen,
+          updateSettings, resetSettings,
           hardReset,
           ...data
         } = state
@@ -996,10 +1012,12 @@ export const useGameStore = create<GameState & GameActions>()(
           if (!hadSeenHints) {
             seedSeenHintsForCurrentProgress(state)
           }
+          // Push loaded prefs into the audio/format singletons (migration 3 guarantees state.settings).
+          applySettings(state.settings, typeof document !== 'undefined' && document.hidden)
 
           const now = Date.now()
           const offlineMs = Math.min(now - state.lastSaveTimestamp, MAX_OFFLINE_MS)
-          if (offlineMs > 1000) {
+          if (offlineMs > 1000 && state.settings.offlineEnabled) {
             const beforeSoundwaves = new Decimal(state.soundwaves)
             const beforeRecords = state.recordsSold
             const beforeAcclaim = new Decimal(state.lifetimeAcclaim ?? 0)

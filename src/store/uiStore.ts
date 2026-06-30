@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type Decimal from 'break_infinity.js'
+import { CONDUCT_BURST_MS } from '../core/constants'
 
 export interface OfflineSummary {
   awayMs: number
@@ -13,6 +14,8 @@ interface UiState {
   helpOpen: boolean
   toggleHelp: () => void
   setHelp: (open: boolean) => void
+  settingsOpen: boolean
+  setSettingsOpen: (open: boolean) => void
   // "Welcome back" offline-earnings summary, set once at load from the offline replay; null = dismissed.
   offlineSummary: OfflineSummary | null
   setOfflineSummary: (s: OfflineSummary) => void
@@ -21,13 +24,14 @@ interface UiState {
   encoreCelebration: { from: number; to: number } | null
   celebrateEncore: (from: number, to: number) => void
   clearEncoreCelebration: () => void
-  // Conduct from TWO independent held-sources — Spacebar (global, any tab) and the pointer button
-  // (Compose only). conducting = either is held, so neither release can cancel the other's hold.
-  spaceHeld: boolean
-  pointerHeld: boolean
+  // Conduct is TAP-to-trigger (no holding — kills the sustained-hold ergonomic/RSI risk, genre-audit C4).
+  // A tap (Spacebar from any tab, or the Compose button) starts/refreshes a fixed burst window during
+  // which `conducting` is true and the crescendo swells; when the window lapses it decays. The game loop
+  // calls expireConductIfDone() each frame to end the window. Auto-Conduct (idle floor) is independent.
   conducting: boolean
-  setSpaceHeld: (b: boolean) => void
-  setPointerHeld: (b: boolean) => void
+  conductBurstEndsAt: number | null
+  triggerConduct: () => void
+  expireConductIfDone: (now: number) => void
   releaseConduct: () => void
   // DEV-only pacing tool: game-loop time multiplier (1 = normal). See DevPanel + useGameLoop.
   devSpeed: number
@@ -38,18 +42,22 @@ export const useUiStore = create<UiState>((set) => ({
   helpOpen: false,
   toggleHelp: () => set((s) => ({ helpOpen: !s.helpOpen })),
   setHelp: (open) => set({ helpOpen: open }),
+  settingsOpen: false,
+  setSettingsOpen: (open) => set({ settingsOpen: open }),
   offlineSummary: null,
   setOfflineSummary: (s) => set({ offlineSummary: s }),
   clearOfflineSummary: () => set({ offlineSummary: null }),
   encoreCelebration: null,
   celebrateEncore: (from, to) => set({ encoreCelebration: { from, to } }),
   clearEncoreCelebration: () => set({ encoreCelebration: null }),
-  spaceHeld: false,
-  pointerHeld: false,
   conducting: false,
-  setSpaceHeld: (b) => set((s) => ({ spaceHeld: b, conducting: b || s.pointerHeld })),
-  setPointerHeld: (b) => set((s) => ({ pointerHeld: b, conducting: s.spaceHeld || b })),
-  releaseConduct: () => set({ spaceHeld: false, pointerHeld: false, conducting: false }),
+  conductBurstEndsAt: null,
+  triggerConduct: () => set({ conducting: true, conductBurstEndsAt: performance.now() + CONDUCT_BURST_MS }),
+  expireConductIfDone: (now) =>
+    set((s) => (s.conductBurstEndsAt !== null && now >= s.conductBurstEndsAt
+      ? { conducting: false, conductBurstEndsAt: null }
+      : {})),
+  releaseConduct: () => set({ conducting: false, conductBurstEndsAt: null }),
   devSpeed: 1,
   setDevSpeed: (n) => set({ devSpeed: n }),
 }))

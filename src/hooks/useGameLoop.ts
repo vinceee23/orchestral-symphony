@@ -12,6 +12,7 @@ import { DELTA_CAP_MS } from '../core/constants'
 export function useGameLoop() {
   const lastTimeRef = useRef<number>(0)
   const checkAccumRef = useRef<number>(0)
+  const tickAccumRef = useRef<number>(0)
 
   useEffect(() => {
     let rafId: number
@@ -22,14 +23,26 @@ export function useGameLoop() {
       // DEV pacing tool: multiply game-time per frame (1 in production — devSpeed is dev-gated in DevPanel).
       const cappedDelta = Math.min(deltaMs, DELTA_CAP_MS) * (useUiStore.getState().devSpeed || 1)
 
-      if (cappedDelta > 0) {
-        useGameStore.getState().tick(cappedDelta)
-        checkAccumRef.current += cappedDelta
-        if (checkAccumRef.current >= 300) {
-          checkAccumRef.current = 0
-          const s = useGameStore.getState()
-          s.checkAchievements()
-          s.checkChallengeCompletion()
+      // End a tap-triggered conduct burst once its window lapses (before the tick reads `conducting`).
+      useUiStore.getState().expireConductIfDone(timestamp)
+
+      // Refresh-rate cap: accumulate game-time and tick at most fpsCap times/sec. Production is delta-based,
+      // so capping only reduces update frequency/CPU — the FULL accumulated time is applied when we do tick.
+      tickAccumRef.current += cappedDelta
+      const fpsCap = useGameStore.getState().settings.fpsCap
+      const frameInterval = fpsCap > 0 ? 1000 / fpsCap : 0
+      if (tickAccumRef.current >= frameInterval) {
+        const step = tickAccumRef.current
+        tickAccumRef.current = 0
+        if (step > 0) {
+          useGameStore.getState().tick(step)
+          checkAccumRef.current += step
+          if (checkAccumRef.current >= 300) {
+            checkAccumRef.current = 0
+            const s = useGameStore.getState()
+            s.checkAchievements()
+            s.checkChallengeCompletion()
+          }
         }
       }
 

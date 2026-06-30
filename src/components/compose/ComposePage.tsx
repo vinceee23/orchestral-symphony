@@ -48,7 +48,7 @@ export function ComposePage() {
   const celebrateEncore = useUiStore((s) => s.celebrateEncore)
   const conducting = useUiStore((s) => s.conducting)
   // Spacebar conduct is global now (see AppShell). This page only owns the pointer "Conduct" button.
-  const setPointerHeld = useUiStore((s) => s.setPointerHeld)
+  const triggerConduct = useUiStore((s) => s.triggerConduct)
   const { activeHint, dismiss: dismissHint } = useOnboardingHint()
 
   const [pendingEncore, setPendingEncore] = useState(false)
@@ -201,12 +201,9 @@ export function ComposePage() {
             <button
               type="button"
               className="pointer-events-auto px-8 py-2.5 rounded-full border border-accent-gold/50 bg-accent-gold/10 backdrop-blur text-accent-gold font-display text-sm font-semibold tracking-wide select-none touch-none hover:bg-accent-gold/20 active:bg-accent-gold/30 transition-colors"
-              onPointerDown={() => setPointerHeld(true)}
-              onPointerUp={() => setPointerHeld(false)}
-              onPointerLeave={() => setPointerHeld(false)}
-              onPointerCancel={() => setPointerHeld(false)}
+              onPointerDown={() => triggerConduct()}
             >
-              Conduct <span className="opacity-60 text-[10px] font-body">(hold / Space)</span>
+              Conduct <span className="opacity-60 text-[10px] font-body">(tap / Space)</span>
             </button>
           </>
         )}

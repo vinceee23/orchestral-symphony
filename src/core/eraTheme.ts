@@ -26,6 +26,11 @@ export function getEra(
             : 0
 }
 
+/** The era actually used for theming — honours the Settings "lock theme" toggle (freezes to lockedEra). */
+export function effectiveEra(liveEra: number, settings: { theme: 'auto' | 'locked'; lockedEra: number }): number {
+  return settings.theme === 'locked' ? settings.lockedEra : liveEra
+}
+
 /** A subtle era-color undertone gradient for app chrome. Strength ramps with era; stays readable.
  *  `weight` scales the max alpha (chrome panels lighter, content bg lighter still). */
 export function eraTintCss(era: number, weight = 1): string {

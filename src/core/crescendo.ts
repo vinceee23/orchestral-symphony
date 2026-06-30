@@ -13,8 +13,9 @@ export interface CrescendoState {
 }
 
 /**
- * Advance crescendo level over dtSec. Holding Conduct rises toward 1 over build time;
- * releasing decays toward 0 over decay time. Auto-conduct floors at AUTO_CONDUCT_FRACTION when AFK.
+ * Advance crescendo level over dtSec. While conducting (a tap-triggered burst window is active) it rises
+ * toward 1 over build time; once the window lapses it decays toward 0 over decay time. Auto-conduct floors
+ * at AUTO_CONDUCT_FRACTION when AFK.
  */
 export function advanceCrescendo(
   currentLevel01: number,

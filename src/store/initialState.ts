@@ -1,6 +1,6 @@
 import Decimal from 'break_infinity.js'
 import type { GameState } from './types'
-import { TIER_CONFIGS, STARTING_SOUNDWAVES } from '../core/constants'
+import { TIER_CONFIGS, STARTING_SOUNDWAVES, DEFAULT_SETTINGS } from '../core/constants'
 import { SAVE_SCHEMA_VERSION } from './saveSchema'
 
 export function createInitialState(): GameState {
@@ -81,5 +81,6 @@ export function createInitialState(): GameState {
     saveSchemaVersion: SAVE_SCHEMA_VERSION,
     seenStoryBeats: [],
     seenHints: [],
+    settings: { ...DEFAULT_SETTINGS },
   }
 }

@@ -250,3 +250,13 @@ body {
     transform: none;
   }
 }
+
+/* App-level reduced-motion toggle (Settings → Display). Near-instant everything; avoids `none` so
+   transitionend-dependent JS still fires. Complements the OS prefers-reduced-motion handling above. */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
