@@ -7,14 +7,20 @@ export type OnboardingHintId =
   | 'first_buy'
   | 'conduct'
   | 'encore'
+  | 'encore_done'
   | 'magnum_opus'
+  | 'magnum_opus_done'
   | 'world_tour'
   | 'challenges'
   | 'signature'
 
 export interface OnboardingHintDefinition {
   id: OnboardingHintId
-  text: string
+  /** A one-line NUDGE (discovery — "you can do X now"). */
+  text?: string
+  /** A richer post-event ORIENTATION card (heading + 2-3 lines). When set, takes precedence over `text`. */
+  title?: string
+  body?: string[]
   isMet: (state: GameState) => boolean
 }
 
@@ -69,12 +75,14 @@ function hasPassedWorldTour(state: GameState): boolean {
 
 export const ONBOARDING_HINT_ORDER: OnboardingHintId[] = [
   'first_buy',
-  'conduct',
-  'encore',
-  'magnum_opus',
-  'world_tour',
-  'challenges',
-  'signature',
+  'encore',          // nudge (pre-reset, discovery)
+  'encore_done',     // orientation (post-first-reset)
+  'magnum_opus',     // nudge
+  'magnum_opus_done',// orientation
+  'conduct',         // orientation (the active verb, unlocks with MO)
+  'world_tour',      // orientation (unlocks at the reset that opens it)
+  'challenges',      // nudge
+  'signature',       // orientation
 ]
 
 export const ONBOARDING_HINTS: Record<OnboardingHintId, OnboardingHintDefinition> = {
@@ -83,37 +91,79 @@ export const ONBOARDING_HINTS: Record<OnboardingHintId, OnboardingHintDefinition
     text: 'Compose your first note.',
     isMet: (state) => !state.activeChallenge && !hasAnyProgress(state),
   },
-  conduct: {
-    id: 'conduct',
-    text: 'Tap Conduct (or Space) for a Crescendo — a short production burst.',
-    isMet: (state) => state.opusCount > 0 && !state.activeChallenge,
-  },
+  // NUDGE (pre-reset, discovery): you can Encore now.
   encore: {
     id: 'encore',
-    text: 'Prestige: reset now for a permanent multiplier.',
+    text: 'You can Encore — reset now for a permanent boost. Open the Prestige tab.',
     isMet: (state) =>
       state.encoreCount === 0 &&
       state.lifetimeEncoreCount === 0 &&
       canPerformEncore(state),
   },
+  // ORIENTATION (after your FIRST Encore): what you earned + what's now open.
+  encore_done: {
+    id: 'encore_done',
+    title: 'Encore — Applause earned',
+    body: [
+      'Your total Applause permanently ×multiplies all production.',
+      'Spend the Applause pool on autobuyers and Encore upgrades.',
+      'Each Encore is faster than the last.',
+    ],
+    isMet: (state) => (state.encoreCount >= 1 || state.lifetimeEncoreCount >= 1) && !state.activeChallenge,
+  },
+  // NUDGE: you can Magnum Opus now.
   magnum_opus: {
     id: 'magnum_opus',
-    text: 'Magnum Opus records a work for Opus Points and deeper upgrades.',
+    text: 'A Magnum Opus is ready — a deeper reset for Opus Points.',
     isMet: (state) => state.opusCount === 0 && canPerformMagnumOpus(state),
   },
+  // ORIENTATION (after your FIRST Magnum Opus).
+  magnum_opus_done: {
+    id: 'magnum_opus_done',
+    title: 'Magnum Opus',
+    body: [
+      'Each Opus Point permanently ×your tempo — it speeds your whole orchestra.',
+      'The Opus upgrade tree is now open.',
+      'And Conducting is unlocked (see below).',
+    ],
+    isMet: (state) => state.opusCount >= 1 && !state.activeChallenge,
+  },
+  // ORIENTATION: the active verb, unlocks with the first MO.
+  conduct: {
+    id: 'conduct',
+    title: 'Conducting',
+    body: [
+      'Tap Conduct (or Space, any tab) to ride a Crescendo — a short production burst.',
+      'No holding; tap again to sustain. Auto-Conduct keeps a floor while idle.',
+    ],
+    isMet: (state) => state.opusCount > 0 && !state.activeChallenge,
+  },
+  // ORIENTATION (at the reset that opens World Tour).
   world_tour: {
     id: 'world_tour',
-    text: 'World Tour is open: build venues to turn your catalogue into Acclaim.',
+    title: 'World Tour',
+    body: [
+      'Acclaim now flows from your catalogue — a steady production ×.',
+      'Build venue components and graduate venues to grow Acclaim.',
+      'Your automation (auto-collect / auto-MO / auto-tour) lives here.',
+    ],
     isMet: (state) => state.worldTourUnlocked && !state.activeChallenge,
   },
+  // NUDGE: challenges available.
   challenges: {
     id: 'challenges',
     text: 'Challenges are open: clear constraint runs for permanent rewards.',
     isMet: (state) => hasUnlockedChallenge(state) && !state.activeChallenge,
   },
+  // ORIENTATION (first Signature ascension).
   signature: {
     id: 'signature',
-    text: 'Signature: at ascension, shape your sound across five instrument domains.',
+    title: 'Signature',
+    body: [
+      'Shape your sound across five instrument domains (a zero-sum allocation).',
+      'Respec is free between runs — experiment without penalty.',
+      'Your dominant domain becomes your identity.',
+    ],
     isMet: (state) => !!state.signatureUnlocked && !state.activeChallenge,
   },
 }
@@ -138,7 +188,9 @@ export function seedSeenHintsFromProgress(state: GameState): OnboardingHintId[] 
   if (hasAnyProgress(state)) seen.push('first_buy')
   if (state.opusCount > 0 || state.worldTourUnlocked) seen.push('conduct')
   if (state.encoreCount > 0 || state.lifetimeEncoreCount > 0 || canPerformEncore(state)) seen.push('encore')
+  if (state.encoreCount > 0 || state.lifetimeEncoreCount > 0) seen.push('encore_done')
   if (state.opusCount > 0 || state.worldTourUnlocked || canPerformMagnumOpus(state)) seen.push('magnum_opus')
+  if (state.opusCount > 0) seen.push('magnum_opus_done')
   if (hasPassedWorldTour(state)) seen.push('world_tour')
   if (hasPassedWorldTour(state) || hasUnlockedChallenge(state)) seen.push('challenges')
   if (state.signatureUnlocked || state.signatureCount > 0) seen.push('signature')
