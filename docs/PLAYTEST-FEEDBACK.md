@@ -29,9 +29,12 @@ Captured during in-app testing of the §D1 build pass. Status: ✅ done · 🔜 
   settings persist.
 
 ## 🎺 Gods (L9) — visual direction DECIDED (2026-07-01)
-Canonical data in `src/core/pantheon.ts`. **v1 concept art in `drafts/god-*-constellation-v1.png` +
-`drafts/god-maestro-orb-v1.png`** (the earlier humanoid pass `drafts/god-*-v1.png` is RETIRED — read too
-mundane/uncanny; not celestial enough).
+Canonical data in `src/core/pantheon.ts`. **MATCHED concept-art set: `drafts/god-*-set-v1.png`** (locked
+spec: thin double gold rule-frame · soft domain nebula · gold line + soft glow · faceless starlight head ·
+Maestro = gold orrery). Earlier passes RETIRED: `god-*-v1.png` (humanoid, too mundane) and
+`god-*-constellation-v1.png` (right concept, inconsistent borders/render).
+*(Tiny nit on the set: Clarion + Maestro rendered with a faint light matte around the plate; crop to the
+black edge for a perfect match.)*
 - **CELESTIAL: each god is a vast custom CONSTELLATION** in the gold→black void — a **faceless** deity (head
   a blank of starlight, NO features) drawn in delicate **gold line** over a domain-tinted starfield,
   cradling/playing its instrument, **antique celestial-atlas** style (Flamsteed/Uranometria).
@@ -43,6 +46,21 @@ mundane/uncanny; not celestial enough).
   figure flares into clarity then settles, "the we, watching, briefly noticing you." Future CSS animation
   for the L9 hub + cold-opens (Pulse flares on beat, Breath breathes, Twins in/out of phase). Captured.
 - **Seeded early** (`1c2f770`): L4 "your sound" glows your god's tint + "…echoing Timpana, the Pulse."
-- Minor polish TODO: unify the antique border treatment across the set (some have ornate frames, some torn-
-  parchment, some full-bleed). Still open: the per-fingerprint orb animation; the Twins two-phase fight;
-  the join-the-pantheon ending. L9 gated far out (build last).
+- Still open: the Twins two-phase fight; the join-the-pantheon ending. L9 gated far out (build last).
+
+### Cold-open progressive pantheon reveal (forward design, 2026-07-01)
+Vince's idea: the per-layer cold-open quotes don't just show the breathing gold orb — across the climb they
+**reveal the pantheon**, the visual companion to the narrator's fingerprint breadcrumbs. Locked shape:
+- **Hybrid accumulate + matched:** each cold-open glows in the god whose fingerprint the narrator drops that
+  beat (text "the Pulse" → Timpana's constellation lights up), and they ACCUMULATE — the night sky fills
+  with gods as you rise.
+- **Faint, building:** barely-there at first (attentive players notice the watchers gathering), full
+  presence by L9. Eerie.
+- **Render = animated SVG/CSS line-constellations** (built FROM the `god-*-set-v1` concept art): stars light
+  up, lines draw themselves in, glow + the "blink"/stir in each god's rhythm. Stays in the cold-open's
+  no-images ritual; fully animatable.
+- **L9 payoff:** entering the gods' domain, all glimpsed constellations wheel together into the
+  **Maestro-orrery** (gold origin orb at center) — the culmination of the whole climb's reveal.
+- Status: FORWARD design (L4–L9 cold-open beats are inert today; needs the SVG-constellation system + beat
+  wiring). Live-beat seed possible later (intro/encore/MO/platinum/world_tour). Builds on the L4 "your
+  sound" god-tint seed (`1c2f770`).
