@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
-import { exportSaveString, importSaveString } from '../../core/save'
-import { getEra } from '../../core/eraTheme'
+import { exportSaveString, importSaveString, parseSaveString } from '../../core/save'
+import { getEra, eraTintCss, ERA_NAMES, ERA_COLORS } from '../../core/eraTheme'
 import { DEFAULT_HOTKEYS, type NumberNotation, type HotkeyAction } from '../../core/constants'
 import { Button } from './Button'
 
@@ -76,6 +76,16 @@ export function SettingsPanel() {
   const [rebinding, setRebinding] = useState<HotkeyAction | null>(null)
   const fps = useFps()
   const hotkeys = settings.hotkeys ?? DEFAULT_HOTKEYS
+
+  // Preview an incoming save themed to ITS era, before you overwrite yours.
+  const importPreview = useMemo(() => {
+    if (!importText.trim()) return null
+    const st = parseSaveString(importText)
+    if (!st) return null
+    const num = (k: string) => Number(st[k]) || 0
+    const era = getEra(num('lifetimeEncorePoints'), num('opusCount'), num('finalePoints'), !!st.worldTourUnlocked, num('signatureCount'))
+    return { era, opus: num('opusCount'), tours: num('tourCount'), sigs: num('signatureCount'), finales: num('finaleCount') }
+  }, [importText])
 
   // Capture the next keypress for a rebind (capture-phase + stop so the game handlers don't also fire it).
   useEffect(() => {
@@ -164,8 +174,21 @@ export function SettingsPanel() {
           <textarea value={importText} onChange={(e) => setImportText(e.target.value)} rows={3}
             placeholder="Paste a save string to import…"
             className="w-full text-[11px] font-mono bg-bg-secondary/60 border border-border rounded-md p-2 text-text-secondary" />
+          {importText.trim() && (importPreview ? (
+            <div className="rounded-lg border p-3 text-xs space-y-1"
+              style={{ backgroundImage: eraTintCss(importPreview.era), borderColor: `${ERA_COLORS[importPreview.era]}66` }}>
+              <div className="font-semibold" style={{ color: ERA_COLORS[importPreview.era] }}>
+                Incoming save · {ERA_NAMES[importPreview.era]} era
+              </div>
+              <div className="text-text-secondary tabular-nums">
+                {importPreview.opus} Opus · {importPreview.tours} tours · {importPreview.sigs} signatures{importPreview.finales > 0 ? ` · ${importPreview.finales} finales` : ''}
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-danger/40 bg-danger/10 p-2 text-[11px] text-danger">Not a valid Sonance save string.</div>
+          ))}
           <div className="flex gap-2 items-center">
-            <Button onClick={onImport} variant="gold" size="sm">Import</Button>
+            <Button onClick={onImport} variant="gold" size="sm" disabled={!importPreview}>Import</Button>
             <label className="text-xs text-text-muted cursor-pointer hover:text-text-secondary">
               load from file…
               <input type="file" accept=".txt,text/plain" onChange={onLoadFile} className="hidden" />

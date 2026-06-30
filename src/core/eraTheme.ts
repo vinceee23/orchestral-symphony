@@ -4,6 +4,8 @@
  * Subtle undertone only (stays dark + readable). Mirrors the Compose stage's era + palette.
  */
 export const ERA_COLORS = ['#d4a843', '#d4a843', '#7c3aed', '#2dd4bf', '#f59e0b', '#ef4444', '#fbbf24']
+/** Display names per era index (matches getEra: 0 start · 1 Encore · 2 MO · 3 Tour · 4 Signature · 6 Finale). */
+export const ERA_NAMES = ['Prelude', 'Encore', 'Magnum Opus', 'World Tour', 'Signature', 'Virtuoso', 'Grand Finale']
 
 /** Stage/app era from progression — one tier per prestige layer (0 intimate · 1 Encore · 2 Magnum Opus · 3 World Tour · 6 Finale). */
 export function getEra(
