@@ -61,6 +61,9 @@ function decimalReviver(_key: string, value: unknown): unknown {
   return value
 }
 
+/** Set true once if a write has failed, so the UI can warn the player progress isn't saving. */
+export let saveWriteFailed = false
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createDecimalStorage(): PersistStorage<any> {
   return {
@@ -70,14 +73,33 @@ export function createDecimalStorage(): PersistStorage<any> {
       try {
         return JSON.parse(raw, decimalReviver) as StorageValue<unknown>
       } catch {
+        // A corrupt/truncated save would boot a FRESH game and the next autosave would clobber the
+        // bad bytes forever. Stash them to a sidecar key first so they're recoverable (manual repair
+        // or future migration) instead of silently lost.
+        try {
+          localStorage.setItem(`${name}-corrupt`, raw)
+          // eslint-disable-next-line no-console
+          console.warn(`[save] couldn't parse "${name}"; backed up to "${name}-corrupt" and starting fresh.`)
+        } catch { /* sidecar best-effort */ }
         return null
       }
     },
     setItem(name: string, value: StorageValue<unknown>) {
-      localStorage.setItem(name, JSON.stringify(value, decimalReplacer))
+      try {
+        localStorage.setItem(name, JSON.stringify(value, decimalReplacer))
+        saveWriteFailed = false
+      } catch (e) {
+        // Quota exceeded / private mode / SecurityError: don't throw on every frame. Keep running
+        // in-memory and flag it so the player can be told (and can still export their save).
+        saveWriteFailed = true
+        // eslint-disable-next-line no-console
+        console.error('[save] localStorage write failed; progress is not being persisted.', e)
+      }
     },
     removeItem(name: string) {
-      localStorage.removeItem(name)
+      try {
+        localStorage.removeItem(name)
+      } catch { /* noop */ }
     },
   }
 }

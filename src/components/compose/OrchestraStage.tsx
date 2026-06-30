@@ -23,7 +23,7 @@ function EmblemIcon({ name, glyph, glow }: { name: string; glyph: string; glow: 
     if (emblemCache.has(name)) { setSrc(emblemCache.get(name)); return }
     let cancelled = false
     const img = new Image()
-    img.src = `/emblems/${name}.jpg`
+    img.src = `${import.meta.env.BASE_URL}emblems/${name}.jpg`
     img.onload = () => {
       try {
         const c = document.createElement('canvas')

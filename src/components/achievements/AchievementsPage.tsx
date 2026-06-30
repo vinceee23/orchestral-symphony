@@ -52,7 +52,7 @@ function AchievementImage({
 
   return (
     <img
-      src={`/achievements/${id}.jpg`}
+      src={`${import.meta.env.BASE_URL}achievements/${id}.jpg`}
       alt=""
       className={`w-full h-full object-cover ${dimClass}`}
       onError={() => setFailed(true)}

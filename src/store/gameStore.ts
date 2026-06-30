@@ -1063,8 +1063,9 @@ export const useGameStore = create<GameState & GameActions>()(
             }
           }
 
-          // Dev shortcut: ?l3 seeds World Tour for instant playtesting
-          if (/(?:[?&#])l3\b/.test(location.search + location.hash)) {
+          // Dev shortcut: ?l3 seeds World Tour for instant playtesting. DEV-only — never in the
+          // public trial build (it would let anyone skip L0-L2; matches the DevPanel gate).
+          if (import.meta.env.DEV && /(?:[?&#])l3\b/.test(location.search + location.hash)) {
             const snapshot = getCatalogueSnapshot(4, 750_000)
             state.worldTourUnlocked = true
             state.catalogueSnapshot = new Decimal(snapshot)

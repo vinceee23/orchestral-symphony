@@ -10,6 +10,7 @@ import { HelpModal } from './components/shared/HelpModal'
 import { EncoreCelebration } from './components/compose/EncoreCelebration'
 import { StoryBeatOverlay } from './components/story/StoryBeatOverlay'
 import { OfflineSummary } from './components/shared/OfflineSummary'
+import { ErrorBoundary } from './components/shared/ErrorBoundary'
 import { DevPanel } from './dev/DevPanel'
 
 function App() {
@@ -31,7 +32,7 @@ function App() {
   }, [])
 
   return (
-    <>
+    <ErrorBoundary>
       <AchievementToast />
       <OfflineSummary />
       <StoryBeatOverlay />
@@ -39,7 +40,7 @@ function App() {
       <HelpModal />
       <EncoreCelebration />
       <DevPanel />
-    </>
+    </ErrorBoundary>
   )
 }
 
