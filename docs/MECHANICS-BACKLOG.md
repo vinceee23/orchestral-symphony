@@ -110,8 +110,9 @@ into specs. P0 items are the exception: they're requirements for the L4 tuning p
 6. **Harmony/Resonance between tiers** [C21/Part B] — adjacent tiers in consonant ratios (chords/intervals) grant
    bonuses → puzzle becomes balancing for consonance, not dumping into the top tier. **⚠️ Touches the live L0–L3
    loop — reworks the public trial; biggest differentiation, biggest build.** (L, **trial-affecting**)
-7. **Tempo risk/reward dial** [C21/Part B] — Tempo becomes a managed tradeoff (more output vs dissonance) instead
-   of strictly-good. **⚠️ Touches live L0 tempo; must not violate C4 anti-idle.** (M–L, **trial-affecting**)
+7. ~~**Tempo risk/reward dial**~~ — **CUT (2026-07-01).** It was Conducting v2 — "spike production for
+   short-term power" is already Conducting's job (L2). Redundant; removing it keeps the tempo verbs distinct
+   (Conducting = spike; L5 Virtuoso = the anti-spike discipline). The not-AD core now leans on #5 + #6 only.
 8. **Time Banking offline model** [C15 / I1] — bank offline time as a spendable resource burned at accelerated
    speed with active decisions on return. Report's top offline pick + a non-AD differentiator. (M–L)
 9. **Rule-inversion challenges** [I2] — add 2–3 challenges that fundamentally change play (e.g. "buying a tier

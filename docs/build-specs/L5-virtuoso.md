@@ -12,14 +12,29 @@
 >   playtest). This spec is forward design; it stays unbuilt until L4's verb is confirmed distinct + paced.
 > - **L5 is squarely "not-AD" already** (it inverts brute-maximize → scores consistency) — keep it that way;
 >   it's one of the game's strongest identity beats.
-> - **⚠ Cross-layer coherence to resolve (NEW):** the genre-audit's **Tempo risk/reward dial** (a not-AD
->   core lever, §D2) makes *spiking* tempo a deliberate tactic, while L5 scores *smooth growth* (spikes = the
->   sin). These must be reconciled — see the new §10 + the open question. Also: L5's `virtuoso` cold-open
->   beat should glow a god's constellation per the cold-open progressive-reveal (`docs/PLAYTEST-FEEDBACK.md`).
+> - **Cross-layer coherence (RESOLVED 2026-07-01):** the §D2 "Tempo risk/reward dial" was **CUT** (it was
+>   Conducting v2). L5's foil is now **Conducting** itself — Conducting spikes for a burst; L5 is the
+>   discipline not to. Deliberate, locked tension (§10.1). Also: L5's `virtuoso` cold-open beat glows **the
+>   Maestro** per the progressive-reveal (`docs/PLAYTEST-FEEDBACK.md`); beat line-2 locked (§1 MINOR).
 >
 > **Status:** implementation-ready (design). Build target for a FRESH session, AFTER L4 is proven. Numbers
 > marked **TBD — decide-at-build (sim/playtest)** are deliberately unset; resolve them from the L5 sim, do
 > NOT invent magnitudes blind (`HARDENING-PLAN.md:107`).
+>
+> **🗣 Realignment Q&A (2026-07-01) — these refine the body, take precedence on conflict:**
+> - **Soul CONFIRMED:** mastery = consistency/control (inverts brute-maximize); **strict idle-first** (~1.5×
+>   cap, no special active boost); **grow-smoothly** definition; headline = **completed-Take count**.
+> - **Take rhythm:** discrete **auto-cycling Takes** (start→window→bank→repeat, hands-free), manual start/end
+>   optional. (§4.1, §4.7 already match.)
+> - **Stakes (NEW):** add a per-take **GRADE** (S/A/B by evenness, feedback only) **+ a clean-take STREAK**
+>   (consecutive clean takes grow a bonus; a bad take BREAKS the streak but **never loses banked takes**) —
+>   real tension, still idle-safe (no punishment, no wipe). Streak bonus is run-tier + capped.
+> - **L4×L5:** **light-touch flavor only** — your dominant Signature domain tints the corridor + colors your
+>   Mastery (your god's hue); **no mechanical dependency** (don't change band/window by domain).
+> - **Production reward = a guaranteed BASELINE production FLOOR** (thematic: "a master never drops below"),
+>   on its own hard-capped M9 channel (B3). This **supersedes** the body's "capped × channel" framing in
+>   §3/§4.6: the payoff is a *floor*, not a multiplier (still B3-bounded + M11-safe).
+> - **L5's foil = Conducting** (the Tempo dial was cut, §10.1).
 >
 > **Authoritative design sources** this spec implements:
 > `LADDER-MECHANICS.md:80-99` (the locked L5 mechanic) · `HARDENING-PLAN.md:17-20` + `:60` (decision D4 —
@@ -478,13 +493,14 @@ Render the **corridor / band UI** (the hardening plan explicitly calls for it �
 
 ## 10. Cross-layer coherence (added 2026-07-01, from the genre-audit) — RULINGS LOCKED
 
-1. **Tempo dial (§D2 not-AD lever) × L5 "in-tempo" → INTENTIONAL TENSION (locked).** The Tempo dial is the
-   *instrument*; L5 mastery = playing it *smoothly under control* — resisting the cheap spike. The layers are
-   in deliberate dialogue: spiking the dial helps short-term but **costs Take-area** in L5. So L5 reads the
-   real (dial-affected) production rate — the dial's spikes legitimately hurt the consistency score, by
-   design. (Build note: this couples the two; tune L5's band + the dial's spike-payoff together in sim so a
-   spike is a *real* choice, not strictly dominated either way.) Naming still 3-way distinct: L1 `tempo.level`
-   (BPM), the L0 Tempo *dial*, L5 "in-tempo" (rate consistency) — keep vocabulary unambiguous in code + UI.
+1. **Conducting (L2) × L5 "in-tempo" → INTENTIONAL TENSION (locked).** *(The §D2 "Tempo risk/reward dial"
+   was CUT 2026-07-01 — it was Conducting v2; spike-for-power is already Conducting's job. So L5's foil is
+   Conducting itself.)* Conducting is the **spike-verb** (tap → a temporary Crescendo burst); **L5 mastery is
+   the discipline NOT to lean on it** — grow smoothly. Deliberate dialogue: a Crescendo spike helps
+   short-term but **costs Take-area** in L5 (L5 reads the real production rate, so the spike legitimately
+   dents the consistency score). Build note: tune L5's band + Conducting's payoff together in sim so spiking
+   stays a *real* choice, never strictly dominated either way. Naming: L1 `tempo.level` (BPM) and L5
+   "in-tempo" (rate consistency) are distinct concepts — keep the vocabulary unambiguous in code + UI.
 
 2. **Cold-open reveal god for the `virtuoso` beat → THE MAESTRO (locked).** The beat glows the Maestro's
    constellation/orb — mastery/control = the conductor, and it quietly foreshadows the origin ("nothing left

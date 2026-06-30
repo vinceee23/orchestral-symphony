@@ -10,9 +10,9 @@ Walked the Gemini genre-audit report (`docs/GENRE-AUDIT-REPORT.md`, converted fr
 one-by-one with Vince: C1–C21, I1–I6, Parts B & C. All decisions recorded in **`docs/MECHANICS-BACKLOG.md`
 §D**. Headlines:
 - **New north-star (memory `sonance-not-ad-reskin`):** Sonance must feel like Sonance, NOT "AD Music Edition" —
-  differentiation must live in the **core-loop math**, not the theme. Chosen identity spine (3 core levers):
-  **Signature-as-spine + Harmony/Resonance + Tempo risk/reward dial** (the last two **touch the live L0–L3
-  loop** — big, trial-affecting builds; spec each before building).
+  differentiation must live in the **core-loop math**, not the theme. Identity spine (2 core levers, after
+  the **Tempo dial was CUT 2026-07-01 as Conducting v2 / redundant**): **Signature-as-spine +
+  Harmony/Resonance** (Harmony **touches the live L0–L3 loop** — big, trial-affecting; spec before building).
 - **Sonance scored well:** ~14 of 21 criticisms already handled at/above genre norms (distinct verbs, free
   respec, prestige preview, Roadies automation, additive achievements, progressive disclosure, sim pacing gate).
 - **Ready-to-build pass (§D1) — ✅ BUILT (uncommitted) on `feat/layer4`:** Settings panel v1
@@ -29,7 +29,7 @@ one-by-one with Vince: C1–C21, I1–I6, Parts B & C. All decisions recorded in
     reported "exit 0" while vitest exited 1; `gate-read-real-exit`.)
 - **Roadmap doctrine:** 9-layer → *gate behind proof* (don't pre-commit to 9 full resets); monetization →
   *free demo L0–L3 → premium L4+* (matches branch split); early community feedback → deferred to launch-prep.
-- Bigger identity/depth items (Signature-as-spine, Harmony/Resonance, Tempo-dial, Time Banking, rule-inversion
+- Bigger identity/depth items (Signature-as-spine, Harmony/Resonance, Time Banking, rule-inversion
   challenges, milestone auto-completion) → §D2, each needs a spec before build.
 
 ## ⭐ THIS SESSION (2026-06-29) — Playtest pass: Warm-Up retired · achievements culled · sim honesty
