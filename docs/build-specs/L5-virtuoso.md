@@ -509,6 +509,84 @@ Render the **corridor / band UI** (the hardening plan explicitly calls for it �
 
 ---
 
+## 11. Detailed systems — full design lock (2026-07-01 Q&A drill)
+
+Decided with Vince so the build is balancing-only. Magnitudes still `TBD-at-build (sim)`; STRUCTURE is locked.
+
+### 11.1 Economy — Mastery Points (MP) + ranks + the upgrade tree
+- **MP currency:** each completed Take grants **Mastery Points** scaled by its **grade × area** (a long, clean
+  take pays most). MP is the spendable currency (new state: `masteryPoints: number`, **resetTier: never** —
+  it's earned skill; verify the tree's effects stay B3-bounded so permanence can't run away).
+- **Rank ladder (titles):** **Apprentice → Player → Soloist → Virtuoso**, gated by `completedTakeCount` (or
+  lifetime MP — TBD). Each rank raises the production floor (§ realignment) + unlocks deeper tree tiers.
+  **"Maestro" is RESERVED for L9** (you become him by beating him — do not use as a player rank).
+- **Mastery upgrade tree (spend MP) — touches ONLY mastery mechanics, never global production** (that's what
+  keeps it distinct from L2's Opus tree). Four branches:
+  - **Poise** — wider forgiveness band / faster meter rise / slower decay (holding tempo gets easier).
+  - **Resonance** — raises the guaranteed **production floor** magnitude (the main power branch, B3-capped).
+  - **Composure** — streak **"saves"**: ignore one bad take without breaking the streak (consumed, regenerates
+    over takes/time); higher tiers = more saves.
+  - **Stamina** — longer take windows / faster auto-cycle / better auto-take quality.
+
+### 11.2 Grades
+- **Grade = % of the take spent in-band** (smooth), with **average meter height** as the tiebreaker.
+- Scale **S / A / B / C** (S = flawless). Grade **scales MP earned** and **gates the streak**.
+- **Clean take** (keeps the streak alive) = **grade A or better**.
+- An **S take fires a "Perfect Take!" flourish** (gold bloom + chime) — pure juice, no power.
+
+### 11.3 Streak (the active amplifier — stays under the idle-first ~1.5× cap)
+- Counts **consecutive clean (A+) takes**. Rewards **both**: a growing **run-tier production "heat" bonus**
+  (capped, B3) **and** bonus **MP** per take as the streak climbs.
+- **Climbs steadily to a hard cap** (each clean take adds; bounded).
+- **Hard reset to 0** on a non-clean (B/C) take or abandon — **banked takes + MP are NEVER lost**, only the
+  transient heat. (Composure "saves" can absorb a break.)
+- **resetTier: run** (a session streak; cleared on Encore+). The heat bonus is transient/run-scoped.
+
+## 12. Loop · floor · UI · integration — full design lock (2026-07-01 drill cont.)
+
+### 12.1 The Take loop
+- **Fixed-duration, auto-cycling** Takes (window length TBD/sim; the **Stamina** branch lengthens it).
+  Auto-start → run the window → **auto-bank** → repeat, hands-free. Manual start/end also available.
+- **End early to bank (skill choice):** the player can end a take early to lock in the current grade/area
+  ("cash" a great one vs "push" for more). Never required — auto handles AFK.
+- **Prestige (Encore+) mid-take → AUTO-BANK first** (count + MP) before the reset wipes the live state. You
+  never lose a good in-progress take to a prestige.
+- **Unlock:** first **Signature ascension** (`signatureCount ≥ 1`, + optional small SW gate) — mirrors how
+  each layer's first reset opens the next.
+
+### 12.2 The anti-collapse production floor — the reward (SUPERSEDES §4.6's "capped ×" framing)
+- **Form:** production never drops below **X% of your peak production this run** — a dynamic anti-collapse
+  floor ("a master maintains / never craters"). Always relevant at any scale; distinct from any multiplier.
+- **X raised by rank + the Resonance MP-branch** (both dials).
+- **HARD-CAPPED** (≤ ~50% of peak, exact TBD/sim) so it can't approach free production (B3); M11-safe.
+  Registered as L5's own capped channel; the transient **streak "heat"** sits on top (run-tier, also capped).
+- **Two distinct floors, don't conflate:** the in-take **Virtuosity METER floor** (`idleFloor`, §4.3 — keeps
+  you banking area) is the internal mechanic; **this PRODUCTION floor** is the cross-run permanent reward.
+
+### 12.3 UI — the tempo corridor
+- Horizontal **corridor** (width = forgiveness band, visibly *wider when idle*); a marker = current
+  `deviation`; centered/in-band glows gold, out-of-band dims. Teaches "grow smoothly = stay centered."
+- Vertical **Virtuosity meter** (0..1) with the **floor drawn as a baseline line**.
+- Readouts: live **area + area-rate**, projected **grade**, **streak** (🔥 count + heat bonus), **MP**, the
+  **rank/title**, and the **production-floor %** as its own labeled stat (B3 legibility). S-take flourish.
+
+### 12.4 Integration & edges
+- **Onboarding:** an L5 **orientation card** via the built two-beat system (nudge on unlock → "Perfect Take:
+  hold smooth, bank the area; a long even take beats a short spiky one. Auto-cycles; end early to cash one.").
+- **Challenges:** Takes **SUSPEND** during an active L3 challenge, resume after (no collision; challenges
+  already warp production/prestige).
+- **Achievements (meaningful-only, `achievements-no-filler`):** ~5–6 — first Perfect Take (S), reach each
+  rank up to **Virtuoso**, a long clean streak, an S-grade. No number-padding.
+- **Era:** locked step (near-blaze, `goldLevel 0.82`); corridor/meter glow gold; the `virtuoso` cold-open
+  glows **the Maestro** (§10.2). No new stage motif.
+
+### 12.5 New-state delta (beyond §2's field list — reconcile at build)
+`masteryPoints: number` (never) · `masteryUpgrades: Record<string,number>` (never, the tree) ·
+`cleanStreak: number` (run) · `streakSaves: number` (run, from Composure) · projected-grade (transient).
+Rank/title is derived from `completedTakeCount`. All non-Decimal → plain `MIGRATIONS` defaults (schema bump).
+
+---
+
 *Summary: L5 Virtuoso = "Perfect Take" — start a Take, hold production growing-smoothly (in-tempo) to climb a
 Virtuosity meter whose HEIGHT decays to a permanent Mastery floor when you spike/stall; bank the integral of
 the curve, headline reward = completed-Take count, all idle-first (auto-cycle + analytic offline floor-accrual,
