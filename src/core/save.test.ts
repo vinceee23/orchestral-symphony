@@ -44,6 +44,8 @@ describe('save export/import round-trip', () => {
     expect(importSaveString('!!not-base64!!')).toBe(false)
     expect(importSaveString(btoa('{"state":{}}'))).toBe(false)   // missing soundwaves + tiers
     expect(importSaveString(btoa('{"nope":1}'))).toBe(false)
+    // missing tempo — would crash on state.tempo.level after reload (tempo isn't backfilled)
+    expect(importSaveString(btoa('{"state":{"soundwaves":{"__decimal":"1"},"tiers":[]}}'))).toBe(false)
     expect(localStorage.getItem(SAVE_KEY)).toBe(RAW)             // original untouched
   })
 })

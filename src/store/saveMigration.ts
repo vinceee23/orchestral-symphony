@@ -181,6 +181,16 @@ function runMigrationChain(state: PersistedSave): void {
   state.saveSchemaVersion = SAVE_SCHEMA_VERSION
 }
 
+/**
+ * ALWAYS deep-complete `settings` (incl. nested `hotkeys`), regardless of saveSchemaVersion. The versioned
+ * migrations 3/4 only fire for OLDER saves — a CURRENT-schema imported save with a partial `settings.hotkeys`
+ * would otherwise slip through and crash the Settings page (fmtKey on an undefined key). Runs every load.
+ */
+function normalizeSettings(state: PersistedSave): void {
+  state.settings = { ...DEFAULT_SETTINGS, ...(state.settings ?? {}) }
+  state.settings.hotkeys = { ...DEFAULT_HOTKEYS, ...(state.settings.hotkeys ?? {}) }
+}
+
 /** Defaults, migrations, and Decimal revival for a parsed save (no offline replay). */
 export function migratePersistedSave(state: PersistedSave): void {
   runMigrationChain(state)
@@ -189,6 +199,7 @@ export function migratePersistedSave(state: PersistedSave): void {
   applyFalsyDefaults(state, defaults)
   applyFiniteNumberDefaults(state, defaults)
   applyUndefinedDefaults(state, defaults)
+  normalizeSettings(state)
   reviveDecimals(state)
   applyStoryBeatSeeding(state)
 }

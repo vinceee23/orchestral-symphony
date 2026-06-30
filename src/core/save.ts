@@ -20,7 +20,10 @@ export function parseSaveString(b64: string): Record<string, unknown> | null {
     const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0))
     const parsed = JSON.parse(new TextDecoder().decode(bytes)) as { state?: Record<string, unknown> }
     const st = parsed?.state
-    if (!st || st.soundwaves === undefined || !Array.isArray(st.tiers)) return null
+    // Require the core shape. `tempo` is in saveMigration's SKIP_DEFAULT_KEYS (not backfilled), so a
+    // tempo-less import would crash on `state.tempo.level` after reload — reject it here.
+    if (!st || st.soundwaves === undefined || !Array.isArray(st.tiers)
+        || typeof st.tempo !== 'object' || st.tempo === null) return null
     return st
   } catch {
     return null

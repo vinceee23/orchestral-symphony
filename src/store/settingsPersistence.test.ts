@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import Decimal from 'break_infinity.js'
-import { migratePersistedSave, type PersistedSave } from './saveMigration'
+import { migratePersistedSave, SAVE_SCHEMA_VERSION, type PersistedSave } from './saveMigration'
 import { DEFAULT_SETTINGS } from '../core/constants'
 
 /** Regression: a saved settings object must SURVIVE load (the "settings reset on refresh" report). */
@@ -35,5 +35,17 @@ describe('settings persistence', () => {
     expect(save.settings?.hotkeys.conduct).toBe(' ')   // kept
     expect(save.settings?.hotkeys.maxAll).toBe('m')    // backfilled
     expect(save.settings?.hotkeys.maxTempo).toBe('t')  // backfilled
+  })
+
+  it('completes partial hotkeys at the CURRENT schema too (unconditional normalize, not just <v4)', () => {
+    // A current-schema save (migrations 3/4 do NOT run) with partial hotkeys must still be completed.
+    const save = {
+      ...baseSave(),
+      saveSchemaVersion: SAVE_SCHEMA_VERSION,
+      settings: { ...DEFAULT_SETTINGS, hotkeys: { conduct: ' ' } },
+    } as unknown as PersistedSave
+    migratePersistedSave(save)
+    expect(save.settings?.hotkeys.maxAll).toBe('m')
+    expect(save.settings?.hotkeys.maxTempo).toBe('t')
   })
 })

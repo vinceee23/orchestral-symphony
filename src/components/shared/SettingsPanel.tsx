@@ -5,7 +5,7 @@ import { getEra, eraTintCss, ERA_NAMES, ERA_COLORS } from '../../core/eraTheme'
 import { DEFAULT_HOTKEYS, type NumberNotation, type HotkeyAction } from '../../core/constants'
 import { Button } from './Button'
 
-const fmtKey = (k: string) => (k === ' ' ? 'Space' : k.toUpperCase())
+const fmtKey = (k: string | undefined) => (k === ' ' ? 'Space' : (k ?? '?').toUpperCase())
 const HOTKEY_ROWS: [HotkeyAction, string][] = [['conduct', 'Conduct'], ['maxAll', 'Max all'], ['maxTempo', 'Max tempo']]
 
 const PRESTIGE_SKIP_KEYS = ['prestige_skip_encore', 'prestige_skip_mo', 'prestige_skip_gf']
@@ -96,13 +96,12 @@ export function SettingsPanel() {
       if (e.key === 'Escape') { setRebinding(null); return }
       if (['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return
       const key = e.key === ' ' ? ' ' : e.key.toLowerCase()
-      // 1–7 are the reserved buy-tier keys (they win in useHotkeys), so a rebind to them would silently
-      // never fire — reject and keep listening rather than bind a dead key.
-      if (key >= '1' && key <= '7') {
-        setStatus('Keys 1–7 are reserved for buying tiers')
-        setTimeout(() => setStatus(null), 2500)
-        return
-      }
+      const reject = (msg: string) => { setStatus(msg); setTimeout(() => setStatus(null), 2500) }
+      // Reserved/conflicting keys would bind a DEAD or double-firing hotkey — reject and keep listening.
+      if (key >= '1' && key <= '7') return reject('Keys 1–7 are reserved for buying tiers')
+      if (key === 'h') return reject('H is reserved for Help')
+      const clash = (Object.entries(hotkeys) as [HotkeyAction, string][]).find(([a, k]) => a !== rebinding && k === key)
+      if (clash) return reject(`Already bound to ${HOTKEY_ROWS.find((r) => r[0] === clash[0])?.[1] ?? clash[0]}`)
       updateSettings({ hotkeys: { ...hotkeys, [rebinding]: key } })
       setRebinding(null)
     }
