@@ -175,9 +175,9 @@ export const OPUS_PLAT_ROOT = 0.05
 export const OPUS_CRESCENDO_BONUS_PER = 0.25            // crescendoBonus = 1 + peakCrescendo*this
 export const CRESCENDO_BASE_MAX = 3                     // base ceiling multiplier (x3)
 export const CRESCENDO_MAX_CEILING = 6                  // hard cap after upgrades
-export const CRESCENDO_BUILD_SEC = 12                   // seconds of conducting to reach ceiling
-export const CRESCENDO_DECAY_SEC = 25                   // seconds to decay ceiling -> x1 when released
-export const CONDUCT_BURST_MS = 15000                   // tap-to-conduct: one tap rides the crescendo for this window (no holding), then it decays; re-tap to sustain. TBD-tune (#6 playtest)
+export const CRESCENDO_BUILD_SEC = 4                    // seconds of conducting to reach ceiling — fast PUNCHY ramp so a tap reads as a burst, not a slow swell
+export const CRESCENDO_DECAY_SEC = 12                   // seconds to decay ceiling -> x1 after the burst window
+export const CONDUCT_BURST_MS = 9000                    // tap-to-conduct burst DURATION: one tap rides the crescendo this long (no holding) then decays; re-tap to sustain. TBD-tune (#6 playtest)
 
 // === Player settings (persisted prefs — see SETTINGS-SPEC.md / genre-audit C12+C16) ===
 export type NumberNotation = 'suffix' | 'scientific' | 'engineering'

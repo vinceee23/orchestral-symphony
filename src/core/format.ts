@@ -50,7 +50,7 @@ export function formatNumber(value: Decimal | number, precision: number = 1): st
 }
 
 export function formatCost(value: Decimal): string {
-  return formatNumber(value, 2)
+  return formatNumber(value, 1)
 }
 
 export function formatRate(value: Decimal): string {
