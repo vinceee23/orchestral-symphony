@@ -55,6 +55,8 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       ...tabs.slice(insertAt),
     ]
   }
+  // Settings always sits last.
+  tabs = [...tabs, { id: 'settings', label: 'Settings', icon: 'sliders' as IconName }]
 
   return (
     <nav

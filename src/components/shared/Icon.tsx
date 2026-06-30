@@ -12,6 +12,7 @@ export type IconName =
   | 'metronome'    // tempo device — TempoBar
   | 'disc'         // vinyl record — Opus / records / platinum
   | 'gear'         // cog — Autobuyers
+  | 'sliders'      // equalizer sliders — Settings
   | 'lock'         // locked layer/feature
 
 interface IconProps {
@@ -82,6 +83,14 @@ const ICONS: Record<IconName, React.ReactNode> = {
       <line x1="16.7" y1="16.7" x2="18.7" y2="18.7" />
       <line x1="5.3" y1="18.7" x2="7.3" y2="16.7" />
       <line x1="16.7" y1="7.3" x2="18.7" y2="5.3" />
+    </>
+  ),
+  sliders: (
+    <>
+      <line x1="4" y1="8" x2="20" y2="8" />
+      <line x1="4" y1="16" x2="20" y2="16" />
+      <circle cx="9" cy="8" r="2.2" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="16" r="2.2" fill="currentColor" stroke="none" />
     </>
   ),
   lock: (

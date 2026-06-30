@@ -14,8 +14,6 @@ interface UiState {
   helpOpen: boolean
   toggleHelp: () => void
   setHelp: (open: boolean) => void
-  settingsOpen: boolean
-  setSettingsOpen: (open: boolean) => void
   // "Welcome back" offline-earnings summary, set once at load from the offline replay; null = dismissed.
   offlineSummary: OfflineSummary | null
   setOfflineSummary: (s: OfflineSummary) => void
@@ -42,8 +40,6 @@ export const useUiStore = create<UiState>((set) => ({
   helpOpen: false,
   toggleHelp: () => set((s) => ({ helpOpen: !s.helpOpen })),
   setHelp: (open) => set({ helpOpen: open }),
-  settingsOpen: false,
-  setSettingsOpen: (open) => set({ settingsOpen: open }),
   offlineSummary: null,
   setOfflineSummary: (s) => set({ offlineSummary: s }),
   clearOfflineSummary: () => set({ offlineSummary: null }),

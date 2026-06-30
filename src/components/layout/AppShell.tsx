@@ -13,6 +13,7 @@ import { AutobuyersPage } from '../autobuyers/AutobuyersPage'
 import { WorldTourPage } from '../worldtour/WorldTourPage'
 import { SignaturePage } from '../signature/SignaturePage'
 import { StatsPanel } from '../shared/StatsPanel'
+import { SettingsPanel } from '../shared/SettingsPanel'
 
 // Dev/screenshot convenience: open a specific tab with ?tab=prestige (etc.). Harmless in prod.
 const initialTab = (() => {
@@ -79,6 +80,7 @@ export function AppShell() {
           {activeTab === 'achievements' && <AchievementsPage />}
           {activeTab === 'challenges' && <ChallengesPage />}
           {activeTab === 'stats' && <StatsPanel />}
+          {activeTab === 'settings' && <SettingsPanel />}
         </main>
       </div>
     </div>

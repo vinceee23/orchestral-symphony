@@ -37,7 +37,6 @@ export function Header() {
   const warmUpLevel = useGameStore((s) => s.warmUpLevel)
   const conducting = useUiStore((s) => s.conducting)
   const toggleHelp = useUiStore((s) => s.toggleHelp)
-  const setSettingsOpen = useUiStore((s) => s.setSettingsOpen)
   const settings = useGameStore((s) => s.settings)
 
   // Subtle live Crescendo readout — visible on EVERY tab while the swell is up or you're conducting,
@@ -140,14 +139,6 @@ export function Header() {
           className="w-8 h-8 flex items-center justify-center rounded-full border border-border-light text-text-secondary hover:text-accent-gold hover:border-accent-gold/50 transition-colors text-sm"
         >
           ?
-        </button>
-        <button
-          onClick={() => setSettingsOpen(true)}
-          title="Settings"
-          aria-label="Settings"
-          className="w-8 h-8 flex items-center justify-center rounded-full border border-border-light text-text-secondary hover:text-accent-gold hover:border-accent-gold/50 transition-colors text-sm"
-        >
-          ⚙
         </button>
       </div>
     </header>

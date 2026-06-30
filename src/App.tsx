@@ -7,7 +7,6 @@ import { applySettings } from './core/settingsSync'
 import { AppShell } from './components/layout/AppShell'
 import { AchievementToast } from './components/shared/AchievementToast'
 import { HelpModal } from './components/shared/HelpModal'
-import { SettingsPanel } from './components/shared/SettingsPanel'
 import { EncoreCelebration } from './components/compose/EncoreCelebration'
 import { StoryBeatOverlay } from './components/story/StoryBeatOverlay'
 import { OfflineSummary } from './components/shared/OfflineSummary'
@@ -38,7 +37,6 @@ function App() {
       <StoryBeatOverlay />
       <AppShell />
       <HelpModal />
-      <SettingsPanel />
       <EncoreCelebration />
       <DevPanel />
     </>

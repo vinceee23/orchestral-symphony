@@ -3,7 +3,6 @@ import { ACHIEVEMENTS } from '../../core/achievements'
 import { CHALLENGES } from '../../core/challenges'
 import { formatNumber } from '../../core/format'
 import { getProductionBreakdown, getProductionMultiplier } from '../../core/multiplierRegistry'
-import { Button } from './Button'
 
 function formatTime(ms: number): string {
   const seconds = Math.floor(ms / 1000)
@@ -30,10 +29,11 @@ export function StatsPanel() {
   const finaleCount = useGameStore((s) => s.finaleCount)
   const finalePoints = useGameStore((s) => s.finalePoints)
   const peakSoundwaves = useGameStore((s) => s.peakSoundwaves)
-  const hardReset = useGameStore((s) => s.hardReset)
-  // Production breakdown (C10): the live per-channel decomposition of the production multiplier.
-  const breakdown = useGameStore((s) => getProductionBreakdown(s))
-  const totalMult = useGameStore((s) => getProductionMultiplier(s))
+  // Production breakdown (C10). Derive from the whole-store value, NOT a selector returning a fresh
+  // array/Decimal each call — that loops useSyncExternalStore and blanks the page.
+  const fullState = useGameStore()
+  const breakdown = getProductionBreakdown(fullState)
+  const totalMult = getProductionMultiplier(fullState)
 
   const totalPurchased = tiers.reduce((sum, t) => sum + t.purchased, 0)
 
@@ -112,24 +112,7 @@ export function StatsPanel() {
             <span className="text-sm text-text-primary font-medium tabular-nums">x{formatNumber(f.value, 2)}</span>
           </div>
         ))}
-        <p className="text-[11px] text-text-muted pt-1">All factors multiply together to set your production rate.</p>
-      </div>
-
-      <div className="rounded-xl border border-danger/30 bg-bg-secondary/40 p-4 space-y-3">
-        <h2 className="text-xs font-semibold text-danger uppercase tracking-wider">Danger Zone</h2>
-        <p className="text-sm text-text-muted">Reset all progress. This cannot be undone.</p>
-        <Button
-          onClick={() => {
-            if (window.confirm('Are you sure? All progress will be lost!')) {
-              hardReset()
-            }
-          }}
-          variant="ghost"
-          size="md"
-          className="border-danger/30 text-danger hover:bg-danger/20 hover:border-danger/50 hover:text-danger"
-        >
-          Hard Reset
-        </Button>
+        <p className="text-[11px] text-text-muted pt-1">All factors multiply together to set your production rate. Hard reset lives in Settings.</p>
       </div>
     </div>
   )
