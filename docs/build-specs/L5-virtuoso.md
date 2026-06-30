@@ -1,9 +1,25 @@
 # L5 — Virtuoso build-spec: "Perfect Take"
 
-> **Status:** implementation-ready. Build target for a FRESH session. **Depends on L4 Signature shipping
-> first** (L5 is the 5th rung; the ladder is built sequential — `LADDER-MECHANICS.md:3-5`). Numbers marked
-> **TBD — decide-at-build (sim/playtest)** are deliberately unset; resolve them from the L5 sim, do NOT
-> invent magnitudes blind (`HARDENING-PLAN.md:107`).
+> **🔄 REFRESH (2026-07-01) — read before the body; the body predates these:**
+> - **Dependencies now BUILT on `feat/layer4`** (the body still says "pending/not built"): the **M9
+>   multiplier-registry + `applyReset`/`resetTier`** (`src/core/multiplierRegistry.ts`, `resets.ts`), the
+>   **M11 non-finite guard** (`guards.ts`), and **L4 Signature** (`signature.ts`). So build L5's production
+>   payoff through the **real M9 `mastery` channel + `CHANNEL_CAPS`** and register its `resetTier` in
+>   `applyReset` — the §2/§4.6 "imperative fallback" branches are now MOOT, use the registry path.
+> - **Save schema is at v4** (not the body's "bump to 2"). L5 adds **migration 5** + bump
+>   `SAVE_SCHEMA_VERSION` 4→5; settings/hotkeys live in the schema now (see `saveMigration.ts`).
+> - **Gate-behind-proof (genre-audit §D4):** do NOT build L5 until L4 is *proven* (Vince's L4 tuning
+>   playtest). This spec is forward design; it stays unbuilt until L4's verb is confirmed distinct + paced.
+> - **L5 is squarely "not-AD" already** (it inverts brute-maximize → scores consistency) — keep it that way;
+>   it's one of the game's strongest identity beats.
+> - **⚠ Cross-layer coherence to resolve (NEW):** the genre-audit's **Tempo risk/reward dial** (a not-AD
+>   core lever, §D2) makes *spiking* tempo a deliberate tactic, while L5 scores *smooth growth* (spikes = the
+>   sin). These must be reconciled — see the new §10 + the open question. Also: L5's `virtuoso` cold-open
+>   beat should glow a god's constellation per the cold-open progressive-reveal (`docs/PLAYTEST-FEEDBACK.md`).
+>
+> **Status:** implementation-ready (design). Build target for a FRESH session, AFTER L4 is proven. Numbers
+> marked **TBD — decide-at-build (sim/playtest)** are deliberately unset; resolve them from the L5 sim, do
+> NOT invent magnitudes blind (`HARDENING-PLAN.md:107`).
 >
 > **Authoritative design sources** this spec implements:
 > `LADDER-MECHANICS.md:80-99` (the locked L5 mechanic) · `HARDENING-PLAN.md:17-20` + `:60` (decision D4 —
@@ -456,6 +472,31 @@ Render the **corridor / band UI** (the hardening plan explicitly calls for it �
    confirm at build (`LADDER-MECHANICS.md:30` "likely never"); verify the permanent floor doesn't breach B3.
 7. **Unlock gate:** the exact L4→L5 ascension condition (mirror `canUnlockWorldTour`'s gate shape).
 8. **`virtuoso` beat fingerprint copy** — the replacement for "(We were never the living.)" (Vince signs off).
+
+---
+
+## 10. Cross-layer coherence (added 2026-07-01, from the genre-audit)
+
+These are design rulings to confirm with Vince (Q&A), not yet locked:
+
+1. **Tempo dial (§D2 not-AD lever) × L5 "in-tempo".** If L0 Tempo becomes a *risk/reward dial* where
+   spiking buys a burst, that directly opposes L5 scoring *smooth growth* (spikes = the sin). Three ways to
+   reconcile — pick one at build:
+   - **(a) Intentional tension (recommended):** the dial is the *instrument*; L5 mastery = playing it
+     *smoothly under control* (resist the cheap spike). The two layers are in deliberate dialogue —
+     spiking is good short-term (dial) but costs you Take-area (L5). This is rich and on-theme ("control").
+   - **(b) Decouple:** L5 reads a *different* signal than the dial-affected rate (e.g. tier-purchase cadence,
+     or production *excluding* the dial's burst term), so the dial doesn't muddy the consistency read.
+   - **(c) Sequence them apart:** ship the Tempo dial as an L0 identity change first, prove it, then design
+     L5's "smooth" definition *around* the dial's final behavior. (Fits gate-behind-proof.)
+   Naming note still applies: L1 `tempo.level` (BPM), the L0 Tempo *dial*, and L5 "in-tempo" (rate
+   consistency) are THREE distinct concepts — keep the vocabulary unambiguous in code + UI.
+
+2. **Cold-open reveal god for the `virtuoso` beat.** Per the progressive-reveal design, each cold-open glows
+   a god's constellation. The `virtuoso` beat (mastery/consistency, "near-blaze" era) has no obvious single
+   domain — candidates: **the Maestro** (mastery/control = the conductor, and it foreshadows the origin) or
+   **no specific god** (a faint many-as-one shimmer). The existing line-2 pullback (§1 MINOR) is the same
+   edit; resolve copy + reveal-god together.
 
 ---
 
