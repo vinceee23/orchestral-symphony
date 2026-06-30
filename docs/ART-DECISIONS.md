@@ -35,7 +35,9 @@
 
 ---
 
-## D2 — Achievement art (1 of 100)  ⭐ biggest coverage gap  · 🔄 Vince exploring LOCAL-GPU generation (RX 6700 XT) — no Gemini credits. See the GPU plan in chat / below.
+## D2 — Achievement art (1 of 100)  ◐ IN PROGRESS 2026-07-01
+> **Resolved approach:** (1) ✅ **glyph fallback shipped** — every achievement now renders a styled gold-on-midnight badge (emoji glowing in a deco frame) instead of raw emoji; the wall reads as intentional. The loader tries `<id>.png` → `<id>.jpg` → badge, so generated art drops in and overrides. (2) 🔄 **local-gen kit ready** (`art/achievements/` + `art/gen-achievements-comfy.mjs`) — ComfyUI+ZLUDA on the RX 6700 XT, **no Gemini credits**. Pilot of 6 (ach_real_life A/B + 5 impactful/reachable) with a shared cinematic style for consistency. **Vince runs the gen on his GPU**, then we judge + scale up.
+
 **Options:**
 - **A (no credits, recommended for the trial): a designed glyph/emblem fallback** — instead of raw OS emoji (inconsistent Windows/Mac/mobile, clashes with the gold deco), render each achievement's icon as a styled gold-on-midnight badge (consistent frame, the existing emoji or an SVG centered in the deco treatment). Looks *intentional*, ships now, costs nothing.
 - **B: generate ~100 bespoke emblems** via `art/gen-emblems.mjs` (Gemini) — best looking, but real credits + curation time.

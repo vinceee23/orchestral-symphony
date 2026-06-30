@@ -4,6 +4,8 @@ import { ACHIEVEMENTS, type AchievementConfig } from '../../core/achievements'
 import { getMilestoneTickspeedMultiplier } from '../../core/formulas'
 
 const COLS = 7
+// Try .png first (ComfyUI / local-gen output, overrides any legacy file) then .jpg, then the glyph badge.
+const ACH_ART_EXTS = ['png', 'jpg']
 
 function achievementDisplay(ach: AchievementConfig, unlocked: boolean) {
   const masked = Boolean(ach.hidden) && !unlocked
@@ -26,36 +28,52 @@ function AchievementImage({
   dim: boolean
   masked: boolean
 }) {
-  const [failed, setFailed] = useState(false)
+  const [extIdx, setExtIdx] = useState(0)
 
   useEffect(() => {
-    setFailed(false)
+    setExtIdx(0)
   }, [id])
 
   const dimClass = dim ? 'grayscale opacity-40' : ''
 
+  // Sealed badge for a hidden/locked achievement — mysterious, not broken.
   if (masked) {
     return (
-      <span className={`flex items-center justify-center w-full h-full text-lg font-display text-text-muted ${dimClass}`}>
-        ???
+      <span
+        className={`flex items-center justify-center w-full h-full text-lg font-display text-accent-gold/40 ${dimClass}`}
+        style={{
+          background: 'radial-gradient(70% 70% at 50% 42%, rgba(212,168,67,0.06), rgba(10,10,15,0.95) 80%)',
+          boxShadow: 'inset 0 0 0 1px rgba(212,168,67,0.12)',
+        }}
+      >
+        ?
       </span>
     )
   }
 
-  if (failed) {
+  // Designed fallback for achievements without bespoke art: the emoji glowing on a gold-on-midnight
+  // deco badge, so the wall reads as intentional (not a failed image load) until real art is generated.
+  if (extIdx >= ACH_ART_EXTS.length) {
     return (
-      <span className={`flex items-center justify-center w-full h-full ${dimClass}`}>
-        {icon}
+      <span
+        className={`flex items-center justify-center w-full h-full text-2xl ${dimClass}`}
+        style={{
+          background: 'radial-gradient(70% 70% at 50% 42%, rgba(212,168,67,0.18), rgba(10,10,15,0.95) 78%)',
+          boxShadow: 'inset 0 0 0 1px rgba(212,168,67,0.25)',
+        }}
+      >
+        <span style={{ filter: 'drop-shadow(0 1px 5px rgba(212,168,67,0.55))' }}>{icon}</span>
       </span>
     )
   }
 
   return (
     <img
-      src={`${import.meta.env.BASE_URL}achievements/${id}.jpg`}
+      key={extIdx}
+      src={`${import.meta.env.BASE_URL}achievements/${id}.${ACH_ART_EXTS[extIdx]}`}
       alt=""
       className={`w-full h-full object-cover ${dimClass}`}
-      onError={() => setFailed(true)}
+      onError={() => setExtIdx((i) => i + 1)}
     />
   )
 }
