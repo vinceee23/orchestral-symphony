@@ -35,7 +35,24 @@
 
 ---
 
-## D2 — Achievement art (1 of 100)  ◐ glyph fallback SHIPPED · local-gen SHELVED (gfx1031/ZLUDA wall)
+## D2 — Achievement art (1 of 100)  ◐ WORKING via local AMD gen (cuDNN-off) — 2D style + batch workflow locked
+> **UPDATE 2026-07-01 (later): LOCAL GEN WORKS.** Codex disabled cuDNN in `comfy/zluda.py` (defaults off on
+> AMD — SDXL still segfaults on gfx1031, SD1.5 runs fine). Server via the scratchpad `run-comfy-server.bat`.
+> The "shelved" writeup below is now historical.
+>
+> **Art direction (Vince's calls):** flat **2D ILLUSTRATED** emblems (NOT 3D/photoreal — the game is 2D),
+> **single ICONIC subject** centered (must read at ~100px tile size), **gold-on-midnight**, **NO text**.
+> **Reference-guided** (img2img/ControlNet from an **EVOCATIVE** subject — the idea the song-pun evokes, NOT
+> literal album covers) on a **proper illustration checkpoint** (SD1.5-base alone is too sloppy + hallucinates
+> text). Style/subjects/negative live in `art/achievements/prompts.json`.
+>
+> **Batch workflow (LOCKED):** (1) Codex proves the pilot (Let It Be first); (2) freeze model+style+settings
+> from the approved pilot so every batch is consistent by construction; (3) Codex generates in **batches of 10**
+> and assembles each into **ONE labeled contact-sheet grid**; (4) **Claude QAs the grid** for style
+> consistency (opens individuals only if one looks off — saves Claude vision budget); (5) **flag off-style →
+> Codex regenerates just those before the next batch**; (6) **Claude curates the evocative subject per batch**
+> (song-pun → icon). Repeat to ~100. Claude commits each approved batch.
+>
 > **2026-07-01 ZLUDA attempt (full writeup so a future session / Codex can resume):** Installed ComfyUI-Zluda
 > for the RX 6700 XT (gfx1031): HIP SDK 6.2.4 + the **gfx1031 rocBLAS** community libs (littlewu build) +
 > a **Defender folder exclusion** (ZLUDA is a flagged false-positive) + ZLUDA nightly. **The server boots

@@ -1,14 +1,15 @@
 {
   "_comment": "Achievement art prompts for local generation. Style targets the EXISTING ach_real_life.jpg look: cinematic, theatrical, dark-with-gold, square. Each subject is themed to the achievement's song-pun name (not its unlock condition). Keep `style` + `negative` IDENTICAL across all items for a consistent set; only `subject` changes. Output → public/achievements/<id>.png (the app loads .png then .jpg).",
-  "style": "cinematic concert photography, single dramatic theatrical spotlight, dark moody atmosphere, warm golden light and soft haze, deep rich shadows, ornate opera-house / grand-stage setting, elegant and reverent, volumetric light, highly detailed, 1:1 square composition",
-  "negative": "text, words, letters, caption, watermark, signature, logo, ui, frame, border, cartoon, flat vector, anime, low quality, blurry, jpeg artifacts, deformed, extra limbs, extra fingers, washed out, oversaturated neon",
+  "style": "2D illustrated emblem, painterly art-deco poster, bold ICONIC composition with the subject large and centered filling the frame, warm gold and amber on a deep midnight-blue background, clean confident shapes with a soft luminous glow, elegant and reverent, orchestral music theme, flat hand-illustrated look (no photographic depth), matches a gold-on-black music game's 2D art, 1:1 square",
+  "negative": "text, words, letters, typography, captions, label, gibberish text, fake writing, signature, watermark, logo, photorealistic, 3d render, photograph, realistic skin, cinematic photo, depth of field, bokeh, lens flare, busy cluttered background, ornate border, picture frame, wide empty stage, tiny distant subject, low quality, blurry, deformed, extra limbs",
   "settings": { "width": 1024, "height": 1024, "steps": 30, "cfg": 6.5, "sampler_name": "dpmpp_2m", "scheduler": "karras", "seed_base": 777000 },
+  "_subject_note": "EVOCATIVE, not literal — the IDEA the song-pun evokes, as a single bold ICONIC object/silhouette centered on a near-empty background. NOT a busy scene. Reference-guided img2img should ground each on a clean reference of this subject.",
   "items": [
-    { "id": "ach_real_life", "name": "Is This the Real Life?", "subject": "a lone operatic rock singer in a dramatic feathered tricorn hat and gold-embroidered black velvet cape, arms thrown wide mid-aria, silhouetted in a single overhead spotlight on a dark opera-house stage, Bohemian Rhapsody grandeur" },
-    { "id": "ach_let_it_be", "name": "Let It Be", "subject": "a solitary grand piano on a quiet darkened stage, one calm beam of golden light falling on the open keys, peaceful and still, a single empty chair, serene reverence" },
-    { "id": "ach_magnum", "name": "Magnum Opus", "subject": "a triumphant conductor seen from behind mid-flourish, baton raised, before a full glowing orchestra bathed in golden light, a faint laurel-wreath of light overhead, the crowning masterwork" },
-    { "id": "ach_purple_rain", "name": "Purple Rain", "subject": "a lone guitarist on a rain-soaked stage under deep purple stage light, rain streaking through the beams, a single warm-gold key light, soulful and dramatic" },
-    { "id": "ach_one_more", "name": "One More Time", "subject": "an encore moment on a grand stage, a single spotlight returning, a glowing spinning vinyl record motif in the light, raised hands of a darkened crowd below, warm gold glow, the call for one more" },
-    { "id": "ach_seven_nation", "name": "Seven Nation Army", "subject": "a lone drummer striking a great timpani in a thunderous pool of dramatic light, dust and reverberation in the air, bold and relentless rhythm, dark stage, gold rim light" }
+    { "id": "ach_real_life", "name": "Is This the Real Life?", "subject": "four faceless heads in a row emerging from deep shadow (the iconic Bohemian Rhapsody silhouette), centered" },
+    { "id": "ach_let_it_be", "name": "Let It Be", "subject": "a single grand piano, lid raised, calm and serene, one soft beam of light, centered on a near-empty background" },
+    { "id": "ach_magnum", "name": "Magnum Opus", "subject": "a laurel wreath crowning a single conductor's baton, a crowning masterwork emblem, centered" },
+    { "id": "ach_purple_rain", "name": "Purple Rain", "subject": "a single electric guitar standing upright with rain falling around it, centered silhouette" },
+    { "id": "ach_one_more", "name": "One More Time", "subject": "a single glowing vinyl record spinning, an encore call, centered" },
+    { "id": "ach_seven_nation", "name": "Seven Nation Army", "subject": "a single bold marching bass drum, relentless rhythm, centered emblem" }
   ]
 }
