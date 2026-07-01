@@ -2,98 +2,21 @@
 import Decimal from 'break_infinity.js'
 import { useUiStore } from '../store/uiStore'
 import { useGameStore } from '../store/gameStore'
-import {
-  TIER_CONFIGS,
-  AUTOBUYER_DEFAULT_INTERVAL,
-  PLATINUM_THRESHOLD,
-} from '../core/constants'
-import { getMilestoneMultiplier, getTempoBPM, getTempoTickInterval } from '../core/formulas'
-import { LAST_VENUE_ID, L3 } from '../core/worldTour'
-import { OPUS_UPGRADES } from '../core/opusUpgrades'
-import { ENCORE_UPGRADES } from '../core/encoreUpgrades'
-import type { GameState } from '../store/types'
+import { buildLayerJumpPatch } from './layerJump'
 
 // DEV-only pacing tool. Shows ONLY on the dev server (npm run dev) AND only when the URL opts in
 // with ?dev (e.g. http://localhost:5173/?dev). Never present in the shipped .exe (import.meta.env.DEV is false).
 const DEV_ON = import.meta.env.DEV && /(?:[?&#])dev\b/.test(location.search + location.hash)
 
 const SPEEDS = [1, 10, 100, 1000]
-
-// --- Layer-jump: drop into a realistic state for a target layer, then grant every achievement its
-// state earns (checkAchievements → "all possible at that layer, from the sim's own checks"). Cumulative:
-// L2 includes L0–L2 unlocks. Escalating SW/tempo per layer; automation (autobuyers) only from L2 (its
-// reveal), so a lower-layer jump doesn't misgrant automation achievements.
 const LAYERS = ['L0', 'L1', 'L2', 'L3', 'L4'] as const
-const LAYER_SW = ['1e6', '1e15', '1e45', '1e120', '1e240'] as const
 
-const maxedTiers = (n: number): GameState['tiers'] =>
-  TIER_CONFIGS.map((c) => ({
-    id: c.id,
-    name: c.name,
-    quantity: new Decimal(n),
-    purchased: n,
-    multiplier: getMilestoneMultiplier(n),
-    unlocked: true,
-  }))
-
-const allAutobuyers = (): GameState['autobuyers'] => {
-  const ab: GameState['autobuyers'] = {}
-  for (let i = 1; i <= 7; i++) {
-    ab[`tier_${i}`] = { unlocked: true, enabled: true, interval: AUTOBUYER_DEFAULT_INTERVAL, bulk: 'max', lastTick: 0 }
-  }
-  return ab
-}
-
-const maxedMap = (defs: { id: string; maxLevel: number }[]) =>
-  Object.fromEntries(defs.map((u) => [u.id, u.maxLevel]))
-
+// Wipe to a realistic state for a target layer (its automations unlocked + enabled) and grant every
+// achievement that state earns — "all possible at that layer, from the sim's own checks".
 function jumpToLayer(layer: number) {
-  const store = useGameStore.getState()
-  store.hardReset()
-  const sw = new Decimal(LAYER_SW[layer])
-  const patch: Partial<GameState> = {
-    tiers: maxedTiers(layer === 0 ? 50 : 100),
-    tempo: (() => {
-      const level = 8 + layer * 4
-      return { level, tickInterval: getTempoTickInterval(level), baseBPM: getTempoBPM(level) }
-    })(),
-    soundwaves: sw,
-    peakSoundwaves: sw,
-  }
-  if (layer >= 1) {
-    patch.layer1WallReached = true
-    patch.encoreCount = 8
-    patch.lifetimeEncoreCount = 8
-    patch.encorePoints = 500
-    patch.lifetimeEncorePoints = 500
-    patch.applausePoints = 200
-    patch.encoreUpgrades = maxedMap(ENCORE_UPGRADES)
-  }
-  if (layer >= 2) {
-    patch.opusCount = 12
-    patch.opusPoints = 500
-    patch.opusUpgrades = maxedMap(OPUS_UPGRADES)
-    patch.recordsSold = PLATINUM_THRESHOLD * 3
-    patch.platinum = true
-    patch.postPlatinumMoCount = L3.GATE_POST_PLAT_MO
-    patch.peakCrescendoMult = 3
-    patch.autobuyers = allAutobuyers() // automation reveal is L2 (opus automators)
-  }
-  if (layer >= 3) {
-    patch.worldTourUnlocked = true
-    patch.tourCount = 4
-    patch.currentVenue = LAST_VENUE_ID
-    patch.lifetimeAcclaim = new Decimal('1e6')
-    patch.acclaim = new Decimal('1e4')
-  }
-  if (layer >= 4) {
-    patch.circuitComplete = true
-    patch.signatureUnlocked = true
-    patch.signatureCount = 5
-    // signatureAllocation left at zero so you set your own Signature in the panel — the point of the feel-test.
-  }
-  useGameStore.setState(patch)
-  useGameStore.getState().checkAchievements() // grant every achievement the jumped state satisfies
+  useGameStore.getState().hardReset()
+  useGameStore.setState(buildLayerJumpPatch(layer))
+  useGameStore.getState().checkAchievements()
 }
 
 export function DevPanel() {
@@ -143,7 +66,7 @@ export function DevPanel() {
           <button
             key={label}
             onClick={() => jumpToLayer(i)}
-            title={`Reset to a realistic ${label} state + grant every achievement it earns`}
+            title={`Reset to a realistic ${label} state (its automations on) + grant every achievement it earns`}
             className={btn}
           >
             {label}
@@ -151,7 +74,8 @@ export function DevPanel() {
         ))}
       </div>
       <div className="text-[9px] text-text-muted/70 leading-tight max-w-[190px]">
-        Jump wipes progress → seeds that layer + its achievements. L4 reveals the Signature tab (dev only).
+        Jump wipes progress → seeds that layer, its achievements, and its automations. L1 auto-encores;
+        L2+ auto-buys tiers + Magnum Opus; L4 reveals Signature (dev only).
       </div>
     </div>
   )

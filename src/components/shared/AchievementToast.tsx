@@ -64,24 +64,25 @@ export function AchievementToast() {
   if (toasts.length === 0) return null
 
   return (
-    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
+    <div className="fixed top-1/2 -translate-y-1/2 right-4 z-50 flex flex-col gap-3 pointer-events-none">
       {toasts.map((toast) => (
         <div
           key={toast.key}
-          className="pointer-events-auto animate-slide-in-right bg-bg-primary/95 backdrop-blur border border-accent-gold/40 rounded-lg p-3 shadow-lg shadow-accent-gold/10 max-w-xs"
+          className="pointer-events-auto animate-slide-in-right bg-bg-primary/95 backdrop-blur border border-accent-gold/50 rounded-xl p-4 shadow-xl shadow-accent-gold/20 max-w-sm"
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <img
               src={`${import.meta.env.BASE_URL}achievements/${toast.id}.png`}
               alt=""
-              className="w-9 h-9 shrink-0 rounded object-cover"
+              className="w-16 h-16 shrink-0 rounded-lg object-cover"
               onError={(e) => { e.currentTarget.src = `${import.meta.env.BASE_URL}achievements/_placeholder.png` }}
             />
             <div className="min-w-0">
-              <div className="text-xs text-accent-gold font-semibold truncate">
+              <div className="text-[10px] uppercase tracking-wider text-text-muted mb-0.5">Achievement unlocked</div>
+              <div className="text-base text-accent-gold font-semibold truncate">
                 {toast.name}
               </div>
-              <div className="text-[10px] text-text-muted">
+              <div className="text-xs text-text-muted">
                 {toast.rewardDescription}
               </div>
             </div>
