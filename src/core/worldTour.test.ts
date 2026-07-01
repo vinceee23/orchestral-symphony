@@ -18,6 +18,8 @@ import {
   isAutoMOUnlocked,
   canAutoPerformMagnumOpus,
   calculateWorldTourTick,
+  buildVenueGraduationPatch,
+  LAST_VENUE_ID,
 } from './worldTour'
 import { DEFAULT_SETTINGS } from './constants'
 import type { GameState } from '../store/types'
@@ -113,6 +115,25 @@ describe('worldTour helpers', () => {
       recordsSold: 1_000_000,
     })
     expect(post).toBeGreaterThan(10)
+  })
+
+  it('circuit capstone completes the circuit WITHOUT revealing L4 in the trial build', () => {
+    const patch = buildVenueGraduationPatch(minimalState({ currentVenue: LAST_VENUE_ID }), false)
+    expect(patch?.circuitComplete).toBe(true)
+    expect(patch && 'signatureUnlocked' in patch).toBe(false) // trial must never leak L4
+  })
+
+  it('circuit capstone reveals L4 Signature in the full-game build', () => {
+    const patch = buildVenueGraduationPatch(minimalState({ currentVenue: LAST_VENUE_ID }), true)
+    expect(patch?.circuitComplete).toBe(true)
+    expect(patch?.signatureUnlocked).toBe(true)
+  })
+
+  it('graduating a non-final venue advances the ladder, not the circuit', () => {
+    const patch = buildVenueGraduationPatch(minimalState({ currentVenue: 0 }), true)
+    expect(patch?.currentVenue).toBe(1)
+    expect(patch?.circuitComplete).toBeUndefined()
+    expect(patch?.signatureUnlocked).toBeUndefined()
   })
 
   it('venue ladder has heterogeneous escalating components', () => {

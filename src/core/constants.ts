@@ -1,6 +1,11 @@
 import Decimal from 'break_infinity.js'
 
-/** Layer 4 gate — auto-tour and other L4 rewards stay disabled until this flips. */
+/**
+ * FULL_GAME build gate. `false` = public L0–L3 trial (web); `true` = full game (mobile/Steam),
+ * which reveals the L4 Signature layer on L3 circuit completion. Flip per build; keep `false` on
+ * the trial/master so L4 never leaks publicly.
+ * TODO: promote to a build-time env flag (e.g. VITE_FULL_GAME) once the mobile/Steam pipeline lands.
+ */
 export const L4_UNLOCKED = false
 
 export const TIER_COUNT = 7

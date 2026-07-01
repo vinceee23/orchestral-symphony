@@ -1,4 +1,5 @@
 import type { GameState } from '../../store/types'
+import { L4_UNLOCKED } from '../../core/constants'
 
 /** Story beat ids — extend with L4–L9 when those layers ship. */
 export type StoryBeatId =
@@ -9,7 +10,8 @@ export type StoryBeatId =
   | 'first_records'
   | 'platinum'
   | 'world_tour'
-  | 'trial_complete'
+  | 'trial_complete'   // trial build only (L4_UNLOCKED false)
+  | 'circuit_complete' // full game only — the L4 Signature reveal
   // Future (copy in STORY-SPEC §7; triggers not wired yet):
   | 'signature'
   | 'virtuoso'
@@ -35,6 +37,7 @@ export const STORY_BEAT_ORDER: StoryBeatId[] = [
   'platinum',
   'world_tour',
   'trial_complete',
+  'circuit_complete',
   'signature',
 ]
 
@@ -109,6 +112,16 @@ export const STORY_BEATS: Record<StoryBeatId, StoryBeatDefinition> = {
       'The last venue empties into silence.',
       'Six stages carried your name as far as this trial can take it.',
       'The Sonance continues...',
+    ],
+  },
+  // Full-game capstone of the L3 circuit — the moment L4 Signature is revealed.
+  circuit_complete: {
+    id: 'circuit_complete',
+    goldLevel: 0.78,
+    lines: [
+      'The last venue empties into silence.',
+      'Six stages carried your name as far as the circuit reaches.',
+      'What comes next is not louder — it is only, unmistakably, yours.',
     ],
   },
   // --- L4–L9: registry placeholders for future wiring ---
@@ -194,7 +207,9 @@ export function isBeatConditionMet(id: StoryBeatId, state: BeatGateState): boole
     case 'world_tour':
       return state.worldTourUnlocked
     case 'trial_complete':
-      return state.circuitComplete
+      return state.circuitComplete && !L4_UNLOCKED // trial build stops here
+    case 'circuit_complete':
+      return state.circuitComplete && L4_UNLOCKED // full game reveals L4 here
     case 'signature':
       return state.signatureCount >= 1
     default:
@@ -257,7 +272,7 @@ export function seedSeenStoryBeatsFromProgress(state: MigrationState): string[] 
   if (state.recordsSold >= 1) seen.push('first_records')
   if (state.platinum) seen.push('platinum')
   if (state.worldTourUnlocked) seen.push('world_tour')
-  if (state.circuitComplete) seen.push('trial_complete')
+  if (state.circuitComplete) seen.push(L4_UNLOCKED ? 'circuit_complete' : 'trial_complete')
   if (state.signatureCount >= 1) seen.push('signature')
   return seen
 }

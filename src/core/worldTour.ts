@@ -1,5 +1,5 @@
 import Decimal from 'break_infinity.js'
-import { PLATINUM_THRESHOLD, getMagnumOpusCost } from './constants'
+import { PLATINUM_THRESHOLD, getMagnumOpusCost, L4_UNLOCKED } from './constants'
 import type { GameState } from '../store/types'
 
 export type ComponentTarget =
@@ -343,6 +343,7 @@ export function isVenueGraduatable(
 /** Build state patch for graduating the current venue (manual or auto). */
 export function buildVenueGraduationPatch(
   state: Pick<GameState, 'currentVenue' | 'autoMO' | 'autoMOEnabled' | 'circuitComplete'>,
+  fullGame: boolean = L4_UNLOCKED,
 ): Partial<GameState> | null {
   if (state.circuitComplete) return null
 
@@ -354,8 +355,9 @@ export function buildVenueGraduationPatch(
   }
 
   if (state.currentVenue >= LAST_VENUE_ID) {
-    // L0-L3 trial capstone: finish the circuit without revealing the L4 Signature layer.
-    return { ...base, circuitComplete: true }
+    // Circuit capstone. Trial (L4_UNLOCKED false): finish without revealing L4. Full game: this is
+    // the instant L4 Signature is revealed (decision: reveal on circuit complete, no extra gate).
+    return { ...base, circuitComplete: true, ...(fullGame ? { signatureUnlocked: true } : {}) }
   }
 
   return { ...base, currentVenue: state.currentVenue + 1 }
