@@ -281,7 +281,9 @@ export function playStoryBeatSound() {
 // A slow generative pad drifting through a warm C-major progression (I–IV–V–vi) — a hall breathing
 // under the game. Long overlapping swells + heavy reverb = a continuous wash, not a melody. Routed
 // through its own gain so it levels/mutes independently of the SFX.
-const PAD_CHORDS = [[0, 2, 4], [3, 5, 7], [4, 6, 8], [5, 7, 9]] // SCALE indices: I, IV, V, vi
+// A longer progression (I–vi–IV–V–iii–vi–ii–V) so the loop isn't obvious. SCALE indices.
+const PROG = [[0, 2, 4], [5, 7, 9], [3, 5, 7], [4, 6, 8], [2, 4, 6], [5, 7, 9], [1, 3, 5], [4, 6, 8]]
+let melodyIdx = 2 // random-walk index into PENTATONIC for a wandering top voice
 
 function applyMusicGain() {
   if (!musicGain || !audioCtx) return
@@ -313,12 +315,17 @@ function scheduleMusic() {
   if (!musicOn) return
   const ctx = getContext()
   if (ctx.state === 'running') {
-    const chord = PAD_CHORDS[musicStep % PAD_CHORDS.length]
-    chord.forEach((idx) => playPad(SCALE[idx] / 2, 7.5, 0.05)) // warm low pad (octave down)
-    if (musicStep % 2 === 1) playPad(PENTATONIC[musicStep % PENTATONIC.length], 5, 0.02) // faint upper air
+    const chord = PROG[musicStep % PROG.length]
+    playPad(SCALE[chord[0]] / 2, 8.5, 0.05) // low root foundation
+    chord.forEach((idx) => playPad(SCALE[idx] / 2, 7.5, 0.038)) // warm triad (octave down)
+    if (Math.random() < 0.45) playPad(SCALE[(chord[2] + 2) % SCALE.length], 6, 0.022) // color tone — 7th/9th shimmer
+    if (Math.random() < 0.75) { // wandering melody: random walk over the pentatonic, varied octave
+      melodyIdx = Math.max(0, Math.min(PENTATONIC.length - 1, melodyIdx + (Math.floor(Math.random() * 3) - 1)))
+      playPad(PENTATONIC[melodyIdx] * (Math.random() < 0.5 ? 1 : 2), 4.5, 0.02)
+    }
     musicStep++
   }
-  musicTimer = setTimeout(scheduleMusic, 5200) // < the 7.5s pad length → chords overlap into a wash
+  musicTimer = setTimeout(scheduleMusic, 4200 + Math.random() * 2600) // varied 4.2–6.8s cadence < pad length → overlap
 }
 
 /** Start the ambient bed. Safe on mount; latches onto the first user gesture (browser autoplay policy). */
