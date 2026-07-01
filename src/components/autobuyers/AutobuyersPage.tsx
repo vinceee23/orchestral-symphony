@@ -1,5 +1,5 @@
 import { useGameStore } from '../../store/gameStore'
-import { TIER_CONFIGS, AUTOBUYER_BULK_TIERS, AUTOBUYER_DEFAULT_INTERVAL, AP_UNLOCK } from '../../core/constants'
+import { TIER_CONFIGS, AUTOBUYER_BULK_TIERS, AUTOBUYER_DEFAULT_INTERVAL, AP_UNLOCK, getAutoEncoreInterval } from '../../core/constants'
 import {
   getAutomatorInterval,
   getAutomatorBulk,
@@ -97,7 +97,13 @@ export function AutobuyersPage() {
             const ab = autobuyers[key]!
             const isTier = key.startsWith('tier_')
             const effectiveBulk = clampAutobuyerBulk(ab.bulk, bulkCap)
-            const interval = isTier ? opInterval : (ab.interval || AUTOBUYER_DEFAULT_INTERVAL)
+            // Auto-encore's real cadence is getAutoEncoreInterval(opusCount) (60s→2s, "weak at first"),
+            // NOT the stored 500ms field — show the truth so it doesn't read as broken.
+            const interval = isTier
+              ? opInterval
+              : key === 'encore'
+                ? getAutoEncoreInterval(opusCount)
+                : (ab.interval || AUTOBUYER_DEFAULT_INTERVAL)
             const displayBulk = availableBulkTiers.includes(ab.bulk) ? ab.bulk : effectiveBulk
 
             return (

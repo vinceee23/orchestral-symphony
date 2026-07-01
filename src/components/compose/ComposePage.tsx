@@ -152,12 +152,6 @@ export function ComposePage() {
       <div className="relative z-10 h-full overflow-y-auto flex flex-col items-center px-4 py-5 [scrollbar-gutter:stable_both-edges]">
         <SoundwaveDisplay />
         <div className="w-full max-w-3xl mt-1"><TempoBar /></div>
-        {visibleHint && (
-          <div className="w-full max-w-xl mt-3">
-            <HintCard hint={visibleHint} onDismiss={dismissHint} />
-          </div>
-        )}
-
         <div className="w-full max-w-5xl flex items-center justify-end mt-5 mb-1">
           <BuyAmountToggle />
         </div>
@@ -176,6 +170,14 @@ export function ComposePage() {
           </div>
         </div>
       </div>
+
+      {/* Contextual hint floats OVER the stage (absolute) so showing it doesn't push the producers
+          down into the Conduct area. pointer-events gated so only the card itself is interactive. */}
+      {visibleHint && (
+        <div className="pointer-events-none absolute top-36 left-1/2 z-30 w-full max-w-xl -translate-x-1/2 px-4">
+          <div className="pointer-events-auto"><HintCard hint={visibleHint} onDismiss={dismissHint} /></div>
+        </div>
+      )}
 
       {/* Reach zone — records selling → Platinum, along the bottom of the stage (L2+) */}
       <RecordsMeter />

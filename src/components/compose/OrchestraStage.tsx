@@ -150,7 +150,7 @@ export function OrchestraStage() {
   })
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {/* generous padding so the buy-pop (rises ~22px), unlock/milestone rings (scale to 1.9x) and the
           arc translateY never overflow this scroll box — otherwise overflow-x:auto forces a transient
           overflow-y scrollbar on every buy. */}
