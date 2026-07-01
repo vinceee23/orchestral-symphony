@@ -13,6 +13,8 @@ const mem: Record<string, string> = {}
 
 const { useGameStore } = await import('../src/store/gameStore')
 const { buildLayerJumpPatch } = await import('../src/dev/layerJump')
+const { TIER_CONFIGS, AUTOBUYER_DEFAULT_INTERVAL } = await import('../src/core/constants')
+const { getTierCost, getMilestoneMultiplier } = await import('../src/core/formulas')
 
 const PINNED_NOW = 1_900_000_000_000
 
@@ -63,6 +65,30 @@ describe('layer-jump automations actually autobuy', () => {
     const before = useGameStore.getState().opusCount
     runTicks(60)
     expect(useGameStore.getState().opusCount).toBeGreaterThan(before)
+  })
+
+  // Drift guard for the Rehearsal bug: the Encore-shop cost discount MUST reach autobuyer buys, not
+  // just manual buys. SW is set affordable ONLY with the 25% discount — a buy proves the discount applied.
+  it('Rehearsal discount reaches autobuyer buys', () => {
+    jump(2, { autoMO: false, autoMOEnabled: false })
+    const cfg = TIER_CONFIGS[0]
+    const purchased = 20
+    const fullCost = getTierCost(cfg, purchased, 1) // undiscounted unit cost at this bracket
+    useGameStore.setState({
+      encoreUpgrades: { rehearsal: 5 }, // -5%/lvl ×5 = 25% off
+      tiers: TIER_CONFIGS.map((c, i) => ({
+        id: c.id, name: c.name,
+        quantity: new Decimal(0), // no production noise — SW must come only from the seeded budget
+        purchased: i === 0 ? purchased : 0,
+        multiplier: i === 0 ? getMilestoneMultiplier(purchased) : new Decimal(1),
+        unlocked: true,
+      })),
+      autobuyers: { tier_1: { unlocked: true, enabled: true, interval: AUTOBUYER_DEFAULT_INTERVAL, bulk: 1, lastTick: 0 } },
+      soundwaves: fullCost.times(0.9), // ≥ 0.75×cost (discounted) but < 1×cost (undiscounted)
+      peakSoundwaves: fullCost.times(0.9),
+    })
+    runTicks(1)
+    expect(useGameStore.getState().tiers[0].purchased).toBe(purchased + 1)
   })
 
   it('auto-Tour fires during a post-Signature re-climb (signatureUnlocked, circuit not complete)', () => {

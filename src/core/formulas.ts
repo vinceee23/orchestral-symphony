@@ -23,6 +23,34 @@ import { getFameMultiplier } from './records'
 import type { TierState } from '../store/types'
 
 /**
+ * SINGLE SOURCE OF TRUTH for the tier cost multiplier. Both buy paths — manual (gameStore) and
+ * autobuyer (tick) — MUST build their multiplier through this, naming every factor explicitly.
+ * History: the Rehearsal term once existed only on the manual path, so autobuyers silently overpaid;
+ * the named struct makes that class of drift a visible omission at the call site.
+ */
+export function composeTierCostMultiplier(f: {
+  challengeMod: number      // active-challenge base cost multiplier (mods.costMultiplier)
+  achievementGlobal: number // global achievement cost reduction (floored at 0.5)
+  achievementTier: number   // this tier's achievement cost reduction (floored at 0.5)
+  rehearsal: number         // Encore-shop Rehearsal: 1 - getRehearsalCostReduction(...)
+  rising: number            // time-based rising-cost challenge factor
+  challengeReward: number   // permanent challenge-reward costMult
+  signature: number         // L4 Signature woodwinds costMult
+}): number {
+  return f.challengeMod * f.achievementGlobal * f.achievementTier * f.rehearsal * f.rising
+    * f.challengeReward * f.signature
+}
+
+/** Single source of truth for the additive tempo bonus (same drift-guard rationale as costs). */
+export function composeTempoBonus(f: {
+  achievements: number
+  challenges: number
+  signature: number
+}): number {
+  return f.achievements + f.challenges + f.signature
+}
+
+/**
  * Cost per unit of a tier. Cost increases every 10 purchases (bracket).
  * cost = baseCost * costGrowth ^ bracket * costMultiplier
  */

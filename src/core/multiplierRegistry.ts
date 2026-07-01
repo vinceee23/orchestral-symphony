@@ -2,7 +2,7 @@ import Decimal from 'break_infinity.js'
 import type { GameState } from '../store/types'
 import { getAchievementGlobalMultiplier, getAchievementTempoBonus } from './achievements'
 import { getActiveChallengeModifiers, getChallengeById, getChallengeMultipliers } from './challenges'
-import { coreProductionFactors, getCoreProductionMultiplier, type ProductionFactor } from './formulas'
+import { coreProductionFactors, getCoreProductionMultiplier, composeTempoBonus, type ProductionFactor } from './formulas'
 import { hasPerk } from './perks'
 import {
   ZERO_SIGNATURE_ALLOCATION,
@@ -125,9 +125,11 @@ function prepareMultiplierInputs(state: ProductionMultiplierState, options: Prod
     recordsSold,
     platinum,
     massProduction: hasPerk(achievementSet, 'perk-bulk-unlock'),
-    achievementTempoBonus: getAchievementTempoBonus(achievementSet)
-      + challengeMults.tempoBonus
-      + signatureEffects.tempoBonus,
+    achievementTempoBonus: composeTempoBonus({
+      achievements: getAchievementTempoBonus(achievementSet),
+      challenges: challengeMults.tempoBonus,
+      signature: signatureEffects.tempoBonus,
+    }),
     acclaimMult: state.worldTourUnlocked && !noPrestige
       ? getAcclaimMultiplier(state.lifetimeAcclaim)
       : 1,

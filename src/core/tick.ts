@@ -9,7 +9,10 @@ import {
   getTempoTickInterval,
   getTempoBPM,
   getMaxBuyable,
+  composeTierCostMultiplier,
+  composeTempoBonus,
 } from './formulas'
+import { getRehearsalCostReduction } from './encoreUpgrades'
 import { advanceCrescendo, getCrescendoMultiplier } from './crescendo'
 import { accrueRecords, isPlatinum } from './records'
 import { getAutomatorInterval, getAutomatorBulk, clampAutobuyerBulk } from './opusUpgrades'
@@ -73,7 +76,11 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
     state.challengeBestTimes ?? {},
     state.keepChallenges ?? false,
   )
-  const totalTempoBonus = achievementTempoBonus + challengeMults.tempoBonus + signatureEffects.tempoBonus
+  const totalTempoBonus = composeTempoBonus({
+    achievements: achievementTempoBonus,
+    challenges: challengeMults.tempoBonus,
+    signature: signatureEffects.tempoBonus,
+  })
 
   // Single source of truth for the production multiplier — shared with the UI rate displays so
   // they can't drift (encore/finale/opus/perfectPitch/tempo/milestone-tickspeed/PRODUCTION_SCALE).
@@ -111,20 +118,25 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
   // (genuine corruption, not a big-but-valid Decimal). Fires in the sims, no-op in prod.
   assertFiniteDecimal(globalMult, 'calculateTick:globalMult')
 
-  // Cost multiplier from challenge + achievement cost reductions + challenge reward costMult
-  const achCostReduction = getAchievementCostReduction(achievementSet)
-  const effectiveCostMult = mods.costMultiplier
-    * achCostReduction
-    * challengeMults.costMult
-    * signatureEffects.costMult
-
   // Rising costs: apply time-based inflation
   let risingCostFactor = 1
   if (mods.risingCostRate > 0 && state.activeChallenge) {
     const elapsedSec = (nowMs - state.activeChallenge.startTime) / 1000
     risingCostFactor = Math.pow(mods.risingCostRate, elapsedSec)
   }
-  const totalCostMult = effectiveCostMult * risingCostFactor
+  // Tier-independent cost multiplier via the shared composer (per-tier achievement term applied at
+  // the buy site). Same source as the manual-buy path — see composeTierCostMultiplier.
+  const achCostReduction = getAchievementCostReduction(achievementSet)
+  const rehearsalMult = 1 - getRehearsalCostReduction(state.encoreUpgrades)
+  const totalCostMult = composeTierCostMultiplier({
+    challengeMod: mods.costMultiplier,
+    achievementGlobal: achCostReduction,
+    achievementTier: 1, // per-tier reduction applied where the tier is known
+    rehearsal: rehearsalMult,
+    rising: risingCostFactor,
+    challengeReward: challengeMults.costMult,
+    signature: signatureEffects.costMult,
+  })
 
   // Process tiers — handle reversed production
   if (mods.reversedProduction) {
@@ -169,9 +181,6 @@ export function calculateTick(state: GameState, deltaMs: number, conducting = fa
       if (i >= mods.maxTiers) continue
 
       const tierAchMult = getAchievementTierMultiplier(achievementSet, tier.id)
-      const tierCostRed = getAchievementTierCostReduction(achievementSet, tier.id)
-      // Use tierCostRed only for cost context, not production
-      void tierCostRed
 
       // Apply noMilestones: replace milestone multiplier with 1
       const effectiveTier = mods.noMilestones

@@ -32,6 +32,8 @@ import {
   getMaxBuyable,
   getMaxTempoLevels,
   getEncoreGain,
+  composeTierCostMultiplier,
+  composeTempoBonus,
 } from '../core/formulas'
 import { ACHIEVEMENTS, getAchievementCostReduction, getAchievementTierCostReduction, getAchievementHeadStartBoost, getAchievementTempoBonus } from '../core/achievements'
 import { getChallengeById, getActiveChallengeModifiers, isChallengeUnlocked, getChallengeStartingSoundwaves, getChallengeMultipliers } from '../core/challenges'
@@ -162,23 +164,27 @@ function getEffectiveCostMultiplier(state: GameState, tierId: number): number {
     risingFactor = Math.pow(mods.risingCostRate, elapsedSec)
   }
 
-  return mods.costMultiplier
-    * globalCostRed
-    * tierCostRed
-    * rehearsal
-    * risingFactor
-    * challengeMults.costMult
-    * getSignatureEffectsForState(state).costMult
+  return composeTierCostMultiplier({
+    challengeMod: mods.costMultiplier,
+    achievementGlobal: globalCostRed,
+    achievementTier: tierCostRed,
+    rehearsal,
+    rising: risingFactor,
+    challengeReward: challengeMults.costMult,
+    signature: getSignatureEffectsForState(state).costMult,
+  })
 }
 
 function getTotalTempoBonus(state: GameState): number {
-  const achBonus = getAchievementTempoBonus(new Set(state.achievements))
-  const chBonus = getChallengeMultipliers(
-    state.completedChallenges,
-    state.challengeBestTimes ?? {},
-    state.keepChallenges ?? false,
-  ).tempoBonus
-  return achBonus + chBonus + getSignatureEffectsForState(state).tempoBonus
+  return composeTempoBonus({
+    achievements: getAchievementTempoBonus(new Set(state.achievements)),
+    challenges: getChallengeMultipliers(
+      state.completedChallenges,
+      state.challengeBestTimes ?? {},
+      state.keepChallenges ?? false,
+    ).tempoBonus,
+    signature: getSignatureEffectsForState(state).tempoBonus,
+  })
 }
 
 export const useGameStore = create<GameState & GameActions>()(
