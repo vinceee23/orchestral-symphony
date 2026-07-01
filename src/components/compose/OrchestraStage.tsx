@@ -150,20 +150,46 @@ export function OrchestraStage() {
   })
 
   return (
-    <div className="flex items-end justify-center gap-3 sm:gap-5 pb-16">
+    <div className="w-full overflow-x-auto pb-16">
+      <div className="flex items-end justify-center gap-3 sm:gap-5 min-w-max px-4">
         {TIER_CONFIGS.map((config, i) => {
           const tier = tiers[i]
           const arc = Math.pow((i - 3) / 3, 2) * 50 // parabola: center sits highest (stage curve)
           if (!tier?.unlocked) {
+            // The immediate next tier to unlock (its predecessor is already unlocked) gets teased with a
+            // dim silhouette + how-to-unlock hint + a soft "ready" breathe. Deeper tiers stay a mystery.
+            const isNext = i > 0 && tiers[i - 1]?.unlocked
             return (
               <div
                 key={config.id}
-                className="flex flex-col items-center justify-center w-[112px] sm:w-[140px] h-[164px] rounded-2xl border border-border/40 bg-bg-secondary/30"
+                className={`relative flex flex-col items-center justify-center w-[112px] sm:w-[140px] h-[164px] rounded-2xl border bg-bg-secondary/30 ${
+                  isNext ? 'border-accent-gold/25' : 'border-border/40'
+                }`}
                 style={{ transform: `translateY(${arc}px)` }}
-                title="Locked — buy the tier before it to reveal this section"
+                title={isNext
+                  ? `${config.name} — unlocks by owning 1 ${TIER_CONFIGS[i - 1].name}`
+                  : 'Locked — grow the earlier sections to reveal this one'}
               >
-                <span className="text-3xl opacity-20">{'\u{1F512}'}</span>
-                <span className="mt-1 text-xs text-text-muted/60 font-display">???</span>
+                {isNext ? (
+                  <>
+                    <span
+                      className="animate-pod-breathe pointer-events-none absolute inset-0 rounded-2xl"
+                      style={{ background: 'radial-gradient(60% 60% at 50% 45%, rgba(212,168,67,0.16), transparent 75%)' }}
+                    />
+                    <span className="text-4xl leading-none opacity-20 grayscale">{config.icon}</span>
+                    <span className="mt-1.5 text-[11px] font-display font-semibold text-text-muted/70 tracking-wide">
+                      {config.name}
+                    </span>
+                    <span className="mt-1 px-1 text-center text-[9px] leading-tight text-accent-gold/60">
+                      Unlocks by owning 1 {TIER_CONFIGS[i - 1].name}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-3xl opacity-20">{'\u{1F512}'}</span>
+                    <span className="mt-1 text-xs text-text-muted/60 font-display">???</span>
+                  </>
+                )}
               </div>
             )
           }
@@ -270,6 +296,7 @@ export function OrchestraStage() {
             </button>
           )
         })}
+      </div>
     </div>
   )
 }

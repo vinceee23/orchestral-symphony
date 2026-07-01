@@ -19,12 +19,10 @@ function achievementDisplay(ach: AchievementConfig, unlocked: boolean) {
 
 function AchievementImage({
   id,
-  icon,
   dim,
   masked,
 }: {
   id: string
-  icon: string
   dim: boolean
   masked: boolean
 }) {
@@ -51,19 +49,16 @@ function AchievementImage({
     )
   }
 
-  // Designed fallback for achievements without bespoke art: the emoji glowing on a gold-on-midnight
-  // deco badge, so the wall reads as intentional (not a failed image load) until real art is generated.
+  // "In progress" fallback for achievements without bespoke art yet: the shared emblem aura (3-ring glow
+  // on near-black navy, empty center) so an unmade slot reads as an intentional part of the set — and real
+  // art drops in over it automatically once generated.
   if (extIdx >= ACH_ART_EXTS.length) {
     return (
-      <span
-        className={`flex items-center justify-center w-full h-full text-2xl ${dimClass}`}
-        style={{
-          background: 'radial-gradient(70% 70% at 50% 42%, rgba(212,168,67,0.18), rgba(10,10,15,0.95) 78%)',
-          boxShadow: 'inset 0 0 0 1px rgba(212,168,67,0.25)',
-        }}
-      >
-        <span style={{ filter: 'drop-shadow(0 1px 5px rgba(212,168,67,0.55))' }}>{icon}</span>
-      </span>
+      <img
+        src={`${import.meta.env.BASE_URL}achievements/_placeholder.png`}
+        alt=""
+        className={`w-full h-full object-cover ${dimClass}`}
+      />
     )
   }
 
@@ -167,7 +162,6 @@ export function AchievementsPage() {
                       )}
                       <AchievementImage
                         id={ach.id}
-                        icon={ach.icon}
                         dim={!unlocked}
                         masked={info.masked}
                       />
@@ -196,7 +190,6 @@ export function AchievementsPage() {
               <div className="aspect-square rounded-xl overflow-hidden text-4xl">
                 <AchievementImage
                   id={displayed.id}
-                  icon={displayed.icon}
                   dim={!isDisplayedUnlocked}
                   masked={displayedInfo.masked}
                 />
