@@ -587,8 +587,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Complete 2 Magnum Opuses',
     icon: '\u{1F3AC}',
     check: (s) => s.opusCount >= 2,
-    reward: { globalPercent: 0.07 },
-    rewardDescription: '+7% all production',
+    reward: { globalPercent: 0.07, perk: 'perk-keep-encore-upgrades' },
+    rewardDescription: '+7% all production Â· PERK: keep your Encore upgrades through a Magnum Opus',
   },
   {
     id: 'ach_opus_three',
@@ -956,9 +956,9 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Go Platinum',
     icon: '\u{1F4FA}',
     check: (s) => s.platinum === true,
-    reward: { perk: 'perk-keep-encore-upgrades' },
-    rewardDescription: 'PERK: keep your Encore upgrades through a Magnum Opus',
-    hidden: true, // mystery: the Platinum perk stays "???" until you go Platinum
+    reward: { none: true },
+    rewardDescription: 'Collectible Â· Muscle Memory is now earned earlier from Double Feature',
+    hidden: true, // legacy Platinum collectible; the perk gate moved to Double Feature for the trial
   },
   {
     id: 'ach_perk_warmup',

@@ -140,7 +140,7 @@ export function PrestigePage() {
           </div>
           <div className="text-right shrink-0">
             <div className="text-2xl font-display font-bold text-accent-gold tabular-nums">x{formatNumber(currentEncoreMult, 2)}</div>
-            <div className="text-xs text-text-muted tabular-nums">production from {lifetimeEncorePoints} total Applause</div>
+            <div className="text-xs text-text-muted tabular-nums">lifetime production from {lifetimeEncorePoints} total Applause</div>
           </div>
         </div>
 
@@ -152,6 +152,7 @@ export function PrestigePage() {
           <div className="rounded-xl border border-border bg-bg-primary/50 p-4">
             <div className="text-xs text-text-muted uppercase tracking-wider">Next Encore grants</div>
             <div className="text-lg font-display font-semibold text-success tabular-nums mt-1">+{projectedGain} Applause</div>
+            <div className="text-xs text-text-muted tabular-nums mt-1">then x{formatNumber(nextEncoreMult, 2)} production</div>
           </div>
         </div>
 

@@ -213,7 +213,7 @@ export function ComposePage() {
 
       {/* Prestige actions — top-right of the stage. Trigger here to watch the animations on-stage;
           the Prestige tab holds the full stats + the same actions. Always visible with live progress. */}
-      <div className="absolute top-3 right-3 z-20 flex flex-col items-end gap-2 w-44">
+      <div className="absolute top-3 right-3 z-20 flex flex-col items-end gap-2 w-52">
         <button
           onClick={onEncore}
           disabled={!canEncore}
@@ -228,6 +228,9 @@ export function ComposePage() {
             <span className="text-[10px] tabular-nums">
               {canEncore ? `×${formatNumber(currentEncoreMult, 2)}→×${formatNumber(nextEncoreMult, 2)}` : `${encorePurchased}/${encoreCost.amount} ${encoreCost.tierName}`}
             </span>
+          </div>
+          <div className="mt-1 text-[11px] font-semibold text-accent-gold tabular-nums">
+            Lifetime production x{formatNumber(currentEncoreMult, 2)}
           </div>
           {canEncore ? (
             <div className="text-[10px] text-text-secondary">Ready · +{projectedGain} Applause</div>

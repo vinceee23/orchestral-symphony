@@ -90,6 +90,7 @@ export const STARTING_SOUNDWAVES = new Decimal(10)
 export const PRODUCTION_SCALE = 1                   // full early production = snappy opening (10 Notes ~30s)
 export const ENCORE_EP_THRESHOLD = new Decimal('1e15') // EP = floor((peak/threshold)^root)
 export const ENCORE_EP_ROOT = 0.03                  // small exponent keeps EP bounded under uncapped production
+export const ENCORE_EP_LINEAR_FLOOR_K = 2.5         // early floor: +1 Applause per ~2.5 orders pushed past threshold
 export const ENCORE_REWARD_PER = 1                  // additive: each EP = +100% production (stable; x2/pt explodes)
 export const ENCORE_WALL_COUNT = 8                  // after this many Encores, the L1 wall hits & Magnum Opus unlocks
 export const TEMPO_BASE_COST = new Decimal(1000)
@@ -211,7 +212,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   hotkeys: { ...DEFAULT_HOTKEYS },
   showTutorials: true,
 }
-export const AUTO_CONDUCT_FRACTION = 0.7                // idle/auto-conduct sustains 70% of the crescendo ceiling; active holding = 100% (Break-phase decision: active > idle)
+export const AUTO_CONDUCT_FRACTION = 0.5                // idle/auto-conduct sustains half of the crescendo ceiling; active holding = 100% (Break-phase decision: active > idle)
 export const TEMPO_OP_MULT_PER_LEVEL = 1.5              // each Tempo OP-node = x1.5 global tempo/production
 export const RECORDS_PROD_K = 5                         // legacy v0 constant (superseded by RECORDS_ALBUM_K)
 export const RECORDS_ALBUM_K = 0.58                       // recordsPerSec = K * opusCount^EXP * crescendoMult * chartClimber

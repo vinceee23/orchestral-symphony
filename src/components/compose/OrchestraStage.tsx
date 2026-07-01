@@ -190,6 +190,8 @@ export function OrchestraStage() {
           const owned = Math.min(1, tier.purchased / 40) // faint base tint from ownership
           const lit = canAfford // light up ONLY when it can be upgraded — clarity on what's ready
           const milestone = tier.purchased % 10 // progress toward next x2
+          const nextMilestoneAt = Math.floor(tier.purchased / 10 + 1) * 10
+          const hitMilestone = burst === config.id && tier.purchased > 0 && milestone === 0
 
           const onBuy = () => {
             if (!canAfford) return
@@ -203,7 +205,7 @@ export function OrchestraStage() {
               key={config.id}
               onClick={onBuy}
               disabled={!canAfford}
-              title={`${config.name} — produces ${config.produces}\nRate: ${formatNumber(rate)}/s\n${amount} for ${formatCost(cost)}\n${milestone}/10 to next x2`}
+              title={`${config.name} — produces ${config.produces}\nRate: ${formatNumber(rate)}/s\n${amount} for ${formatCost(cost)}\nNext x2 at ${nextMilestoneAt}`}
               aria-label={`${config.name}, ${formatNumber(rate)} per second. Buy ${amount} for ${formatCost(cost)} soundwaves.${canAfford ? '' : ' Not enough soundwaves.'}`}
               className={`group relative flex flex-col items-center w-[112px] sm:w-[140px] rounded-2xl border px-3 py-4 transition-all duration-150 ${
                 burst === config.id ? 'animate-section-buy' : (waving ? 'animate-section-wave' : '')
@@ -234,12 +236,15 @@ export function OrchestraStage() {
               {resonating.has(config.id) && (
                 <span className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-accent-gold animate-resonate-ring" />
               )}
+              {hitMilestone && (
+                <span className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-accent-gold animate-resonate-ring" />
+              )}
               {pop?.id === config.id && (
                 <span
                   key={pop.seq}
                   className="buy-pop pointer-events-none absolute -top-1 left-1/2 -translate-x-1/2 text-sm font-bold text-accent-gold tabular-nums drop-shadow-[0_0_6px_rgba(212,168,67,0.7)]"
                 >
-                  +{formatNumber(pop.n)}
+                  {hitMilestone ? 'x2!' : `+${formatNumber(pop.n)}`}
                 </span>
               )}
               <EmblemIcon name={config.name.toLowerCase()} glyph={config.icon} glow={lit ? 0.85 : 0.2 + owned * 0.25} />
@@ -256,6 +261,9 @@ export function OrchestraStage() {
               <div className="mt-1 h-[3px] w-full rounded-full bg-bg-primary/70 overflow-hidden">
                 <div className="h-full rounded-full bg-accent-gold/60" style={{ width: `${milestone * 10}%` }} />
               </div>
+              <span className={`mt-1 text-[10px] font-semibold tabular-nums ${milestone >= 7 ? 'text-accent-gold' : 'text-text-muted'}`}>
+                next x2 at {nextMilestoneAt}
+              </span>
               <span className={`mt-1 text-[10px] tabular-nums ${canAfford ? 'text-accent-gold' : 'text-text-muted'}`}>
                 {formatCost(cost)}
               </span>

@@ -13,6 +13,7 @@ import {
   ENCORE_REWARD_PER,
   ENCORE_EP_THRESHOLD,
   ENCORE_EP_ROOT,
+  ENCORE_EP_LINEAR_FLOOR_K,
   PRODUCTION_SCALE,
 } from './constants'
 import { getPerfectPitchMultiplier } from './encoreUpgrades'
@@ -166,12 +167,18 @@ export function getEncoreMultiplier(ep: number): Decimal {
 
 /** EP gained from a run's peak soundwaves: floor((peak/threshold)^root), with a MIN of 1.
  *  Any Encore that meets its tier-gate rewards at least 1 EP — a prestige never gives nothing.
- *  Above the threshold the sublinear curve takes over (keeps EP bounded under uncapped production).
+ *  A small log-linear floor makes early pushed runs read +1, +2, +3 before the late root curve dominates.
  *  (Auto-encore still gates on peak > threshold separately, so this never causes auto-prestige spam.) */
 export function getEncoreGain(peakSoundwaves: Decimal): number {
   if (peakSoundwaves.lte(0)) return 0
   if (peakSoundwaves.lte(ENCORE_EP_THRESHOLD)) return 1
-  const n = Math.floor(peakSoundwaves.div(ENCORE_EP_THRESHOLD).pow(ENCORE_EP_ROOT).toNumber())
+  const ratio = peakSoundwaves.div(ENCORE_EP_THRESHOLD)
+  const rootGain = Math.floor(ratio.pow(ENCORE_EP_ROOT).toNumber())
+  const pushedOrders = ratio.log10()
+  const linearFloor = isFinite(pushedOrders)
+    ? Math.floor(Math.max(0, pushedOrders) / ENCORE_EP_LINEAR_FLOOR_K)
+    : Number.MAX_SAFE_INTEGER
+  const n = Math.max(rootGain, linearFloor)
   return isFinite(n) ? Math.max(1, n) : Number.MAX_SAFE_INTEGER // guard: extreme peaks can't poison numeric EP
 }
 

@@ -33,7 +33,12 @@ export const ConductorPodium = memo(function ConductorPodium({ active, swell = 0
           fill="none" stroke="currentColor" strokeWidth="1.5" />
       </svg>
       {!active && (
-        <span className="mt-0.5 text-[8px] uppercase tracking-[0.25em] text-text-muted/40 font-display">the baton awaits</span>
+        <span className="mt-2 text-[11px] uppercase tracking-[0.16em] text-accent-gold/70 font-display drop-shadow-[0_0_8px_rgba(212,168,67,0.25)]">
+          Conduct awaits
+        </span>
+      )}
+      {!active && (
+        <span className="mt-0.5 text-[10px] text-text-muted/65">coming in the next layer</span>
       )}
     </div>
   )

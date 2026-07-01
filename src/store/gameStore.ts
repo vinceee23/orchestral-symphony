@@ -244,10 +244,6 @@ export const useGameStore = create<GameState & GameActions>()(
           const gradPatch = buildVenueGraduationPatch(after)
           if (gradPatch) set(gradPatch)
         }
-        const afterGrad = get()
-        if (afterGrad.circuitComplete && !afterGrad.signatureUnlocked) {
-          set({ signatureUnlocked: true })
-        }
         const postGrad = get()
         if (canAutoPerformMagnumOpus(postGrad)) {
           get().performMagnumOpus()

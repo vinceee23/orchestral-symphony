@@ -354,8 +354,8 @@ export function buildVenueGraduationPatch(
   }
 
   if (state.currentVenue >= LAST_VENUE_ID) {
-    // TBD-tune (sim/playtest): L4 unlock currently uses the locked L3 circuit-break anchor.
-    return { ...base, circuitComplete: true, signatureUnlocked: true }
+    // L0-L3 trial capstone: finish the circuit without revealing the L4 Signature layer.
+    return { ...base, circuitComplete: true }
   }
 
   return { ...base, currentVenue: state.currentVenue + 1 }

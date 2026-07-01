@@ -1,5 +1,5 @@
 import type { GameState } from '../../store/types'
-import { getEncoreCost, getMagnumOpusCost } from '../../core/constants'
+import { L4_UNLOCKED, getEncoreCost, getMagnumOpusCost } from '../../core/constants'
 import { canUnlockWorldTour } from '../../core/worldTour'
 import { CHALLENGES, getActiveChallengeModifiers, getChallengeById, isChallengeUnlocked } from '../../core/challenges'
 
@@ -164,7 +164,7 @@ export const ONBOARDING_HINTS: Record<OnboardingHintId, OnboardingHintDefinition
       'Respec is free between runs — experiment without penalty.',
       'Your dominant domain becomes your identity.',
     ],
-    isMet: (state) => !!state.signatureUnlocked && !state.activeChallenge,
+    isMet: (state) => L4_UNLOCKED && !!state.signatureUnlocked && !state.activeChallenge,
   },
 }
 
@@ -193,6 +193,6 @@ export function seedSeenHintsFromProgress(state: GameState): OnboardingHintId[] 
   if (state.opusCount > 0) seen.push('magnum_opus_done')
   if (hasPassedWorldTour(state)) seen.push('world_tour')
   if (hasPassedWorldTour(state) || hasUnlockedChallenge(state)) seen.push('challenges')
-  if (state.signatureUnlocked || state.signatureCount > 0) seen.push('signature')
+  if (L4_UNLOCKED && (state.signatureUnlocked || state.signatureCount > 0)) seen.push('signature')
   return seen
 }

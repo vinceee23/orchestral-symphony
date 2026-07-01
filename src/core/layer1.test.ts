@@ -106,6 +106,8 @@ describe('Layer 1 reward shape (regression guards)', () => {
     const g = getEncoreGain(new Decimal('1e17.7'))
     expect(g).toBeGreaterThanOrEqual(1)
     expect(g).toBeLessThanOrEqual(5)
+    expect(getEncoreGain(new Decimal('1e20'))).toBe(2)
+    expect(getEncoreGain(new Decimal('1e22.5'))).toBe(3)
     // 1000x more peak should NOT explode the gain (small exponent)
     expect(getEncoreGain(new Decimal('1e20.7'))).toBeLessThanOrEqual(10)
   })

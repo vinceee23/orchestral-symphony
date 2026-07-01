@@ -83,10 +83,20 @@ export function WorldTourPage() {
         <p className="text-sm text-text-muted mt-2">Fill venues with Acclaim, upgrade the stage, then book a new tour.</p>
         {circuitComplete && (
           <p className="text-xs text-teal-300/90 mt-2 uppercase tracking-wider">
-            Full circuit complete — Acclaim scales with your live catalogue
+            Trial complete
           </p>
         )}
       </header>
+
+      {circuitComplete && (
+        <section className="rounded-xl border border-teal-400/40 bg-teal-950/30 p-5 text-center space-y-2">
+          <h2 className="text-xl font-display font-semibold text-teal-200">The circuit is complete.</h2>
+          <p className="text-sm text-text-secondary leading-relaxed">
+            Six venues carried the work from the Old House to the World Stage. This trial ends here, with Acclaim now scaling from your live catalogue.
+          </p>
+          <p className="text-sm font-display text-accent-gold">The Sonance continues...</p>
+        </section>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="rounded-xl border border-teal-500/30 bg-bg-secondary/40 p-4">

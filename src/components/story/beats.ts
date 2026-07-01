@@ -9,6 +9,7 @@ export type StoryBeatId =
   | 'first_records'
   | 'platinum'
   | 'world_tour'
+  | 'trial_complete'
   // Future (copy in STORY-SPEC §7; triggers not wired yet):
   | 'signature'
   | 'virtuoso'
@@ -33,6 +34,7 @@ export const STORY_BEAT_ORDER: StoryBeatId[] = [
   'first_records',
   'platinum',
   'world_tour',
+  'trial_complete',
   'signature',
 ]
 
@@ -100,6 +102,15 @@ export const STORY_BEATS: Record<StoryBeatId, StoryBeatDefinition> = {
       'They are all quiet now.',
     ],
   },
+  trial_complete: {
+    id: 'trial_complete',
+    goldLevel: 0.78,
+    lines: [
+      'The last venue empties into silence.',
+      'Six stages carried your name as far as this trial can take it.',
+      'The Sonance continues...',
+    ],
+  },
   // --- L4–L9: registry placeholders for future wiring ---
   signature: {
     id: 'signature',
@@ -162,7 +173,7 @@ export const STORY_BEATS: Record<StoryBeatId, StoryBeatDefinition> = {
 type BeatGateState = Pick<
   GameState,
   'encoreCount' | 'lifetimeEncoreCount' | 'opusCount' | 'platinum' | 'worldTourUnlocked'
-  | 'layer1WallReached' | 'recordsSold' | 'signatureCount'
+  | 'layer1WallReached' | 'recordsSold' | 'signatureCount' | 'circuitComplete'
 >
 
 /** Whether a beat's milestone condition is satisfied (independent of seenStoryBeats). */
@@ -182,6 +193,8 @@ export function isBeatConditionMet(id: StoryBeatId, state: BeatGateState): boole
       return state.platinum
     case 'world_tour':
       return state.worldTourUnlocked
+    case 'trial_complete':
+      return state.circuitComplete
     case 'signature':
       return state.signatureCount >= 1
     default:
@@ -214,6 +227,7 @@ type MigrationState = Pick<
   | 'layer1WallReached'
   | 'recordsSold'
   | 'signatureCount'
+  | 'circuitComplete'
 >
 
 /** True when a save predates story beats and already has meaningful progress. */
@@ -225,6 +239,7 @@ export function hasPreStoryProgress(state: MigrationState): boolean {
     || state.opusCount > 0
     || state.platinum
     || state.worldTourUnlocked
+    || state.circuitComplete
     || state.signatureCount > 0
   )
 }
@@ -242,6 +257,7 @@ export function seedSeenStoryBeatsFromProgress(state: MigrationState): string[] 
   if (state.recordsSold >= 1) seen.push('first_records')
   if (state.platinum) seen.push('platinum')
   if (state.worldTourUnlocked) seen.push('world_tour')
+  if (state.circuitComplete) seen.push('trial_complete')
   if (state.signatureCount >= 1) seen.push('signature')
   return seen
 }

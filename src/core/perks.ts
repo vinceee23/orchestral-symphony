@@ -26,7 +26,7 @@ export const PERKS: PerkConfig[] = [
   },
   {
     id: 'perk-keep-encore-upgrades',
-    achievementId: 'ach_perk_muscle_memory',
+    achievementId: 'ach_double_feature',
     name: 'Muscle Memory',
     blurb: 'Keep your Encore upgrades through a Magnum Opus',
   },
