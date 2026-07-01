@@ -159,7 +159,11 @@ export function ComposePage() {
         <div className="w-full flex justify-center mt-3 pb-24">
           <div
             className={[
-              'shrink-0 transition-transform duration-[1500ms] ease-out',
+              // w-full (NOT shrink-0): the scale wrapper must stay viewport-width so OrchestraStage's
+              // own overflow-x scroller engages — shrink-0 grew it to content width, pushing the
+              // horizontal scroll up to the page column where centered-overflow made the LEFT pods
+              // (Notes!) unreachable on phones.
+              'w-full transition-transform duration-[1500ms] ease-out',
               firstBuyHintActive
                 ? '[&_button:first-of-type]:ring-2 [&_button:first-of-type]:ring-accent-gold/70 [&_button:first-of-type]:ring-offset-2 [&_button:first-of-type]:ring-offset-bg-primary [&_button:first-of-type]:animate-pulse-gold'
                 : '',
@@ -215,7 +219,9 @@ export function ComposePage() {
 
       {/* Prestige actions — top-right of the stage. Trigger here to watch the animations on-stage;
           the Prestige tab holds the full stats + the same actions. Always visible with live progress. */}
-      <div className="absolute top-3 right-3 z-20 flex flex-col items-end gap-2 w-52">
+      {/* On phones the always-on panel sat over the SW counter — show it there only when a prestige
+          is actually READY (the moment that deserves attention); desktop keeps the persistent panel. */}
+      <div className={`absolute top-3 right-3 z-20 flex-col items-end gap-2 w-44 sm:w-52 ${canEncore || canMO ? 'flex' : 'hidden sm:flex'}`}>
         <button
           onClick={onEncore}
           disabled={!canEncore}

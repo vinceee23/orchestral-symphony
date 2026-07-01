@@ -154,7 +154,10 @@ export function OrchestraStage() {
       {/* generous padding so the buy-pop (rises ~22px), unlock/milestone rings (scale to 1.9x) and the
           arc translateY never overflow this scroll box — otherwise overflow-x:auto forces a transient
           overflow-y scrollbar on every buy. */}
-      <div className="flex items-end justify-center gap-3 sm:gap-5 min-w-max px-8 pt-12 pb-24">
+      {/* w-max + mx-auto (NOT justify-center): centers when it fits, and when it overflows the
+          scroller starts at the LEFT edge — justify-center on overflow clips the first pods beyond
+          scroll reach (flexbox centered-overflow bug; hit on phones). */}
+      <div className="flex items-end gap-3 sm:gap-5 w-max mx-auto px-8 pt-12 pb-24">
         {TIER_CONFIGS.map((config, i) => {
           const tier = tiers[i]
           const arc = Math.pow((i - 3) / 3, 2) * 50 // parabola: center sits highest (stage curve)
