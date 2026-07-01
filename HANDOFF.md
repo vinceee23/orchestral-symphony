@@ -30,6 +30,10 @@
   logged for the playtest verdict.
 
 ### ▶ AWAITING VINCE / NEXT (2026-07-02)
+- **⭐ READ FIRST on waking: `docs/PACING-QUESTIONS-FOR-VINCE.md`** — overnight pacing/monotony
+  investigation: the L2 desert quantified (~30 identical MO cycles, 5–28h, challenges locked past it),
+  idler cliff, Ovation dead-end + the tap-questions for each. Also: 4 live-worthy commits UNDEPLOYED
+  (incl. the mobile Notes-pod fix); offline hardening + era-reactive BGM + Steam screenshots done.
 - **Playtest from fresh** (all reported bugs fixed) + the **L4 feel-test** via DevPanel L4 jump.
 - **Redeploy** master→Pages to ship the branch-only fixes to friends (recommended).
 - **Trial circuit pacing verdict:** is 20–50h+ casual circuit-completion intended? (Options: acclaim curve, cheaper
