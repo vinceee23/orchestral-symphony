@@ -36,6 +36,33 @@
 ---
 
 ## D2 — Achievement art (1 of 100)  ◐ WORKING via local AMD gen (cuDNN-off) — 2D style + batch workflow locked
+
+> **RESUME HERE (2026-07-01, supervised continuation):** We PIVOTED from local AMD gen to **Gemini Nano
+> Banana 1 = `gemini-2.5-flash-image`** (cheapest, ~4¢/img → ~$4 for 100). Local gen worked but was slow +
+> iteration-heavy; Nano Banana nails accurate hand-drawn subjects first-shot. **Key gotcha:** shell
+> `GEMINI_API_KEY` is the STALE exhausted key — ALWAYS run `env -u GEMINI_API_KEY node --env-file=.env ...`
+> so the billing key (`…2zKQ`) wins.
+>
+> **LOCKED art direction (Vince's calls this session):** flat **2D HAND-DRAWN / hand-painted** gold emblem
+> (confident inked outlines, matte — NOT glossy/3D/vector), single accurate subject centered, on a **soft
+> warm concentric glow** ("the loved glow", brightest center → fainter → faintest, NOT ring outlines) over
+> **near-black navy**. Reverse-engineered from the loved local gen `let_it_be_ds8_refined_d0p54_s777201`
+> (sampled BG (7,10,17), glow peak ~(60,45,20)).
+>
+> **PIPELINE (proven on Let It Be):** (1) `art/gen-aura-glow.py` code-generates the glow aura — IDENTICAL on
+> all 100 by construction (free, consistent). (2) Nano Banana generates each subject as a hand-drawn gold
+> icon on PURE BLACK (`art/gen-subject-proof.mjs` is the per-subject template; prompt in it). (3) The script
+> **keys** the subject (flood-fill bg → transparent, preserves inked lines, glow shows through gaps) and
+> alpha-composites it over the aura at ~0.62 scale. Output → `public/achievements/<id>.png`.
+> **Proof awaiting final approval:** `drafts/letitbe-glow.png` (Vince was about to lock when he went to sleep;
+> he referenced "look what i recently chatted" — an image/msg that didn't reach Claude; ASK for it first).
+>
+> **NEXT (supervised):** confirm `drafts/letitbe-glow.png` glow → lock → curate song-pun→icon subject for all
+> ~100 (style/subjects seed in `art/achievements/prompts.json`) → batch via Nano Banana + code-composite →
+> grid-QA → regen off-style → commit approved batches. Also still open: build the `/image-gen` skill.
+> Scripts this session: `art/gen-aura-glow.py` (LOCKED aura), `gen-subject-proof.mjs`, `gen-letitbe-*.mjs`,
+> `gen-aura-rings.py`/`gen-aura-bloom.py` (superseded ring/bloom experiments).
+
 > **UPDATE 2026-07-01 (later): LOCAL GEN WORKS.** Codex disabled cuDNN in `comfy/zluda.py` (defaults off on
 > AMD — SDXL still segfaults on gfx1031, SD1.5 runs fine). Server via the scratchpad `run-comfy-server.bat`.
 > The "shelved" writeup below is now historical.

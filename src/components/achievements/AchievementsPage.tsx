@@ -193,7 +193,7 @@ export function AchievementsPage() {
                 ? 'bg-accent-gold/5 border-accent-gold/30'
                 : 'bg-bg-secondary/40 border-border'
             }`}>
-              <div className="aspect-video rounded-xl overflow-hidden text-4xl">
+              <div className="aspect-square rounded-xl overflow-hidden text-4xl">
                 <AchievementImage
                   id={displayed.id}
                   icon={displayed.icon}
