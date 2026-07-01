@@ -154,7 +154,7 @@ All mutations are store actions (`gameStore.ts`). Key ones:
 
 ```ts
 {
-  name: 'orchestral-symphony-v6',     // localStorage key. The "-v6" is a hard-reset boundary: bumping it orphans old saves.
+  name: 'sonance-v1',                 // localStorage key (SAVE_KEY, src/core/save.ts). Renamed from 'orchestral-symphony-v6' in the SONANCE rename; bumping it orphans old saves.
   storage: createDecimalStorage(),    // src/core/save.ts — Decimal-aware JSON (see §6.3)
   partialize: (state) => { /* strips every ACTION fn, persists only data */ },
   onRehydrateStorage: () => (state) => { /* migrate -> offline replay -> ?l3 seed -> stamp lastSaveTimestamp */ },
@@ -324,7 +324,7 @@ them on saves written before the field existed).
 
 | Flag | Read in | Effect |
 |---|---|---|
-| `?fresh` | `src/dev/freshStart.ts` (imported **first** in `main.tsx` so it runs before hydration) | Removes every `orchestral-symphony*` localStorage key → clean start. Strips itself from the URL afterward. |
+| `?fresh` | `src/dev/freshStart.ts` (imported **first** in `main.tsx` so it runs before hydration) | Removes every `sonance*` (and legacy `orchestral-symphony*`) localStorage key → clean start. Strips itself from the URL afterward. |
 | `?l3` | `gameStore.ts:967` (inside `onRehydrateStorage`) | Force-unlocks World Tour with a seeded catalogue (`getCatalogueSnapshot(4, 750_000)`), sets `layer1WallReached`, `platinum`, `opusCount>=4`, `postPlatinumMoCount>=GATE_POST_PLAT_MO`, seeds story beats. For instant L3 playtesting. Strips itself from the URL. |
 | `?dev` | `src/dev/DevPanel.tsx:8` | Shows the dev pacing panel — **only on the Vite dev server** (`import.meta.env.DEV && ?dev`). Speed `1/10/100/1000×`, grant SW/OP/records buttons. **Never present in the shipped Electron/Pages build** (`import.meta.env.DEV` is false there). |
 
@@ -434,7 +434,7 @@ the push. Use the `gh-pin` skill / the pinning recipe in CLAUDE.md. Never set cr
 - **Adding an action:** add to `GameActions` (`types.ts`) + implement in `gameStore.ts`, and make sure the
   `partialize` destructure (`gameStore.ts:918`) lists it so it's stripped from the persisted blob.
 - **Changing the save shape incompatibly:** bump `SAVE_SCHEMA_VERSION` and add a `MIGRATIONS[N]` entry; or
-  for a hard reset, bump the `name: 'orchestral-symphony-v6'` suffix (orphans all old saves).
+  for a hard reset, bump the `SAVE_KEY = 'sonance-v1'` suffix in src/core/save.ts (orphans all old saves).
 - **`Date.now()` is read inside actions/tick** for prestige timing, autobuyer intervals, and offline calc.
   Sim tests `vi.useFakeTimers()` to control it.
 - **`StrictMode`** double-invokes effects in dev — the loop/auto-save hooks are written to tolerate

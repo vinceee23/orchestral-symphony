@@ -32,7 +32,7 @@ Current: 3 sine-blip one-shots (buy/tempo/prestige); **Conduct/Crescendo, achiev
 - ☑ **Input parity (audio)**: keyboard buys (1–7, M, T) now fire buy/flourish SFX on a successful purchase. *(Visual juice parity — section flash/+N pop on keyboard — is the UI batch.)*
 - ☑ **Venue collect** cue. (era step-up swell intentionally skipped — it always coincides with a prestige sting; the silent **World Tour auto-unlock** belongs to the celebration task.)
 - ☐ Upgrade/component buys still pass hardcoded pitches (buyBuySound(7)/(5)) — minor; map to meaningful pitch later.
-- 🅿 **Procedural music/ambient bed** that evolves per era + a separate Music volume slider — needs your ear + a settings-schema/save change. Deferred to a reviewed batch.
+- ☑ **Procedural music/ambient bed** that evolves per era + a separate Music volume slider — needs your ear + a settings-schema/save change. Deferred to a reviewed batch. — **SHIPPED 2026-07-01/02** (generative ambient bed + Settings music toggle/volume)
 
 ### UI / UX juice
 - ☑ **FloatingNotes reshuffle fixed**: deterministic module-level note field, sliced by liveliness — notes no longer teleport on prestige (existing notes keep position; higher tiers append).

@@ -67,11 +67,12 @@ best-times, seen-beats) are locked — those are what L8/L9 depend on. **The Fal
 - **One primary, blend the rest over time — via a finite "Signature budget."** Your voice has a fixed
   expressive capacity, allocated across domains. Mono = 100% in one (intense, pure). Blends split the pie
   (60/40, etc.) — secondaries are reduced *because they share a zero-sum budget*, so blending is always a
-  real specialist-vs-generalist trade-off, never free stacking. **Budget = HYBRID (decided 2026-06-28):**
-  the pie is **FIXED early** (effectively mono — a real choice), then a **slow, HARD-CAPPED growth late**
-  lets you blend in meaningful secondaries ("eventually mix in other domains") *without* the generalist
-  becoming objectively optimal — the cap keeps a focused build competitive. (Resolves the prior "grows vs
-  fixed" contradiction the build-specs flagged.)
+  real specialist-vs-generalist trade-off, never free stacking. ~~Budget = HYBRID (decided 2026-06-28):
+  fixed early, hard-capped growth late.~~ ⛔ **SUPERSEDED by the final LOCK (HARDENING-PLAN +
+  build-specs/L4-signature.md, and AS BUILT): the budget is FIXED at 1.0 forever.** What grows is
+  **efficiency** (`getSignatureEfficiency(signatureCount)`, capped ~×1.75) — allocations strengthen with
+  ascensions; the pie itself never grows. Blending is affordable from day one; it's the evenness-scaled
+  Harmony domain (not budget growth) that keeps generalists competitive without being optimal.
 - **Respec between runs** — re-allocate your Signature each new L4 run. High build-craft replayability,
   no "wrong choice" trap.
 - **Reset/persist:** TBD when built (L4 is a reset layer) — Signature allocation + budget growth are the

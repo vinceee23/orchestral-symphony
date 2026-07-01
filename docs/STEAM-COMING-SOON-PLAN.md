@@ -5,7 +5,7 @@
 trigger Steam's "Popular Upcoming" placement and the post-launch visibility algorithm. This is the
 single highest-leverage thing we can do before L4+ is finished.
 
-Ties into the locked [distribution model](../MEMORY.md): **Steam = paid, ad-free, full game.** This
+Ties into the locked [distribution model](MONETIZATION.md): **Steam = paid, ad-free, full game.** This
 page sells that tier. (The free web trial keeps funneling; mobile comes later.)
 
 ---
@@ -29,10 +29,10 @@ page sells that tier. (The free web trial keeps funneling; mobile comes later.)
 Steam won't publish the page until the **required** graphics exist. Exact pixel sizes matter.
 
 ### Required for a Coming Soon page
-- [ ] **Header capsule** — 460 × 215 (the main library/store thumbnail; most-seen asset)
-- [ ] **Small capsule** — 231 × 87 (search results — must have readable logo)
-- [ ] **Main capsule** — 616 × 353 (top of the store page / front-page features)
-- [ ] **Vertical capsule** — 374 × 448 (upcoming/curator lists)
+- [x] **Header capsule** — 460 × 215 (the main library/store thumbnail; most-seen asset)
+- [x] **Small capsule** — 231 × 87 (search results — must have readable logo)
+- [x] **Main capsule** — 616 × 353 (top of the store page / front-page features)
+- [x] **Vertical capsule** — 374 × 448 (upcoming/curator lists)
 - [ ] **Screenshots** — minimum **5**, 1920 × 1080 (16:9). Pull from the live trial.
 - [ ] **Short description** — ≤ 300 characters (draft below)
 - [ ] **About This Game** — full description (draft below)
@@ -71,7 +71,7 @@ Steam won't publish the page until the **required** graphics exist. Exact pixel 
 > Tour**, and press further into stranger, grander layers. The world *reacts* — visuals shift era by
 > era and a generative ambient score drifts underneath the whole climb.
 >
-> **100 hand-crafted achievements** nod to the songs that shaped music, each with its own bespoke emblem.
+> **100 hand-crafted achievements** nod to the songs that shaped music, with bespoke emblem art.
 >
 > Play for a minute or lose an afternoon. Numbers go up; the music gets bigger.
 
@@ -114,4 +114,4 @@ Idle · Incremental · Clicker · Music · Casual · Relaxing · Atmospheric · 
 ## Open decisions for Vince
 1. Register as **individual** vs **company**?
 2. OK to spend the **$100** Steam Direct fee now to start the wishlist clock?
-3. Want me to adapt `gen-og-card.py` into a **capsule-image generator** (the 4 required sizes) as the next concrete step?
+3. ~~Capsule generator~~ ✅ DONE — `art/gen-capsules.py` → all 4 capsules in `drafts/steam/` (2026-07-02).

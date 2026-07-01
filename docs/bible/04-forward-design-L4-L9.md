@@ -135,9 +135,11 @@ of us*. / …Curious." — `beats.ts:82-86`). Each domain bends the *whole* buil
   pure). Blends split the pie (60/40, etc.).
 - **Zero-sum.** Secondaries are reduced *because they share the budget* — blending is always a real
   **specialist-vs-generalist trade-off, never free stacking.**
-- **The budget GROWS with progress.** Early L4 it is small (effectively mono); later the pie grows, which is
-  *how* you "eventually mix in other domains" — a strong primary + meaningful secondaries becomes affordable
-  late. Budget growth IS the L4-tier progress.
+- ~~**The budget GROWS with progress.**~~ ⛔ **SUPERSEDED — the budget is FIXED (1.0).** LOCKED by
+  `HARDENING-PLAN.md` (D-decisions) and `build-specs/L4-signature.md` §"fixed budget"; code agrees
+  (`src/core/signature.ts` `SIGNATURE_BUDGET = 1`). What grows instead is **efficiency**
+  (`getSignatureEfficiency(signatureCount)`, capped ~1.75) — every allocation's effects strengthen with
+  ascensions, but the pie never gets bigger. Do not build budget-growth from this paragraph.
 - **Respec between runs** (`LADDER-MECHANICS.md:73-74`): re-allocate each new L4 run. High build-craft
   replayability, no "wrong-choice" trap.
 

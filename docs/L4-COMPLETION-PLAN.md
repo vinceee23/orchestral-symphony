@@ -3,7 +3,7 @@
 **Author's TL;DR:** L4 is **~95% built**, not unbuilt. The real work is *wiring the reveal,
 tuning, and proving the verb by playtest* — which is the LOCKED gate for L5+. So this plan scopes the
 **executable-now** effort to **finishing L4**, and treats L5→L9 as a **sequential post-launch roadmap.**
-That maps cleanly onto the [distribution model](../MEMORY.md): **L0–L4 = Steam/mobile 1.0; L5–L9 = free
+That maps cleanly onto the [distribution model](MONETIZATION.md): **L0–L4 = Steam/mobile 1.0; L5–L9 = free
 content updates** (which also feed Steam's "recent updates" visibility).
 
 Assessment basis: full code+doc sweep 2026-07-02 (see summary in that session). Key spec: `docs/build-specs/L4-signature.md`; ladder: `docs/LADDER-MECHANICS.md`, `docs/bible/04-forward-design-L4-L9.md`.

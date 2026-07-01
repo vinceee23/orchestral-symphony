@@ -1,7 +1,23 @@
 # Monetization — strategy (Sonance)
 
-Status: **plan, not implemented.** Captures the decided model (2026-06-25). Implement later; for the
+Status: **plan, not implemented.** Decided 2026-06-25; **updated + price LOCKED 2026-07-02.** For the
 early community playtest the only live channel is **Ko-fi donations**.
+
+## LOCKED distribution model (2026-07-02) — the authoritative version
+
+Three tiers, each feeding the next (this section supersedes any older numbers below):
+
+| Tier | Content | Price / monetization |
+|---|---|---|
+| **Web** (GitHub Pages, live) | **L0–L3 trial** | Free, no ads — the shareable hook |
+| **Mobile** (Capacitor, later) | **Full game** | Free + opt-in rewarded ads + "remove ads" IAP |
+| **Steam** (Electron) | **Full game** | **$4.99 one-time (LOCKED)** — ad-free, achievements, cloud |
+
+- **Release shape:** L0–L4 = the sellable 1.0; **L5–L9 ship as post-launch free content updates.**
+- **Build matrix = 2 flags:** `L4_UNLOCKED` (FULL_GAME — `src/core/constants.ts`) and, later, an ADS flag.
+  Web = off/off · Mobile = on/on · Steam = on/off. A postbuild spoiler check enforces trial cleanliness.
+- **$4.99 rationale:** impulse-range; matches Cookie Clicker / Antimatter Dimensions; leaves discount
+  headroom (−20% → $3.99 promos); avoids the "shallow at $2.99" signal.
 
 ## Guiding principles
 - **Money follows reach, not the game.** A self-hosted link earns coffee money; real income needs
@@ -16,7 +32,7 @@ early community playtest the only live channel is **Ko-fi donations**.
 |---|---|---|---|
 | **Web portals** (itch.io, CrazyGames, Poki) | Free | Portal **ad-share** (their SDK) + itch pay-what-you-want | Lowest effort to actually earn — the portal brings traffic + handles ads. |
 | **Mobile** (Android/iOS, via Capacitor) | **Free** | **Opt-in rewarded ads + IAP** | The full free-to-play model. **All in-game ads/cosmetics/boosts live here only.** Biggest idle-game market. |
-| **Steam** (desktop, via the existing Electron build) | **Paid one-time (~$3–5)** | Purchase only — **NO ads** | The premium/ad-free "definitive" version. Pay once, clean experience, supports the dev. |
+| **Steam** (desktop, via the existing Electron build) | **Paid one-time — $4.99 (LOCKED 2026-07-02)** | Purchase only — **NO ads** | The premium/ad-free "definitive" version. Pay once, clean experience, supports the dev. |
 | **Ko-fi** (now) | — | Donations | Goodwill tips. Live today: `ko-fi.com/vinceangelolmacaraig`. |
 
 Coherent story: **try free on web/mobile → buy the ad-free premium cut on Steam if you love it.**

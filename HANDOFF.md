@@ -1,7 +1,43 @@
-# HANDOFF — Sonance (updated 2026-07-01)
+# HANDOFF — Sonance (updated 2026-07-02)
 
 > **READ FIRST for a fresh session:** this block, then the key docs below. This file is the
 > "where we left off + what changed + what needs your call" snapshot.
+
+## ⭐ SESSION 2026-07-02 — L4 finished · trial DEPLOYED · full fresh-eyes audit (Fable) · fix batch + journey sims
+
+**Branch `feat/layer4`; master now FAST-FORWARDS from it for deploys (policy evolved — protection is the
+`L4_UNLOCKED=false` flag, not the branch; see memory `l4-branch-policy`).** Live at
+**vinceee23.github.io/orchestral-symphony/** (deployed through `8dfe8ae`; later commits are branch-only, undeployed).
+
+**Big moves this session:**
+- **L4 Signature is FINISHED bar Vince's feel-playtest** — reveal wired behind `L4_UNLOCKED` (FULL_GAME flag);
+  `L4_VISIBLE = flag || DEV` lets the dev server show it; tuning was already sim-proven (`sim/l4-signature.test.ts`,
+  DOMINANCE_BAND 1.30). Plan + status: `docs/L4-COMPLETION-PLAN.md`. Release shape LOCKED: **L0–L4 = paid 1.0,
+  L5–L9 = free post-launch updates**; **Steam $4.99 LOCKED** (`docs/MONETIZATION.md` is the tracked home).
+- **Trial deployed + BGM** — generative ambient bed (`src/core/audio.ts`) + Settings music toggle/volume;
+  og:image; Steam Coming-Soon plan (`docs/STEAM-COMING-SOON-PLAN.md`) + all 4 capsules (`drafts/steam/`).
+- **DevPanel layer-jumps L0–L4** (`?dev`) — realistic per-layer state + achievements + that layer's automations
+  (`src/dev/layerJump.ts`), each autobuyer verified firing (`sim/autobuyers.test.ts`).
+- **Full fresh-eyes audit (4 sweeps + strategy/identity pass)** → fix batch landed (`81f7a96`, `cc4c628`):
+  **Rehearsal-discount-skips-autobuyers bug fixed** (cost/tempo math single-sourced via composers in
+  `formulas.ts`); **trial bundle spoiler-proofed** (L4+ story lines split to `beatsForward.ts`, postbuild
+  `scripts/check-trial-spoilers.mjs` fails leaking builds); Grand Finale beat wired (was silent);
+  **"Ovation"** (AP currency-name collision fixed) + **"Ensemble"** tab (fantasy-first north star — memory
+  `design-north-star`: music fantasy WINS conflicts); trial-end soft CTA (Ko-fi now, swap to Steam wishlist later).
+- **6-profile human journey sim** (`sim/l4-journey.test.ts`, run with `JOURNEY=1`): rusher completes L0→Signature
+  in **~12.4 sim-h**; **only the active-optimal profile finishes the L3 circuit in 60h** (auto-tour is L4-gated →
+  manual re-tour grind for everyone else); idler hits the 8-encore wall at ~8.5h vs 16min active. Pacing findings
+  logged for the playtest verdict.
+
+### ▶ AWAITING VINCE / NEXT (2026-07-02)
+- **Playtest from fresh** (all reported bugs fixed) + the **L4 feel-test** via DevPanel L4 jump.
+- **Redeploy** master→Pages to ship the branch-only fixes to friends (recommended).
+- **Trial circuit pacing verdict:** is 20–50h+ casual circuit-completion intended? (Options: acclaim curve, cheaper
+  late venues, or accept — trial needn't be finished to convert.)
+- Steam: $100 fee + individual-vs-company (his call); screenshots still to capture.
+- B-tier audit items open: offline-replay integration test + load-freeze chunking, per-frame memoization,
+  beats logic → core, applause/post-Plat pacing sims, a11y (tiles/toast/colorblind), repo-out-of-OneDrive,
+  URL rename decision, song-title IP think.
 > **Key docs:** `docs/bible/` (00 method → 01 arch → 02 economy → 05 world), `docs/MECHANICS-BACKLOG.md` **§D**
 > (genre-audit decisions), `docs/PLAYTEST-FEEDBACK.md` (this session's playtest items + gods art direction),
 > `docs/SETTINGS-SPEC.md`, `docs/build-specs/L5-virtuoso.md` (**§§10–12 = the full L5 design, build-ready**),
@@ -26,7 +62,7 @@
 8. `ddca856` docs — `docs/ART-DECISIONS.md`.
 
 ### ▶ AWAITING VINCE / NEXT
-- **🅿 Balance/feel — `docs/PLAYTEST-BALANCE-PROPOSALS.md` (P1–P8).** Deliberately NOT changed (gate behind playtest). P1 flat early-Encore reward (most trial-impactful), P3 thin Conduct payoff (`AUTO_CONDUCT_FRACTION`), P4 no L0–L1 active verb, **P5 offline-autobuyer frozen-clock bug**, P6 challenge reward placeholders, **P7 framerate-dependent ch_leaky** (P5/P7 are bugs I can fix on a yes), P8 trial-ending/L4-leak. Each has options + my pick + re-sim list.
+- ~~🅿 Balance/feel — P1–P8~~ ✅ **SUPERSEDED: all P1–P8 were implemented 2026-07-01 (`12087bd`)** after Vince's verdicts. Original framing (kept for history): Deliberately NOT changed (gate behind playtest). P1 flat early-Encore reward (most trial-impactful), P3 thin Conduct payoff (`AUTO_CONDUCT_FRACTION`), P4 no L0–L1 active verb, **P5 offline-autobuyer frozen-clock bug**, P6 challenge reward placeholders, **P7 framerate-dependent ch_leaky** (P5/P7 are bugs I can fix on a yes), P8 trial-ending/L4-leak. Each has options + my pick + re-sim list.
 - **🅿 Art — `docs/ART-DECISIONS.md`.** D1 wire the 6 existing venue drafts (`drafts/l3-venues/ladder-*.jpg` → venues 0–5, cheapest visible win), D2 achievement art 1/100 (rec: no-credit glyph fallback), D3 era backdrops, D4 favicon/og:image set + delete stale `favicon.svg`. Wiring prepped; awaiting taste/credit decisions.
 - **☐ Deferred (M-effort, documented in the audit Tier-1):** modal Esc/focus-trap, tier-button aria-labels, per-tick funnel memoize + save debounce (perf), buy-juice VISUAL parity (keyboard flash/+N), World Tour unlock celebration overlay, locked-pod anticipation, HelpModal expansion (Conduct/WT/Platinum).
 - **Deploy still DEFERRED.** Trial-safe (L0–L3) commits to port to master when ready — but note these polish commits live on `feat/layer4` alongside L4 work; cherry-pick the trial-safe set.

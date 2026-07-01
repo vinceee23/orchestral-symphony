@@ -1,73 +1,31 @@
-# React + TypeScript + Vite
+# SONANCE
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+*Reach into the silence; something reaches back.*
 
-Currently, two official plugins are available:
+A music idle game: grow an orchestra from a single note — compose, conduct swelling crescendos, and
+prestige through eras of sound. React 19 + TypeScript + Zustand + break_infinity.js, Vite-built,
+deployed as a free L0–L3 trial at **https://vinceee23.github.io/orchestral-symphony/**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Run / build / test
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev        # dev server (add ?dev to the URL for the DevPanel: speed, grants, L0–L4 layer jumps)
+npm run build      # tsc + vite build + postbuild trial-spoiler check (fails on L4+ leaks)
+npm test           # vitest — unit + pacing sims (fast suite)
+JOURNEY=1 npx vitest run sim/l4-journey.test.ts   # heavy 6-profile human journey sim (minutes)
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Layout
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- `src/core/` — game math: tick, formulas, prestige resets, multiplier registry, audio
+- `src/store/` — Zustand store, save/migration (`SAVE_KEY = 'sonance-v1'`)
+- `src/components/` — UI (Compose stage, Prestige, World Tour, Achievements, …)
+- `sim/` — pacing/balance simulations with asserted bands
+- `docs/` — design bible, build specs (L4–L9), plans; **start at `HANDOFF.md`** for current state
+- `art/` — asset-generation scripts (emblems, capsules, og-card)
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## The one flag that matters
+
+`L4_UNLOCKED` (`src/core/constants.ts`) is the FULL_GAME gate: `false` = public L0–L3 trial (this
+repo's default — L4+ never renders and a postbuild check enforces no spoiler strings ship);
+`true` = full game (mobile/Steam builds). See `docs/MONETIZATION.md` for the distribution model.

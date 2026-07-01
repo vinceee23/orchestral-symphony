@@ -1,5 +1,7 @@
 # Playtest balance proposals (L0–L3) — for Vince's feel verdict
 
+> DONE: **ALL P1-P8 IMPLEMENTED** (commit `12087bd`, 2026-07-01) - this doc is now the historical record of the decisions, not an open brief.
+
 > These are the **balance/feel** items from the audit. Per "gate behind proof," I did **NOT** change
 > any of them autonomously — each needs your hands on the game. For each: the symptom you'll feel, why
 > it happens (with the real numbers), concrete options, my recommendation, and what to re-sim after.
