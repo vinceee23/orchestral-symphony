@@ -14,6 +14,9 @@ Three tiers, each feeding the next (this section supersedes any older numbers be
 | **Steam** (Electron) | **Full game** | **$4.99 one-time (LOCKED)** — ad-free, achievements, cloud |
 
 - **Release shape:** L0–L4 = the sellable 1.0; **L5–L9 ship as post-launch free content updates.**
+- **Sequencing (2026-07-02):** web trial (live) → **Steam** → mobile **only after Steam proves demand**
+  (wrapper + ad-SDK + store effort deferred until justified). Trial circuit pacing ACCEPTED as-is:
+  the trial converts mid-journey; casuals aren't expected to finish the circuit (auto-tour is L4-gated).
 - **Build matrix = 2 flags:** `L4_UNLOCKED` (FULL_GAME — `src/core/constants.ts`) and, later, an ADS flag.
   Web = off/off · Mobile = on/on · Steam = on/off. A postbuild spoiler check enforces trial cleanliness.
 - **$4.99 rationale:** impulse-range; matches Cookie Clicker / Antimatter Dimensions; leaves discount
