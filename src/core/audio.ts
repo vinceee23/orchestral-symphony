@@ -285,6 +285,16 @@ export function playStoryBeatSound() {
 const PROG = [[0, 2, 4], [5, 7, 9], [3, 5, 7], [4, 6, 8], [2, 4, 6], [5, 7, 9], [1, 3, 5], [4, 6, 8]]
 let melodyIdx = 2 // random-walk index into PENTATONIC for a wandering top voice
 
+// Scene: what the game is doing right now. The bed GROWS with the journey — era 0 is two lonely
+// voices in a big hall; each era adds voices/colour/motion, and the live crescendo leans everything
+// in. Fed ~3×/sec from the game loop (useGameLoop → setMusicScene); safe defaults pre-wire.
+let sceneEra = 0
+let sceneCrescendo = 0
+export function setMusicScene(scene: { era: number; crescendo: number }): void {
+  sceneEra = Number.isFinite(scene.era) ? Math.max(0, Math.floor(scene.era)) : 0
+  sceneCrescendo = Number.isFinite(scene.crescendo) ? Math.max(0, Math.min(1, scene.crescendo)) : 0
+}
+
 function applyMusicGain() {
   if (!musicGain || !audioCtx) return
   const target = muted || !musicOn ? 0 : musicVolume
@@ -315,17 +325,30 @@ function scheduleMusic() {
   if (!musicOn) return
   const ctx = getContext()
   if (ctx.state === 'running') {
+    const era = sceneEra
+    const swell = 1 + sceneCrescendo * 0.6 // the live crescendo warms every voice
     const chord = PROG[musicStep % PROG.length]
-    playPad(SCALE[chord[0]] / 2, 8.5, 0.05) // low root foundation
-    chord.forEach((idx) => playPad(SCALE[idx] / 2, 7.5, 0.038)) // warm triad (octave down)
-    if (Math.random() < 0.45) playPad(SCALE[(chord[2] + 2) % SCALE.length], 6, 0.022) // color tone — 7th/9th shimmer
-    if (Math.random() < 0.75) { // wandering melody: random walk over the pentatonic, varied octave
+    playPad(SCALE[chord[0]] / 2, 8.5, 0.05 * swell) // low root foundation — always there
+    if (era === 0) {
+      playPad(SCALE[chord[2]] / 2, 7.5, 0.03 * swell) // era 0: root + one voice — sparse, lonely hall
+    } else {
+      chord.forEach((idx) => playPad(SCALE[idx] / 2, 7.5, 0.038 * swell)) // full warm triad
+    }
+    if (era >= 3) playPad(SCALE[chord[0]], 7, 0.02 * swell) // octave doubling — the hall fills out
+    const colorP = era >= 5 ? 0.6 : era >= 1 ? 0.45 : 0.15 // 7th/9th shimmer, rarer early
+    if (Math.random() < colorP) playPad(SCALE[(chord[2] + 2) % SCALE.length], 6, 0.022 * swell)
+    // wandering melody: random walk over the pentatonic — more present (and higher) as eras pass
+    const melodyP = [0.25, 0.5, 0.6, 0.75, 0.8, 0.9, 0.9][Math.min(era, 6)] + sceneCrescendo * 0.15
+    if (Math.random() < melodyP) {
       melodyIdx = Math.max(0, Math.min(PENTATONIC.length - 1, melodyIdx + (Math.floor(Math.random() * 3) - 1)))
-      playPad(PENTATONIC[melodyIdx] * (Math.random() < 0.5 ? 1 : 2), 4.5, 0.02)
+      const octave = Math.random() < (era >= 4 ? 0.6 : 0.4) ? 2 : 1
+      playPad(PENTATONIC[melodyIdx] * octave, 4.5, 0.02 + sceneCrescendo * 0.012)
     }
     musicStep++
   }
-  musicTimer = setTimeout(scheduleMusic, 4200 + Math.random() * 2600) // varied 4.2–6.8s cadence < pad length → overlap
+  // cadence tightens as the hall fills: ~5.5–8.1s at the start → 4.2–6.8s by late eras (< pad length → overlap)
+  const cadenceBase = Math.max(4200, 5500 - sceneEra * 250)
+  musicTimer = setTimeout(scheduleMusic, cadenceBase + Math.random() * 2600)
 }
 
 /** Start the ambient bed. Safe on mount; latches onto the first user gesture (browser autoplay policy). */

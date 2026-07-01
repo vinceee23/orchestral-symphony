@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react'
 import { useGameStore } from '../store/gameStore'
 import { useUiStore } from '../store/uiStore'
 import { DELTA_CAP_MS } from '../core/constants'
+import { setMusicScene } from '../core/audio'
+import { getEra } from '../core/eraTheme'
 
 /**
  * Drives the simulation. Ticks EVERY animation frame with the real elapsed delta, so production
@@ -42,6 +44,12 @@ export function useGameLoop() {
             const s = useGameStore.getState()
             s.checkAchievements()
             s.checkChallengeCompletion()
+            // Feed the ambient bed what the game is doing (era + live crescendo) — the music grows
+            // with the journey. Throttled here (~3×/sec) so it costs nothing per frame.
+            setMusicScene({
+              era: getEra(s.lifetimeEncorePoints, s.opusCount, s.finalePoints, s.worldTourUnlocked, s.signatureCount),
+              crescendo: s.crescendo,
+            })
           }
         }
       }
