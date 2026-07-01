@@ -188,7 +188,7 @@ export function SettingsPanel() {
                 Incoming save · {ERA_NAMES[importPreview.era]} era
               </div>
               <div className="text-text-secondary tabular-nums">
-                {importPreview.opus} Opus · {importPreview.tours} tours · {importPreview.sigs} signatures{importPreview.finales > 0 ? ` · ${importPreview.finales} finales` : ''}
+                {importPreview.opus} Opus · {importPreview.tours} tours{importPreview.sigs > 0 ? ` · ${importPreview.sigs} signatures` : ''}{importPreview.finales > 0 ? ` · ${importPreview.finales} finales` : ''}
               </div>
             </div>
           ) : (

@@ -13,7 +13,7 @@ export function formatChallengeTimeMs(ms: number): string {
 
 export function formatChallengeReward(reward: ChallengeReward): string {
   const parts: string[] = []
-  if (reward.ap > 0) parts.push(`+${reward.ap} AP`)
+  if (reward.ap > 0) parts.push(`+${reward.ap} Ovation`)
   if (reward.capstone) parts.push('Speed bonus (scales with total time)')
   if (reward.globalProdMult !== undefined) {
     const pct = Math.round((reward.globalProdMult - 1) * 100)
@@ -34,13 +34,13 @@ export function formatChallengeReward(reward: ChallengeReward): string {
 export function formatAutobuyerUnlock(key: string): string {
   switch (key) {
     case 'tempo':
-      return 'Tempo autobuyer'
+      return 'Tempo automator'
     case 'finale_auto':
-      return 'Finale autobuyer'
+      return 'Finale automator'
     case 'all_auto':
-      return 'All autobuyer'
+      return 'All automators'
     default:
-      return key.replace('tier_', 'Tier ').replace('_auto', ' auto')
+      return key.replace('tier_', 'Tier ').replace('_auto', ' automator')
   }
 }
 

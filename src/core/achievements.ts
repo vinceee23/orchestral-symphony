@@ -497,7 +497,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   {
     id: 'ach_twinkle',
     name: 'Twinkle Twinkle Little Star',
-    description: 'Have all 7 tier autobuyers enabled simultaneously',
+    description: 'Have all 7 section automators enabled simultaneously',
     icon: '\u{2728}',
     check: (s) => allTierAutobuyersRunning(s),
     reward: { startingSW: 500 },
@@ -525,7 +525,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   {
     id: 'ach_autopilot',
     name: 'Set the Tempo, Walk Away',
-    description: 'Go Platinum with all 7 tier autobuyers running',
+    description: 'Go Platinum with all 7 section automators running',
     icon: '\u{1F6E0}',
     // Playstyle feat: rewards the full hands-free rig carrying you to Platinum.
     check: (s) => s.platinum && allTierAutobuyersRunning(s),
@@ -588,7 +588,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     icon: '\u{1F3AC}',
     check: (s) => s.opusCount >= 2,
     reward: { globalPercent: 0.07, perk: 'perk-keep-encore-upgrades' },
-    rewardDescription: '+7% all production Â· PERK: keep your Encore upgrades through a Magnum Opus',
+    rewardDescription: '+7% all production · PERK: keep your Encore upgrades through a Magnum Opus',
   },
   {
     id: 'ach_opus_three',
@@ -957,7 +957,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     icon: '\u{1F4FA}',
     check: (s) => s.platinum === true,
     reward: { none: true },
-    rewardDescription: 'Collectible Â· Muscle Memory is now earned earlier from Double Feature',
+    rewardDescription: 'Collectible · Muscle Memory is now earned earlier from Double Feature',
     hidden: true, // legacy Platinum collectible; the perk gate moved to Double Feature for the trial
   },
   {

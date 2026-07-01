@@ -1,5 +1,6 @@
 import type { GameState } from '../../store/types'
-import { L4_UNLOCKED } from '../../core/constants'
+import { L4_UNLOCKED, L4_VISIBLE } from '../../core/constants'
+import { FORWARD_STORY_BEATS } from './beatsForward'
 
 /** Story beat ids — extend with L4–L9 when those layers ship. */
 export type StoryBeatId =
@@ -39,6 +40,7 @@ export const STORY_BEAT_ORDER: StoryBeatId[] = [
   'trial_complete',
   'circuit_complete',
   'signature',
+  'grand_finale',
 ]
 
 export const STORY_BEATS: Record<StoryBeatId, StoryBeatDefinition> = {
@@ -124,33 +126,6 @@ export const STORY_BEATS: Record<StoryBeatId, StoryBeatDefinition> = {
       'What comes next is not louder — it is only, unmistakably, yours.',
     ],
   },
-  // --- L4–L9: registry placeholders for future wiring ---
-  signature: {
-    id: 'signature',
-    goldLevel: 0.75,
-    lines: [
-      'Now you sound like no one else.',
-      'Now you sound like… one of us.',
-      '…Curious.',
-    ],
-  },
-  virtuoso: {
-    id: 'virtuoso',
-    goldLevel: 0.82,
-    lines: [
-      'There is nothing left for the living to teach you.',
-      '(We were never the living.)',
-    ],
-  },
-  canon: {
-    id: 'canon',
-    goldLevel: 0.88,
-    lines: [
-      'They will play your work long after you are dust.',
-      'Mortals call that immortality.',
-      'We call it a beginning.',
-    ],
-  },
   grand_finale: {
     id: 'grand_finale',
     goldLevel: 1,
@@ -160,33 +135,25 @@ export const STORY_BEATS: Record<StoryBeatId, StoryBeatDefinition> = {
       'This is the end of the song.',
     ],
   },
-  redemption: {
-    id: 'redemption',
-    goldLevel: 0.12,
-    lines: [
-      'Then: silence.',
-      'The records gather dust. The world forgets your name.',
-      '…But the applause never stopped.',
-      'It was never theirs. It was ours.',
-      'Rise. Show us the first time was no accident. Come.',
-    ],
-  },
-  the_gods: {
-    id: 'the_gods',
-    goldLevel: 0.05,
-    lines: [
-      'Anyone can rise once.',
-      'You fell, and rose again.',
-      'Now you know our faces.',
-      'Stand with us.',
-    ],
-  },
+  // --- L4–L9 forward beats: real lines live in beatsForward.ts, included only in FULL-GAME builds.
+  // The trial ships line-less stubs (these beats are condition-gated off in the trial anyway), so the
+  // gods' voice can't be datamined out of the public bundle. Rollup folds the ternary at build time;
+  // scripts/check-trial-spoilers.mjs (postbuild) enforces it stays that way.
+  ...(L4_UNLOCKED
+    ? (FORWARD_STORY_BEATS as Record<'signature' | 'virtuoso' | 'canon' | 'redemption' | 'the_gods', StoryBeatDefinition>)
+    : {
+        signature: { id: 'signature', goldLevel: 0.75, lines: [] },
+        virtuoso: { id: 'virtuoso', goldLevel: 0.82, lines: [] },
+        canon: { id: 'canon', goldLevel: 0.88, lines: [] },
+        redemption: { id: 'redemption', goldLevel: 0.12, lines: [] },
+        the_gods: { id: 'the_gods', goldLevel: 0.05, lines: [] },
+      } satisfies Record<'signature' | 'virtuoso' | 'canon' | 'redemption' | 'the_gods', StoryBeatDefinition>),
 }
 
 type BeatGateState = Pick<
   GameState,
   'encoreCount' | 'lifetimeEncoreCount' | 'opusCount' | 'platinum' | 'worldTourUnlocked'
-  | 'layer1WallReached' | 'recordsSold' | 'signatureCount' | 'circuitComplete'
+  | 'layer1WallReached' | 'recordsSold' | 'signatureCount' | 'circuitComplete' | 'finaleCount'
 >
 
 /** Whether a beat's milestone condition is satisfied (independent of seenStoryBeats). */
@@ -211,7 +178,12 @@ export function isBeatConditionMet(id: StoryBeatId, state: BeatGateState): boole
     case 'circuit_complete':
       return state.circuitComplete && L4_UNLOCKED // full game reveals L4 here
     case 'signature':
-      return state.signatureCount >= 1
+      // Defense-in-depth: signatureCount can't move in the trial, but gate on the flag anyway so the
+      // gods-tease can never fire in a PROD trial build even via an imported/modified save.
+      // L4_VISIBLE (not L4_UNLOCKED) so dev-server playtests still get the beat.
+      return L4_VISIBLE && state.signatureCount >= 1
+    case 'grand_finale':
+      return state.finaleCount >= 1 // the 1.79e308 "infinity" event — reachable trial content
     default:
       return false
   }
@@ -243,6 +215,7 @@ type MigrationState = Pick<
   | 'recordsSold'
   | 'signatureCount'
   | 'circuitComplete'
+  | 'finaleCount'
 >
 
 /** True when a save predates story beats and already has meaningful progress. */
@@ -274,5 +247,6 @@ export function seedSeenStoryBeatsFromProgress(state: MigrationState): string[] 
   if (state.worldTourUnlocked) seen.push('world_tour')
   if (state.circuitComplete) seen.push(L4_UNLOCKED ? 'circuit_complete' : 'trial_complete')
   if (state.signatureCount >= 1) seen.push('signature')
+  if (state.finaleCount >= 1) seen.push('grand_finale')
   return seen
 }

@@ -15,7 +15,7 @@ function componentEffectLabel(id: string, level: number): string {
   if (cfg.role === 'unlock') {
     switch (cfg.target) {
       case 'autoCollect': return 'Auto-collect Acclaim'
-      case 'keepAutobuyers': return 'Autobuyers survive tours'
+      case 'keepAutobuyers': return 'Automators survive tours'
       case 'autoMO': return 'Auto-Magnum Opus'
       case 'autoGraduate': return 'Auto-graduate venues'
       default: return 'Unlock'
@@ -95,6 +95,18 @@ export function WorldTourPage() {
             Six venues carried the work from the Old House to the World Stage. This trial ends here, with Acclaim now scaling from your live catalogue.
           </p>
           <p className="text-sm font-display text-accent-gold">The Sonance continues...</p>
+          {/* Phased CTA: swap this for the Steam wishlist link the day the Coming Soon page is live. */}
+          <p className="text-xs text-text-muted pt-1">
+            More layers are being composed.{' '}
+            <a
+              href="https://ko-fi.com/vinceangelolmacaraig"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent-gold/90 hover:text-accent-gold underline underline-offset-2"
+            >
+              Follow the work — or leave a coin in the case ☕
+            </a>
+          </p>
         </section>
       )}
 

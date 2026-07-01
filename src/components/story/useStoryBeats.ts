@@ -17,6 +17,7 @@ export function useStoryBeats() {
   const recordsSold = useGameStore((s) => s.recordsSold)
   const signatureCount = useGameStore((s) => s.signatureCount)
   const circuitComplete = useGameStore((s) => s.circuitComplete)
+  const finaleCount = useGameStore((s) => s.finaleCount)
   const setStoryBeatSeen = useGameStore((s) => s.setStoryBeatSeen)
 
   const nextBeat = useMemo(
@@ -31,10 +32,11 @@ export function useStoryBeats() {
         recordsSold,
         signatureCount,
         circuitComplete,
+        finaleCount,
       }),
     [
       seenStoryBeats, encoreCount, lifetimeEncoreCount, opusCount, platinum,
-      worldTourUnlocked, layer1WallReached, recordsSold, signatureCount, circuitComplete,
+      worldTourUnlocked, layer1WallReached, recordsSold, signatureCount, circuitComplete, finaleCount,
     ],
   )
 

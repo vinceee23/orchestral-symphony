@@ -55,16 +55,16 @@ export function AutobuyersPage() {
   return (
     <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
       <header className="text-center">
-        <h1 className="text-2xl font-display font-semibold text-accent-purple tracking-wide">Autobuyers</h1>
+        <h1 className="text-2xl font-display font-semibold text-accent-purple tracking-wide">Ensemble</h1>
         <p className="text-sm text-text-muted mt-2">
-          Opus upgrades raise the speed &amp; bulk caps; configure each section here.
+          The orchestra plays itself. Opus upgrades raise the speed &amp; bulk caps; configure each section here.
         </p>
       </header>
 
       <section className="rounded-xl border border-accent-purple/40 bg-bg-secondary/40 p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-display font-semibold text-accent-purple">Applause Points</h2>
-          <span className="text-sm font-mono text-text-primary">{Math.floor(applausePoints).toLocaleString()} AP</span>
+          <h2 className="text-base font-display font-semibold text-accent-purple">Ovation</h2>
+          <span className="text-sm font-mono text-text-primary">{Math.floor(applausePoints).toLocaleString()} Ovation</span>
         </div>
         <p className="text-xs text-text-muted">Earned each Encore. Spend to automate prestige — so the long stretches run themselves.</p>
 
@@ -83,7 +83,7 @@ export function AutobuyersPage() {
               variant="purple"
               size="sm"
             >
-              Unlock ({AP_UNLOCK.encore.cost} AP)
+              Unlock ({AP_UNLOCK.encore.cost} Ovation)
             </Button>
           </div>
         )}

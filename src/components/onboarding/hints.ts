@@ -10,6 +10,7 @@ export type OnboardingHintId =
   | 'encore_done'
   | 'magnum_opus'
   | 'magnum_opus_done'
+  | 'ensemble'
   | 'world_tour'
   | 'challenges'
   | 'signature'
@@ -80,6 +81,7 @@ export const ONBOARDING_HINT_ORDER: OnboardingHintId[] = [
   'magnum_opus',     // nudge
   'magnum_opus_done',// orientation
   'conduct',         // orientation (the active verb, unlocks with MO)
+  'ensemble',        // orientation (the Ensemble tab + Applause-automation economy appears with MO)
   'world_tour',      // orientation (unlocks at the reset that opens it)
   'challenges',      // nudge
   'signature',       // orientation
@@ -106,7 +108,7 @@ export const ONBOARDING_HINTS: Record<OnboardingHintId, OnboardingHintDefinition
     title: 'Encore — Applause earned',
     body: [
       'Your total Applause permanently ×multiplies all production.',
-      'Spend the Applause pool on autobuyers and Encore upgrades.',
+      'Spend the Applause pool on Encore upgrades in the Prestige tab.',
       'Each Encore is faster than the last.',
     ],
     isMet: (state) => (state.encoreCount >= 1 || state.lifetimeEncoreCount >= 1) && !state.activeChallenge,
@@ -137,6 +139,17 @@ export const ONBOARDING_HINTS: Record<OnboardingHintId, OnboardingHintDefinition
       'No holding; tap again to sustain. Auto-Conduct keeps a floor while idle.',
     ],
     isMet: (state) => state.opusCount > 0 && !state.activeChallenge,
+  },
+  // ORIENTATION: the Ensemble tab (automation) + the Ovation economy appear with the first MO.
+  ensemble: {
+    id: 'ensemble',
+    title: 'The Ensemble',
+    body: [
+      'Your orchestra can now play itself — the Ensemble tab holds your automators.',
+      'Encores also earn Ovation: spend it there to automate prestige itself.',
+      'Automators are weak at first and grow with each Magnum Opus.',
+    ],
+    isMet: (state) => state.opusCount >= 1 && !state.activeChallenge,
   },
   // ORIENTATION (at the reset that opens World Tour).
   world_tour: {
@@ -191,6 +204,7 @@ export function seedSeenHintsFromProgress(state: GameState): OnboardingHintId[] 
   if (state.encoreCount > 0 || state.lifetimeEncoreCount > 0) seen.push('encore_done')
   if (state.opusCount > 0 || state.worldTourUnlocked || canPerformMagnumOpus(state)) seen.push('magnum_opus')
   if (state.opusCount > 0) seen.push('magnum_opus_done')
+  if (state.opusCount > 0) seen.push('ensemble')
   if (hasPassedWorldTour(state)) seen.push('world_tour')
   if (hasPassedWorldTour(state) || hasUnlockedChallenge(state)) seen.push('challenges')
   if (L4_UNLOCKED && (state.signatureUnlocked || state.signatureCount > 0)) seen.push('signature')

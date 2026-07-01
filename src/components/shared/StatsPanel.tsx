@@ -81,7 +81,7 @@ export function StatsPanel() {
           {encoreCount > 0 && (
             <div className="flex justify-between items-baseline gap-4">
               <span className="text-sm text-text-secondary">Encores</span>
-              <span className="text-sm text-accent-gold font-medium tabular-nums">{encoreCount} ({encorePoints} EP)</span>
+              <span className="text-sm text-accent-gold font-medium tabular-nums">{encoreCount} ({encorePoints} Applause)</span>
             </div>
           )}
           {opusCount > 0 && (
