@@ -162,6 +162,9 @@ export function OrchestraStage() {
             // The immediate next tier to unlock (its predecessor is already unlocked) gets teased with a
             // dim silhouette + how-to-unlock hint + a soft "ready" breathe. Deeper tiers stay a mystery.
             const isNext = i > 0 && tiers[i - 1]?.unlocked
+            // Higher tiers also gate on Encores (tick.ts): Movements needs 1, Symphonies needs 3.
+            const extraReq = i === 5 ? ' + 1 Encore' : i === 6 ? ' + 3 Encores' : ''
+            const unlockReq = `owning 1 ${TIER_CONFIGS[i - 1]?.name ?? ''}${extraReq}`
             return (
               <div
                 key={config.id}
@@ -170,7 +173,7 @@ export function OrchestraStage() {
                 }`}
                 style={{ transform: `translateY(${arc}px)` }}
                 title={isNext
-                  ? `${config.name} — unlocks by owning 1 ${TIER_CONFIGS[i - 1].name}`
+                  ? `${config.name} — unlocks by ${unlockReq}`
                   : 'Locked — grow the earlier sections to reveal this one'}
               >
                 {isNext ? (
@@ -186,7 +189,7 @@ export function OrchestraStage() {
                       {config.name}
                     </span>
                     <span className="mt-1 px-1 text-center text-[9px] leading-tight text-accent-gold/60">
-                      Unlocks by owning 1 {TIER_CONFIGS[i - 1].name}
+                      Unlocks by {unlockReq}
                     </span>
                   </>
                 ) : (
