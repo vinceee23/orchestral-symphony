@@ -99,5 +99,8 @@ Foundations already in place for all of the above: the **M9 multiplier registry*
 - ✅ **Task 1 (reveal wiring)** — `worldTour.ts` sets `signatureUnlocked` on circuit capstone when `L4_UNLOCKED`; added a full-game `circuit_complete` story beat (trial keeps `trial_complete`); `buildVenueGraduationPatch` took a `fullGame = L4_UNLOCKED` param for testability. Dormant while the flag is false → trial unchanged.
 - ✅ **Task 2 (cleanup)** — documented `L4_UNLOCKED` as the FULL_GAME gate (no test referenced it as dead). Gate sites verified consistent.
 - ✅ **Tests** — 3 new: trial-safety (no L4 leak), full-game reveal, mid-ladder advance.
-- ⏳ **Task 3 (tune magnitudes)** — next: L4 pacing sim + the `signature.ts` / `multiplierRegistry` constants.
-- ⏳ **Task 4 (prove the verb)** — playtest for distinct viable builds.
+- ✅ **Task 3 (tune magnitudes)** — ALREADY DONE + sim-proven pre-session. `sim/l4-signature.test.ts` (in the gated suite, 10 tests) drives the real `calculateTick` across all 5 mono-builds + blend + a mix at signatureCounts [1,5,40] and asserts `DOMINANCE_BAND = 1.30` — the exact "diverse-but-viable" philosophy (decision 3). Also guards idle:active balance, overflow (M11), and no-op identity. The `TBD-tune` labels are conservative; the values were tuned (e.g. Percussion 0.08→0.07, 2026-06-29).
+- ⏳ **Task 4 (prove the verb — HUMAN playtest)** — the only remaining gate. Sim says builds are mathematically diverse-but-viable; Vince must confirm the *feel* (is the allocation an interesting decision?). Requires a full build (`L4_UNLOCKED` true) locally. Optional: a DevPanel shortcut to jump into L4 without grinding L0–L3.
+- ✅ **Task 5 (gate)** — build + 109 tests + L4 sim all green. L4 ships the moment a full build is packaged.
+
+**Net: L4 is functionally finished and sim-validated. Only the human feel-playtest remains.**
