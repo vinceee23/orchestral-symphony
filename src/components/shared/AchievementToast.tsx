@@ -28,6 +28,10 @@ export function AchievementToast() {
     const newIds = achievements.slice(prevCountRef.current)
     prevCountRef.current = achievements.length
 
+    // A large batch landing at once = a bulk grant (dev layer-jump / migration), not organic play.
+    // Don't storm the screen with a minutes-long toast train.
+    if (newIds.length > 8) return
+
     const newToasts: ToastItem[] = []
     for (const id of newIds) {
       const ach = ACHIEVEMENTS.find((a) => a.id === id)

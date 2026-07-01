@@ -8,6 +8,13 @@ import Decimal from 'break_infinity.js'
  */
 export const L4_UNLOCKED = false
 
+/**
+ * L4 UI visibility. Full-game flag OR the dev server — so the DevPanel layer-jump can reveal Signature
+ * locally for playtesting. Prod trial builds have DEV=false + L4_UNLOCKED=false → L4 stays hidden.
+ * (Gate reveal LOGIC on L4_UNLOCKED, but VISIBILITY on this.)
+ */
+export const L4_VISIBLE = L4_UNLOCKED || import.meta.env.DEV
+
 export const TIER_COUNT = 7
 
 export interface TierConfig {

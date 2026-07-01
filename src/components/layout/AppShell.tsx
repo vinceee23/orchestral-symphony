@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useGameStore } from '../../store/gameStore'
-import { DEFAULT_HOTKEYS, L4_UNLOCKED } from '../../core/constants'
+import { DEFAULT_HOTKEYS, L4_VISIBLE } from '../../core/constants'
 import { useUiStore } from '../../store/uiStore'
 import { getEra, eraTintCss, effectiveEra } from '../../core/eraTheme'
 import { Header } from './Header'
@@ -36,7 +36,7 @@ export function AppShell() {
   const signatureUnlocked = useGameStore((s) => s.signatureUnlocked)
   const settings = useGameStore((s) => s.settings)
   const era = effectiveEra(getEra(lifetimeEncorePoints, opusCount, finalePoints, worldTourUnlocked, signatureCount), settings)
-  const signatureVisible = L4_UNLOCKED && signatureUnlocked
+  const signatureVisible = L4_VISIBLE && signatureUnlocked
   useEffect(() => {
     if (opusCount <= 0) return
     const { triggerConduct, releaseConduct } = useUiStore.getState()

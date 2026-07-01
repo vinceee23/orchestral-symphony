@@ -1,7 +1,7 @@
 import { useGameStore } from '../../store/gameStore'
 import { Icon, type IconName } from '../shared/Icon'
 import { getEra, eraTintCss, effectiveEra } from '../../core/eraTheme'
-import { L4_UNLOCKED } from '../../core/constants'
+import { L4_VISIBLE } from '../../core/constants'
 
 interface SidebarProps {
   activeTab: string
@@ -42,7 +42,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       ...tabs.slice(insertAt),
     ]
   }
-  if (L4_UNLOCKED && signatureUnlocked) {
+  if (L4_VISIBLE && signatureUnlocked) {
     const worldTourIndex = tabs.findIndex((t) => t.id === 'worldtour')
     const autobuyersIndex = tabs.findIndex((t) => t.id === 'autobuyers')
     const insertAt = worldTourIndex >= 0
