@@ -67,7 +67,12 @@ export function AchievementToast() {
           className="pointer-events-auto animate-slide-in-right bg-bg-primary/95 backdrop-blur border border-accent-gold/40 rounded-lg p-3 shadow-lg shadow-accent-gold/10 max-w-xs"
         >
           <div className="flex items-center gap-2">
-            <span className="text-xl">{toast.icon}</span>
+            <img
+              src={`${import.meta.env.BASE_URL}achievements/${toast.id}.png`}
+              alt=""
+              className="w-9 h-9 shrink-0 rounded object-cover"
+              onError={(e) => { e.currentTarget.src = `${import.meta.env.BASE_URL}achievements/_placeholder.png` }}
+            />
             <div className="min-w-0">
               <div className="text-xs text-accent-gold font-semibold truncate">
                 {toast.name}

@@ -150,8 +150,11 @@ export function OrchestraStage() {
   })
 
   return (
-    <div className="w-full overflow-x-auto pb-16">
-      <div className="flex items-end justify-center gap-3 sm:gap-5 min-w-max px-4">
+    <div className="w-full overflow-x-auto">
+      {/* generous padding so the buy-pop (rises ~22px), unlock/milestone rings (scale to 1.9x) and the
+          arc translateY never overflow this scroll box — otherwise overflow-x:auto forces a transient
+          overflow-y scrollbar on every buy. */}
+      <div className="flex items-end justify-center gap-3 sm:gap-5 min-w-max px-8 pt-12 pb-24">
         {TIER_CONFIGS.map((config, i) => {
           const tier = tiers[i]
           const arc = Math.pow((i - 3) / 3, 2) * 50 // parabola: center sits highest (stage curve)
@@ -176,7 +179,9 @@ export function OrchestraStage() {
                       className="animate-pod-breathe pointer-events-none absolute inset-0 rounded-2xl"
                       style={{ background: 'radial-gradient(60% 60% at 50% 45%, rgba(212,168,67,0.16), transparent 75%)' }}
                     />
-                    <span className="text-4xl leading-none opacity-20 grayscale">{config.icon}</span>
+                    <span className="opacity-40 grayscale">
+                      <EmblemIcon name={config.name.toLowerCase()} glyph={config.icon} glow={0.15} />
+                    </span>
                     <span className="mt-1.5 text-[11px] font-display font-semibold text-text-muted/70 tracking-wide">
                       {config.name}
                     </span>

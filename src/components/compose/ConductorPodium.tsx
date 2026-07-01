@@ -38,7 +38,7 @@ export const ConductorPodium = memo(function ConductorPodium({ active, swell = 0
         </span>
       )}
       {!active && (
-        <span className="mt-0.5 text-[10px] text-text-muted/65">coming in the next layer</span>
+        <span className="mt-0.5 text-[10px] text-text-muted/65">Keep making music to unlock</span>
       )}
     </div>
   )
