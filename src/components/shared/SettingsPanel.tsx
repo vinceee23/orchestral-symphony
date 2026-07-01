@@ -210,6 +210,11 @@ export function SettingsPanel() {
           <input type="range" min={0} max={1} step={0.05} value={settings.sfxVolume}
             onChange={(e) => updateSettings({ sfxVolume: Number(e.target.value) })} className="accent-accent-gold w-40" />
         </Row>
+        <Row label="Background music"><Toggle checked={settings.musicEnabled} onChange={(b) => updateSettings({ musicEnabled: b })} /></Row>
+        <Row label={`Music volume (${Math.round(settings.musicVolume * 100)}%)`}>
+          <input type="range" min={0} max={1} step={0.05} value={settings.musicVolume} disabled={!settings.musicEnabled}
+            onChange={(e) => updateSettings({ musicVolume: Number(e.target.value) })} className="accent-accent-gold w-40 disabled:opacity-40" />
+        </Row>
         <Row label="Mute when tab unfocused"><Toggle checked={settings.muteOnUnfocus} onChange={(b) => updateSettings({ muteOnUnfocus: b })} /></Row>
       </Section>
 

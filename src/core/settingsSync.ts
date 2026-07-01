@@ -1,5 +1,5 @@
 import { setNotation } from './format'
-import { setMuted, setVolume } from './audio'
+import { setMuted, setVolume, setMusicVolume, startAmbientMusic, stopAmbientMusic } from './audio'
 import type { GameSettings } from './constants'
 
 /**
@@ -10,4 +10,7 @@ export function applySettings(s: GameSettings, hidden = false): void {
   setNotation(s.notation)
   setVolume(s.sfxVolume)
   setMuted(s.masterMuted || (s.muteOnUnfocus && hidden))
+  setMusicVolume(s.musicVolume)
+  if (s.musicEnabled) startAmbientMusic()
+  else stopAmbientMusic()
 }

@@ -197,6 +197,8 @@ export interface GameSettings {
   offlineEnabled: boolean
   hotkeys: HotkeyMap
   showTutorials: boolean       // per-layer mechanic hints on reaching a new layer
+  musicEnabled: boolean        // ambient background music bed
+  musicVolume: number          // 0..1
 }
 export const DEFAULT_HOTKEYS: HotkeyMap = { conduct: ' ', maxAll: 'm', maxTempo: 't' }
 export const DEFAULT_SETTINGS: GameSettings = {
@@ -211,6 +213,8 @@ export const DEFAULT_SETTINGS: GameSettings = {
   offlineEnabled: true,
   hotkeys: { ...DEFAULT_HOTKEYS },
   showTutorials: true,
+  musicEnabled: true,
+  musicVolume: 0.45,
 }
 export const AUTO_CONDUCT_FRACTION = 0.5                // idle/auto-conduct sustains half of the crescendo ceiling; active holding = 100% (Break-phase decision: active > idle)
 export const TEMPO_OP_MULT_PER_LEVEL = 1.5              // each Tempo OP-node = x1.5 global tempo/production
