@@ -4,7 +4,7 @@ import Decimal from 'break_infinity.js'
 import type { GameState, GameActions, AutobuyerState, SignatureDomain } from './types'
 import type { BuyAmount } from '../core/constants'
 import {
-  TIER_CONFIGS, STARTING_SOUNDWAVES, MAX_OFFLINE_MS,
+  TIER_CONFIGS, STARTING_SOUNDWAVES,
   getEncoreCost, getMagnumOpusCost, getApplauseGain, getAutoEncoreInterval,
   AP_UNLOCK, AP_UNLOCK_AUTO_TOUR,
   GRAND_FINALE_SW_THRESHOLD,
@@ -23,6 +23,7 @@ import { OPUS_UPGRADES, OPUS_UPGRADE_MAP, getOpusUpgradeCost } from '../core/opu
 import { hasPerk, ENCORE_UPGRADE_DISCOUNT } from '../core/perks'
 import { getOpusGain } from '../core/records'
 import { calculateTick } from '../core/tick'
+import { computeOfflineProgress } from '../core/offline'
 import {
   getTierCost,
   getMilestoneMultiplier,
@@ -1019,56 +1020,20 @@ export const useGameStore = create<GameState & GameActions>()(
           // Push loaded prefs into the audio/format singletons (migration 3 guarantees state.settings).
           applySettings(state.settings, typeof document !== 'undefined' && document.hidden)
 
+          // Offline catch-up: the replay lives in core/offline.ts (computeOfflineProgress) so the
+          // REAL path is unit-tested (sim/offline.test.ts) — chunking, advancing sim-clock (P5),
+          // autobuyer lastTick reset, and the 24h cap all included.
           const now = Date.now()
-          const offlineMs = Math.min(now - state.lastSaveTimestamp, MAX_OFFLINE_MS)
-          if (offlineMs > 1000 && state.settings.offlineEnabled) {
-            const beforeSoundwaves = new Decimal(state.soundwaves)
-            const beforeRecords = state.recordsSold
-            const beforeAcclaim = new Decimal(state.lifetimeAcclaim ?? 0)
-            const chunkMs = 1000
-            let remaining = offlineMs
-            let currentState: GameState = { ...state }
-            // Advance a SIMULATED clock per chunk. Reading Date.now() inside this synchronous loop never
-            // moves, which starved offline autobuyers/tempo to ~one catch-up burst at chunk 1 (when SW is
-            // lowest). With an advancing clock they fire across the whole window as SW accrues.
-            let simNow = state.lastSaveTimestamp
-            while (remaining > 0) {
-              const step = Math.min(remaining, chunkMs)
-              simNow += step
-              const updates = calculateTick(currentState, step, false, simNow)
-              currentState = { ...currentState, ...updates }
-              remaining -= step
-            }
-            state.soundwaves = currentState.soundwaves
-            state.tiers = currentState.tiers
-            state.tempo = currentState.tempo
-            // Reset autobuyer clocks to real-now so the first LIVE tick doesn't see the (possibly 24h-capped)
-            // simulated gap and over-fire on frame 1.
-            state.autobuyers = Object.fromEntries(
-              Object.entries(currentState.autobuyers).map(([k, ab]) => [k, ab ? { ...ab, lastTick: now } : ab]),
-            ) as GameState['autobuyers']
-            state.totalTimePlayed = currentState.totalTimePlayed
-            state.peakSoundwaves = currentState.peakSoundwaves
-            state.producedThisRun = currentState.producedThisRun
-            state.crescendo = currentState.crescendo
-            state.peakCrescendoMult = currentState.peakCrescendoMult
-            state.recordsSold = currentState.recordsSold
-            state.platinum = currentState.platinum
-            state.warmUpLevel = currentState.warmUpLevel
-            state.activityGraceMs = currentState.activityGraceMs
-            state.acclaim = currentState.acclaim
-            state.lifetimeAcclaim = currentState.lifetimeAcclaim
-            state.venueBuffer = currentState.venueBuffer
-            state.venueSoldOut = currentState.venueSoldOut
+          const offline = computeOfflineProgress(state, now)
+          if (offline) {
+            Object.assign(state, offline.patch)
             seedSeenHintsForCurrentProgress(state)
 
             // "Welcome back" offline-earnings summary — only for a meaningful absence with real gains.
-            const swGained = state.soundwaves.minus(beforeSoundwaves)
-            const recGained = state.recordsSold - beforeRecords
-            const accGained = new Decimal(state.lifetimeAcclaim ?? 0).minus(beforeAcclaim)
-            if (offlineMs > 60_000 && (swGained.gt(0) || recGained > 0 || accGained.gt(0))) {
+            const { soundwaves: swGained, records: recGained, acclaim: accGained } = offline.gains
+            if (offline.awayMs > 60_000 && (swGained.gt(0) || recGained > 0 || accGained.gt(0))) {
               useUiStore.getState().setOfflineSummary({
-                awayMs: offlineMs,
+                awayMs: offline.awayMs,
                 soundwaves: swGained,
                 records: recGained,
                 acclaim: accGained,
