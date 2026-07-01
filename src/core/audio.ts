@@ -14,6 +14,13 @@ let reverbSend: GainNode | null = null
 let muted = false
 let volume = 0.7 // 0..1, set from settings (see settingsSync.ts)
 
+// Ambient music bed (generative pad) — its own gain so it levels/mutes independently of SFX.
+let musicGain: GainNode | null = null
+let musicOn = false
+let musicVolume = 0.45
+let musicTimer: ReturnType<typeof setTimeout> | null = null
+let musicStep = 0
+
 function getContext(): AudioContext {
   if (!audioCtx) {
     audioCtx = new AudioContext()
@@ -35,6 +42,10 @@ function buildBus(ctx: AudioContext) {
   reverbSend.gain.value = 0.16 // subtle hall, not a cathedral
   reverbSend.connect(convolver)
   convolver.connect(master)
+
+  musicGain = ctx.createGain()
+  musicGain.gain.value = 0 // faded up by applyMusicGain() when the bed starts
+  musicGain.connect(master)
 }
 
 /** A decaying white-noise impulse response — a cheap, decent reverb tail. */
@@ -53,6 +64,7 @@ function makeImpulse(ctx: AudioContext, seconds: number, decay: number): AudioBu
 
 export function setMuted(value: boolean) {
   muted = value
+  applyMusicGain() // mute silences the bed too
 }
 
 export function isMuted(): boolean {
@@ -263,4 +275,87 @@ export function playStoryBeatSound() {
   } catch {
     // Silently fail
   }
+}
+
+// --- Ambient music bed ------------------------------------------------------
+// A slow generative pad drifting through a warm C-major progression (I–IV–V–vi) — a hall breathing
+// under the game. Long overlapping swells + heavy reverb = a continuous wash, not a melody. Routed
+// through its own gain so it levels/mutes independently of the SFX.
+const PAD_CHORDS = [[0, 2, 4], [3, 5, 7], [4, 6, 8], [5, 7, 9]] // SCALE indices: I, IV, V, vi
+
+function applyMusicGain() {
+  if (!musicGain || !audioCtx) return
+  const target = muted || !musicOn ? 0 : musicVolume
+  musicGain.gain.setTargetAtTime(target, audioCtx.currentTime, 0.8) // smooth fade in/out
+}
+
+/** One long, soft pad note through the music bus + reverb. */
+function playPad(freq: number, dur: number, gain: number) {
+  const ctx = getContext()
+  if (!musicGain || !reverbSend) return
+  const t = ctx.currentTime
+  const osc = ctx.createOscillator()
+  osc.type = 'triangle'
+  osc.frequency.value = freq
+  const g = ctx.createGain()
+  g.gain.setValueAtTime(0, t)
+  g.gain.linearRampToValueAtTime(gain, t + dur * 0.35) // slow swell in
+  g.gain.exponentialRampToValueAtTime(0.0008, t + dur)
+  osc.connect(g)
+  g.connect(musicGain)
+  const send = ctx.createGain(); send.gain.value = 1; g.connect(send); send.connect(reverbSend)
+  osc.start(t)
+  osc.stop(t + dur + 0.1)
+}
+
+function scheduleMusic() {
+  musicTimer = null
+  if (!musicOn) return
+  const ctx = getContext()
+  if (ctx.state === 'running') {
+    const chord = PAD_CHORDS[musicStep % PAD_CHORDS.length]
+    chord.forEach((idx) => playPad(SCALE[idx] / 2, 7.5, 0.05)) // warm low pad (octave down)
+    if (musicStep % 2 === 1) playPad(PENTATONIC[musicStep % PENTATONIC.length], 5, 0.02) // faint upper air
+    musicStep++
+  }
+  musicTimer = setTimeout(scheduleMusic, 5200) // < the 7.5s pad length → chords overlap into a wash
+}
+
+/** Start the ambient bed. Safe on mount; latches onto the first user gesture (browser autoplay policy). */
+export function startAmbientMusic() {
+  if (musicOn) return
+  musicOn = true
+  const begin = () => {
+    if (!musicOn) return
+    const ctx = getContext()
+    applyMusicGain()
+    if (ctx.state === 'running' && !musicTimer) scheduleMusic()
+  }
+  begin()
+  if (typeof window !== 'undefined') {
+    const onGesture = () => {
+      begin()
+      if (audioCtx?.state === 'running') {
+        window.removeEventListener('pointerdown', onGesture)
+        window.removeEventListener('keydown', onGesture)
+      }
+    }
+    window.addEventListener('pointerdown', onGesture)
+    window.addEventListener('keydown', onGesture)
+  }
+}
+
+export function stopAmbientMusic() {
+  musicOn = false
+  applyMusicGain()
+  if (musicTimer) { clearTimeout(musicTimer); musicTimer = null }
+}
+
+export function setMusicVolume(value: number) {
+  musicVolume = Math.max(0, Math.min(1, value))
+  applyMusicGain()
+}
+
+export function isMusicOn(): boolean {
+  return musicOn
 }

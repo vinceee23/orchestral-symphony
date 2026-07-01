@@ -4,6 +4,7 @@ import { useAutoSave } from './hooks/useAutoSave'
 import { useHotkeys } from './hooks/useHotkeys'
 import { useGameStore } from './store/gameStore'
 import { applySettings } from './core/settingsSync'
+import { startAmbientMusic } from './core/audio'
 import { AppShell } from './components/layout/AppShell'
 import { AchievementToast } from './components/shared/AchievementToast'
 import { HelpModal } from './components/shared/HelpModal'
@@ -30,6 +31,8 @@ function App() {
     document.addEventListener('visibilitychange', onVis)
     return () => document.removeEventListener('visibilitychange', onVis)
   }, [])
+  // Ambient music bed — starts on the first user gesture (autoplay policy) and stays silent while muted.
+  useEffect(() => { startAmbientMusic() }, [])
 
   return (
     <ErrorBoundary>
