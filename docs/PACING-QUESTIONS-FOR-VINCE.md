@@ -1,5 +1,12 @@
 # Pacing / Scaling / Monotony — findings + YOUR morning tap-questions
 
+> ✅ **RESOLVED 2026-07-02 (morning taps + implementation `afe73b3`):**
+> **Q1 L2 desert** → mini-wave: Solo+Duo open at 5 MOs with pre-WT-retuned targets (sim-validated
+> mid-band; full-suite-early failed the beatability sim — 2 unbeatable, most 10-25× over band, so the
+> rest stay WT-gated as tuned). **Q2 idler** → accepted + presence message in the first-Encore hint.
+> **Q3 Ovation** → forward-tease line in the Ensemble panel. **Q5 redeploy** → done (mobile fix + BGM
+> live). Outstanding: Q4 BGM verdict (Vince's ear), Q6 Steam paperwork (Vince offline).
+
 *Written unsupervised 2026-07-02 (late) while you slept, per your ask: "note the questions you have
 in mind." Data: the 6-profile journey sim (`sim/l4-journey.test.ts`, JOURNEY=1) + a new targeted
 probe (`sim/l2-probe.test.ts`, PROBE=1). PC was shut down at the end of this workflow as requested.*
