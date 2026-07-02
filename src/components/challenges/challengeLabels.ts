@@ -1,7 +1,7 @@
 import Decimal from 'break_infinity.js'
 import { formatNumber } from '../../core/format'
 import { MILESTONE_MULTIPLIER } from '../../core/constants'
-import type { ChallengeConfig, ChallengeReward } from '../../core/challenges'
+import { CHALLENGES_UNLOCK_OPUS, type ChallengeConfig, type ChallengeReward } from '../../core/challenges'
 
 /** mm:ss for challenge best-times and summary totals. */
 export function formatChallengeTimeMs(ms: number): string {
@@ -53,7 +53,10 @@ export function formatUnlockRequirement(
     opusCount: number
   },
 ): string {
-  if (!gate.worldTourUnlocked) return 'Unlock World Tour first'
+  if (!gate.worldTourUnlocked) {
+    if (!challenge.earlyUnlock) return 'Unlock World Tour first'
+    if (gate.opusCount < CHALLENGES_UNLOCK_OPUS) return `Requires ${CHALLENGES_UNLOCK_OPUS} Magnum Opuses`
+  }
   const t = challenge.unlockThreshold
   if (t.opusCount !== undefined && gate.opusCount < t.opusCount) {
     return `Requires ${t.opusCount} Magnum Opus`

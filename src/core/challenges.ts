@@ -53,6 +53,9 @@ export interface ChallengeConfig {
   /** Automation unlock — only ch_acoustic / ch_reverse / ch_unplugged grant one. */
   unlocksAutobuyer: string | null
   unlockThreshold: ChallengeUnlockThreshold
+  /** Mini-wave desert-breaker: available from CHALLENGES_UNLOCK_OPUS Magnum Opuses, before World
+   *  Tour. Targets on early challenges are tuned for PRE-World-Tour power (sim-validated). */
+  earlyUnlock?: boolean
 }
 
 export interface ChallengeMultipliers {
@@ -139,13 +142,20 @@ export function getL4ChallengeAscensionPatch(
   }
 }
 
+/** Mini-wave desert-breaker: `earlyUnlock` challenges open at this many Magnum Opuses (pre-World-
+ *  Tour), injecting variety into the ~30-MO mid-L2 stretch the pacing probe found. Everything else
+ *  stays World-Tour-gated — their targets assume post-WT power (sim-proven: opening the whole suite
+ *  early made 2 unbeatable and most others 10-25x over the time band). */
+export const CHALLENGES_UNLOCK_OPUS = 5
+
 export function isChallengeUnlocked(
   state: Pick<GameState, 'worldTourUnlocked' | 'peakSoundwaves' | 'encoreCount' | 'opusCount'> & {
     completedChallenges?: string[]
   },
   challenge: ChallengeConfig,
 ): boolean {
-  if (!state.worldTourUnlocked) return false
+  const earlyOpen = challenge.earlyUnlock === true && state.opusCount >= CHALLENGES_UNLOCK_OPUS
+  if (!state.worldTourUnlocked && !earlyOpen) return false
   const t = challenge.unlockThreshold
   if (t.peakSoundwaves !== undefined && !state.peakSoundwaves.gte(t.peakSoundwaves)) return false
   if (t.encoreCount !== undefined && state.encoreCount < t.encoreCount) return false
@@ -257,22 +267,28 @@ export const CHALLENGES: ChallengeConfig[] = [
     name: 'Solo Performance',
     description: 'Reach the target using only Notes. No other tiers available.',
     icon: '\u{1F3B5}',
-    targetSoundwaves: new Decimal(6e7),
+    // Early-wave target: tuned for PRE-World-Tour power at the 5-MO unlock (was 6e7, tuned for the
+    // old WT-era unlock — 112min from a mid-L2 snapshot, sim-measured).
+    targetSoundwaves: new Decimal(3e5),
     constraint: { type: 'singleTier', tierId: 1 },
     reward: { crescendoBonus: 0.5, ap: 5 },
     unlocksAutobuyer: null,
     unlockThreshold: {},
+    earlyUnlock: true,
   },
   {
     id: 'ch_duet',
     name: 'Dynamic Duo',
     description: 'Reach the target using only Notes and Motifs.',
     icon: '\u{1F46F}',
-    targetSoundwaves: new Decimal(2.5e15),
+    // Early-wave target: tuned for PRE-World-Tour power at the 5-MO unlock (was 2.5e15; 1e9 measured
+    // trivial at 48s — 1e11 interpolates to ~4min, mid-band).
+    targetSoundwaves: new Decimal(1e11),
     constraint: { type: 'maxTiers', count: 2 },
     reward: { globalProdMult: 1.15, ap: 5 },
     unlocksAutobuyer: null,
-    unlockThreshold: { opusCount: 4 },
+    unlockThreshold: { opusCount: 5 },
+    earlyUnlock: true,
   },
   {
     id: 'ch_inflation',

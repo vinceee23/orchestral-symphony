@@ -2,6 +2,7 @@ import { useGameStore } from '../../store/gameStore'
 import { Icon, type IconName } from '../shared/Icon'
 import { getEra, eraTintCss, effectiveEra } from '../../core/eraTheme'
 import { L4_VISIBLE } from '../../core/constants'
+import { CHALLENGES_UNLOCK_OPUS } from '../../core/challenges'
 
 interface SidebarProps {
   activeTab: string
@@ -38,6 +39,15 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     tabs = [
       ...tabs.slice(0, insertAt),
       { id: 'worldtour', label: 'World Tour', icon: 'globe' as IconName },
+      ...tabs.slice(insertAt),
+    ]
+  }
+  // Challenges open mid-L2 (5 MOs) — earlier than World Tour — to break the MO-cycle desert.
+  if (worldTourUnlocked || opusCount >= CHALLENGES_UNLOCK_OPUS) {
+    const anchor = tabs.findIndex((t) => t.id === 'worldtour')
+    const insertAt = anchor >= 0 ? anchor + 1 : tabs.findIndex((t) => t.id === 'autobuyers') + 1
+    tabs = [
+      ...tabs.slice(0, insertAt),
       { id: 'challenges', label: 'Challenges', icon: 'metronome' as IconName },
       ...tabs.slice(insertAt),
     ]

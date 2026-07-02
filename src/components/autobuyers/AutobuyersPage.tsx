@@ -66,7 +66,7 @@ export function AutobuyersPage() {
           <h2 className="text-base font-display font-semibold text-accent-purple">Ovation</h2>
           <span className="text-sm font-mono text-text-primary">{Math.floor(applausePoints).toLocaleString()} Ovation</span>
         </div>
-        <p className="text-xs text-text-muted">Earned each Encore. Spend to automate prestige — so the long stretches run themselves.</p>
+        <p className="text-xs text-text-muted">Earned each Encore. Spend to automate prestige — so the long stretches run themselves. Surplus carries forward: grander automations await beyond the circuit.</p>
 
         {!autobuyers['encore']?.unlocked && (
           <div className="flex items-center justify-between gap-3 border-t border-border pt-3">

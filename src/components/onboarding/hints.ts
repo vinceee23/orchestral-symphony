@@ -110,6 +110,7 @@ export const ONBOARDING_HINTS: Record<OnboardingHintId, OnboardingHintDefinition
       'Your total Applause permanently ×multiplies all production.',
       'Spend the Applause pool on Encore upgrades in the Prestige tab.',
       'Each Encore is faster than the last.',
+      'Sonance rewards presence early — the orchestra learns to play itself as you climb.',
     ],
     isMet: (state) => (state.encoreCount >= 1 || state.lifetimeEncoreCount >= 1) && !state.activeChallenge,
   },

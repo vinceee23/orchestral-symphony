@@ -22,14 +22,22 @@ const l3Gate = {
 }
 
 describe('isChallengeUnlocked', () => {
-  it('requires World Tour before any challenge is visible', () => {
+  it('early-wave (Solo/Duet) opens at 5 MOs pre-World-Tour; the rest stay WT-gated', () => {
     const solo = getChallengeById('ch_solo')!
-    expect(isChallengeUnlocked({ ...l3Gate, worldTourUnlocked: false }, solo)).toBe(false)
+    const duet = getChallengeById('ch_duet')!
+    const inflation = getChallengeById('ch_inflation')!
+    const preWT = { ...l3Gate, worldTourUnlocked: false }
+    // Below the mini-wave gate: nothing opens pre-WT.
+    expect(isChallengeUnlocked({ ...preWT, opusCount: 4 }, solo)).toBe(false)
+    // At 5 MOs: ONLY the earlyUnlock pair opens (the desert-breaker); others wait for World Tour.
+    expect(isChallengeUnlocked({ ...preWT, opusCount: 5 }, solo)).toBe(true)
+    expect(isChallengeUnlocked({ ...preWT, opusCount: 5 }, duet)).toBe(true)
+    expect(isChallengeUnlocked({ ...preWT, opusCount: 5 }, inflation)).toBe(false)
   })
 
-  it('unlocks Solo immediately at L3 and Duet at 4 MO', () => {
+  it('unlocks Solo immediately at L3 and Duet at 5 MO', () => {
     expect(isChallengeUnlocked(l3Gate, getChallengeById('ch_solo')!)).toBe(true)
-    expect(isChallengeUnlocked(l3Gate, getChallengeById('ch_duet')!)).toBe(true)
+    expect(isChallengeUnlocked({ ...l3Gate, opusCount: 5 }, getChallengeById('ch_duet')!)).toBe(true)
     expect(isChallengeUnlocked({ ...l3Gate, opusCount: 3 }, getChallengeById('ch_duet')!)).toBe(false)
   })
 
